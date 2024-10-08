@@ -1,0 +1,11 @@
+Package: racafe
+Type: Package
+Title: Funciones utilitarias para aplicaciones
+Version: 0.1.0
+Author: Camilo Yate
+Maintainer: Camilo Yate <hcyate@racafe.com>
+Description: Funciones de manejo de cadenas de caracteres, fechas, numeros, formatos y varios
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.2
