@@ -101,7 +101,6 @@ TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_va
 
   return(data)
 }
-<<<<<<< HEAD
 
 #' AdicionarBotonDetalle
 #'
