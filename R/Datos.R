@@ -137,5 +137,3 @@ AdicionarBotonDetalle <- function(tabla) {
     return(tabla)
   }
 }
-=======
->>>>>>> eea5a9f0c9e42be6201baf4f57fb3da213863c1c
