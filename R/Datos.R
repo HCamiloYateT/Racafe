@@ -101,6 +101,7 @@ TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_va
 
   return(data)
 }
+<<<<<<< HEAD
 
 #' AdicionarBotonDetalle
 #'
@@ -136,3 +137,5 @@ AdicionarBotonDetalle <- function(tabla) {
     return(tabla)
   }
 }
+=======
+>>>>>>> eea5a9f0c9e42be6201baf4f57fb3da213863c1c
