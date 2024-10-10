@@ -1,3 +1,69 @@
+#' Consulta a una base de datos SQL Server
+#'
+#' Esta función realiza una consulta a una base de datos SQL Server utilizando ODBC.
+#' Se conecta a diferentes bases de datos dependiendo del valor del parámetro `base`,
+#' ejecuta una consulta SQL y limpia los nombres de las columnas en el dataframe resultante.
+#'
+#' @param base Una cadena de texto que especifica el nombre de la base de datos.
+#'            Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".
+#'            Se asignará el nombre correspondiente en la conexión.
+#' @param uid El nombre de usuario para la conexión a la base de datos.
+#' @param pwd La contraseña del usuario para la conexión.
+#' @param query La consulta SQL a ejecutar en la base de datos.
+#'
+#' @return Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
+#' @export
+#' Consulta a una base de datos SQL Server y limpia los nombres de las columnas
+#'
+#' Esta función realiza una consulta a una base de datos SQL Server utilizando ODBC.
+#' Dependiendo del valor del parámetro `base`, se conecta a una base de datos específica,
+#' ejecuta una consulta SQL, y limpia los nombres de las columnas en el dataframe resultante.
+#'
+#' @param base Una cadena que especifica la base de datos a la que conectarse. Puede ser
+#'             uno de los siguientes valores: "syscafe", "cafesys", o "estad".
+#'             El valor correspondiente se traduce al nombre real de la base de datos.
+#' @param uid El nombre de usuario para la conexión a la base de datos.
+#' @param pwd La contraseña del usuario para la conexión.
+#' @param query La consulta SQL que se ejecutará en la base de datos.
+#'
+#' @return Un dataframe con los resultados de la consulta y los nombres de las columnas limpiados.
+#' @export
+ConsultaSistema <- function(base, uid, pwd, query) {
+
+  # Cargar las librerías necesarias
+  require(DBI)       # Para la conexión y manejo de bases de datos
+  require(tidyverse) # Para manipulación de datos (dplyr, tidyr, etc.)
+
+  # Asigna el nombre de la base de datos en función del valor de `base`
+  base <- case_when(
+    base == "syscafe" ~ "ContabRacafe",
+    base == "cafesys" ~ "Cafesys",
+    base == "estad" ~ "EstadRacafe",
+    TRUE ~ stop("Base de datos no válida") # Agregar control de errores si el valor de `base` es incorrecto
+  )
+
+  # Establece la conexión con la base de datos SQL Server
+  con <- dbConnect(odbc::odbc(),
+                   Driver = "ODBC Driver 18 for SQL Server",
+                   Server = "172.16.19.21",
+                   Database = base,
+                   uid = uid,
+                   pwd = pwd,
+                   port = 1433,
+                   TrustServerCertificate = "yes")
+
+  # Ejecuta la consulta SQL y limpia los nombres de las columnas usando la función LimpiarNombres
+  df <- dbGetQuery(con, query) %>%
+    mutate(across(where(is.character), racafe::LimpiarNombres))
+
+  # Cierra la conexión con la base de datos
+  dbDisconnect(con)
+
+  # Retorna el dataframe con los resultados
+  return(df)
+}
+
+
 #' Recodificación de Categorías Menos Frecuentes
 #'
 #' Recodifica las categorías menos frecuentes de una variable según su valor absoluto o una función de resumen y las agrupa en una nueva categoría.
