@@ -28,7 +28,7 @@
 #'
 #' @return Un dataframe con los resultados de la consulta y los nombres de las columnas limpiados.
 #' @export
-ConsultaSistema <- function(base, uid, pwd, query) {
+ConsultaSistema <- function(bd, uid, pwd, query) {
 
   # Cargar las librerías necesarias
   require(DBI)       # Para la conexión y manejo de bases de datos
@@ -36,11 +36,12 @@ ConsultaSistema <- function(base, uid, pwd, query) {
 
   # Asigna el nombre de la base de datos en función del valor de `base`
   base <- case_when(
-    base == "syscafe" ~ "ContabRacafe",
-    base == "cafesys" ~ "Cafesys",
-    base == "estad" ~ "EstadRacafe",
-    TRUE ~ stop("Base de datos no válida") # Agregar control de errores si el valor de `base` es incorrecto
+    bd == "syscafe" ~ "ContabRacafe",
+    bd == "cafesys" ~ "Cafesys",
+    bd == "estad" ~ "EstadRacafe"
   )
+
+  if (is.na(base)) stop("las bases de datos disponibles son: 'syscafe', 'cafesys' o 'estad'")
 
   # Establece la conexión con la base de datos SQL Server
   con <- dbConnect(odbc::odbc(),
