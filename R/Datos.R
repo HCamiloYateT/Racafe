@@ -101,38 +101,3 @@ TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_va
 
   return(data)
 }
-
-#' AdicionarBotonDetalle
-#'
-#' Añade un botón con un ícono de lupa a una tabla para abrir un detalle interactivo.
-#' @param tabla Un data frame o tibble. La tabla a la cual se le añadirá el botón de detalle.
-#' @return La misma tabla con una nueva columna `Detalle` que contiene un botón interactivo en HTML.
-#' @details La función agrega una columna con un ícono de lupa (`&#128270;`) como botón, que puede ser usado para desplegar más información o detalles de un registro específico de la tabla. La función solo realiza modificaciones si la tabla tiene más de una fila.
-#' @examples
-#' \dontrun{
-#' # Crear una tabla de ejemplo
-#' tabla <- data.frame(ID = 1:3, Nombre = c("Juan", "Ana", "Luis"))
-#'
-#' # Adicionar el botón de detalle
-#' tabla_con_boton <- AdicionarBotonDetalle(tabla)
-#' print(tabla_con_boton)
-#' }
-#' @import dplyr
-#' @importFrom htmltools HTML
-#' @export
-AdicionarBotonDetalle <- function(tabla) {
-  # Requiere que la tabla no sea nula y tenga filas
-  req(tabla)
-
-  # Solo añadir el botón si la tabla tiene filas
-  if (nrow(tabla) > 0) {
-    # Añadir la columna 'Detalle' con un ícono de lupa (HTML)
-    tabla %>%
-      mutate(Detalle = htmltools::HTML(paste0(
-        "<span title='Abrir Detalle' style='cursor:pointer'>&#128270;</span>"
-      )))
-  } else {
-    # Retornar la tabla sin modificar si no tiene filas
-    return(tabla)
-  }
-}
