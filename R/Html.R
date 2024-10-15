@@ -24,20 +24,17 @@ Espacios <- function(n = 1) {
   strrep('&emsp;', n)
 }
 
-#' @title Obligatorio: Campo obligatorio con un asterisco rojo
-#' @description Esta función genera un componente visual de campo obligatorio con un asterisco rojo al lado de la etiqueta.
-#' @param s Texto que se mostrará como etiqueta del campo obligatorio.
-#' @return Un objeto HTML que contiene el texto de la etiqueta con un asterisco rojo que indica que el campo es obligatorio.
+#' @title Obligatorio: Añade un asterisco rojo a un campo obligatorio
+#' @description Esta función genera una etiqueta que indica que un campo es obligatorio, añadiendo un asterisco de color rojo junto al texto de la etiqueta.
+#' @param s Un string que representa el texto de la etiqueta que será mostrado en el formulario.
+#' @details La función envuelve el texto de la etiqueta proporcionada en un encabezado HTML de nivel 6 (`h6`) y añade un asterisco en color rojo, utilizando la funcionalidad de `shiny`.
+#' @return Un objeto `HTML` que será renderizado en la interfaz de usuario de `shiny`, mostrando una etiqueta con un asterisco rojo que denota obligatoriedad.
 #' @examples
-#' Obligatorio("Nombre")  # Añade un asterisco rojo a la etiqueta "Nombre" para indicar que es obligatorio.
+#' Obligatorio("Nombre")  # Crea una etiqueta con la palabra "Nombre" y un asterisco rojo.
 #' @export
 Obligatorio <- function(s) {
-  # Genera un campo de etiqueta con un asterisco rojo indicando obligatoriedad
-  tagList(
-    # Usa h6 para crear un encabezado de tamaño pequeño con el texto de la etiqueta
-    # y un span que contiene el asterisco con estilo inline (color rojo)
-    h6(HTML(s, span("*", style = "color: red;")))
-  )
+  # Crea un encabezado HTML de nivel 6 con el texto y un asterisco rojo.
+  h6(paste(s, span("*", style = "color: red;")) %>% HTML)
 }
 
 
