@@ -126,3 +126,18 @@ Unicos <- function(x) {
     unique() %>%     # Extrae los valores únicos
     sort()         # Ordena los valores
 }
+
+#' @title Verifica si un valor es NULL, NA o una cadena vacía
+#' @description Esta función evalúa un valor y determina si es NULL, NA o una cadena vacía ("").
+#' @param x Un valor a verificar.
+#' @return Un valor lógico: TRUE si el valor es NULL, NA o "", de lo contrario FALSE.
+#' @examples
+#' es_vacio(NULL)    # TRUE
+#' es_vacio(NA)      # TRUE
+#' es_vacio("")      # TRUE
+#' es_vacio("texto") # FALSE
+#' @export
+EsVacio <- function(x) {
+  is.null(x) || is.na(x) || x == ""
+}
+
