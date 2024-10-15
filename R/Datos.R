@@ -1,32 +1,16 @@
-#' Consulta a una base de datos SQL Server
+#' Consulta a una base de datos SQL Server.
 #'
-#' Esta función realiza una consulta a una base de datos SQL Server utilizando ODBC.
-#' Se conecta a diferentes bases de datos dependiendo del valor del parámetro `base`,
-#' ejecuta una consulta SQL y limpia los nombres de las columnas en el dataframe resultante.
+#' Esta función se conecta a una base de datos SQL Server y ejecuta una consulta SQL.
+#' Dependiendo del valor del parámetro `bd`, se selecciona la base de datos correspondiente.
+#' Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante.
 #'
-#' @param base Una cadena de texto que especifica el nombre de la base de datos.
-#'            Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".
-#'            Se asignará el nombre correspondiente en la conexión.
-#' @param uid El nombre de usuario para la conexión a la base de datos.
-#' @param pwd La contraseña del usuario para la conexión.
-#' @param query La consulta SQL a ejecutar en la base de datos.
-#'
-#' @return Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
-#' @export
-#' Consulta a una base de datos SQL Server y limpia los nombres de las columnas
-#'
-#' Esta función realiza una consulta a una base de datos SQL Server utilizando ODBC.
-#' Dependiendo del valor del parámetro `base`, se conecta a una base de datos específica,
-#' ejecuta una consulta SQL, y limpia los nombres de las columnas en el dataframe resultante.
-#'
-#' @param base Una cadena que especifica la base de datos a la que conectarse. Puede ser
-#'             uno de los siguientes valores: "syscafe", "cafesys", o "estad".
-#'             El valor correspondiente se traduce al nombre real de la base de datos.
+#' @param bd Una cadena de texto que especifica el nombre de la base de datos a la que conectarse.
+#'           Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".
 #' @param uid El nombre de usuario para la conexión a la base de datos.
 #' @param pwd La contraseña del usuario para la conexión.
 #' @param query La consulta SQL que se ejecutará en la base de datos.
 #'
-#' @return Un dataframe con los resultados de la consulta y los nombres de las columnas limpiados.
+#' @return Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
 #' @export
 ConsultaSistema <- function(bd, uid, pwd, query) {
 
@@ -34,7 +18,7 @@ ConsultaSistema <- function(bd, uid, pwd, query) {
   require(DBI)       # Para la conexión y manejo de bases de datos
   require(tidyverse) # Para manipulación de datos (dplyr, tidyr, etc.)
 
-  # Asigna el nombre de la base de datos en función del valor de `base`
+  # Asigna el nombre de la base de datos en función del valor de `bd`
   base <- case_when(
     bd == "syscafe" ~ "ContabRacafe",
     bd == "cafesys" ~ "Cafesys",
@@ -53,7 +37,7 @@ ConsultaSistema <- function(bd, uid, pwd, query) {
                    port = 1433,
                    TrustServerCertificate = "yes")
 
-  # Ejecuta la consulta SQL y limpia los nombres de las columnas usando la función LimpiarNombres
+  # Ejecuta la consulta SQL y limpia los nombres de las columnas
   df <- dbGetQuery(con, query) %>%
     mutate(across(where(is.character), racafe::LimpiarNombres))
 
@@ -169,37 +153,41 @@ TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_va
   return(data)
 }
 
-#' AdicionarBotonDetalle
+#' Adiciona botones interactivos a una tabla.
 #'
-#' Añade un botón con un ícono de lupa a una tabla para abrir un detalle interactivo.
-#' @param tabla Un data frame o tibble. La tabla a la cual se le añadirá el botón de detalle.
-#' @return La misma tabla con una nueva columna `Detalle` que contiene un botón interactivo en HTML.
-#' @details La función agrega una columna con un ícono de lupa (`&#128270;`) como botón, que puede ser usado para desplegar más información o detalles de un registro específico de la tabla. La función solo realiza modificaciones si la tabla tiene más de una fila.
-#' @examples
-#' \dontrun{
-#' # Crear una tabla de ejemplo
-#' tabla <- data.frame(ID = 1:3, Nombre = c("Juan", "Ana", "Luis"))
+#' Esta función permite agregar botones interactivos a una tabla, cada uno
+#' representando una acción específica. Los botones se pueden usar para
+#' abrir detalles, registrar contactos, editar, eliminar o duplicar.
 #'
-#' # Adicionar el botón de detalle
-#' tabla_con_boton <- AdicionarBotonDetalle(tabla)
-#' print(tabla_con_boton)
-#' }
-#' @import dplyr
-#' @importFrom htmltools HTML
+#' @param tabla Un `data.frame` o `tibble` al que se le desean agregar los botones.
+#' @param botones Un vector de caracteres que especifica qué botones agregar.
+#' Las opciones disponibles son: "Detalle", "Contacto", "Editar", "Eliminar", "Duplicar".
+#'
+#' @return Un `data.frame` o `tibble` con nuevas columnas para los botones seleccionados.
 #' @export
-AdicionarBotonDetalle <- function(tabla) {
-  # Requiere que la tabla no sea nula y tenga filas
-  req(tabla)
+AdicionarBotones <- function(tabla, botones) {
+  req(tabla)  # Asegura que la tabla no sea nula
 
-  # Solo añadir el botón si la tabla tiene filas
+  # Verifica si la tabla tiene filas
   if (nrow(tabla) > 0) {
-    # Añadir la columna 'Detalle' con un ícono de lupa (HTML)
-    tabla %>%
-      mutate(Detalle = htmltools::HTML(paste0(
-        "<span title='Abrir Detalle' style='cursor:pointer'>&#128270;</span>"
-      )))
-  } else {
-    # Retornar la tabla sin modificar si no tiene filas
-    return(tabla)
+    # Mapa de botones a su HTML correspondiente
+    botones_html <- list(
+      Detalle = "<span title='Abrir Detalle' style='cursor:pointer'>&#128270;</span>",
+      Contacto = "<span title='Registrar Contacto' style='cursor:pointer'>&#128172;</span>",
+      Editar = "<span title='Editar' style='cursor:pointer'>&#9997;</span>",
+      Eliminar = "<span title='Eliminar' style='cursor:pointer'>&#9940;</span>",
+      Duplicar = "<span title='Duplicar' style='cursor:pointer'>&#128203;</span>"
+    )
+
+    # Filtra solo los botones que se desean agregar
+    botones_seleccionados <- intersect(botones, names(botones_html))
+
+    # Crea nuevas columnas en la tabla para cada botón seleccionado
+    for (boton in botones_seleccionados) {
+      tabla <- tabla %>%
+        mutate(!!boton := HTML(botones_html[[boton]]))
+    }
   }
+
+  return(tabla)  # Devuelve la tabla modificada
 }
