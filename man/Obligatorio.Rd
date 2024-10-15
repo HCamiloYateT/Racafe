@@ -2,19 +2,22 @@
 % Please edit documentation in R/Html.R
 \name{Obligatorio}
 \alias{Obligatorio}
-\title{Obligatorio: Campo obligatorio con un asterisco rojo}
+\title{Obligatorio: Añade un asterisco rojo a un campo obligatorio}
 \usage{
 Obligatorio(s)
 }
 \arguments{
-\item{s}{Texto que se mostrará como etiqueta del campo obligatorio.}
+\item{s}{Un string que representa el texto de la etiqueta que será mostrado en el formulario.}
 }
 \value{
-Un objeto HTML que contiene el texto de la etiqueta con un asterisco rojo que indica que el campo es obligatorio.
+Un objeto `HTML` que será renderizado en la interfaz de usuario de `shiny`, mostrando una etiqueta con un asterisco rojo que denota obligatoriedad.
 }
 \description{
-Esta función genera un componente visual de campo obligatorio con un asterisco rojo al lado de la etiqueta.
+Esta función genera una etiqueta que indica que un campo es obligatorio, añadiendo un asterisco de color rojo junto al texto de la etiqueta.
+}
+\details{
+La función envuelve el texto de la etiqueta proporcionada en un encabezado HTML de nivel 6 (`h6`) y añade un asterisco en color rojo, utilizando la funcionalidad de `shiny`.
 }
 \examples{
-Obligatorio("Nombre")  # Añade un asterisco rojo a la etiqueta "Nombre" para indicar que es obligatorio.
+Obligatorio("Nombre")  # Crea una etiqueta con la palabra "Nombre" y un asterisco rojo.
 }
