@@ -24,24 +24,21 @@ Espacios <- function(n = 1) {
   strrep('&emsp;', n)
 }
 
-#' Crear una Etiqueta Obligatoria con un Asterisco
-#'
-#' Esta función genera una etiqueta HTML que incluye el texto de la etiqueta y un asterisco (`*`)
-#' para indicar que el campo es obligatorio. El asterisco es presentado con una clase CSS llamada
-#' `mandatory_star` para facilitar el estilo visual.
-#'
-#' @param label Texto de la etiqueta que se desea mostrar.
-#' @return Un objeto `tagList` que representa la etiqueta HTML con el asterisco visual.
-#'
+#' @title Obligatorio: Campo obligatorio con un asterisco rojo
+#' @description Esta función genera un componente visual de campo obligatorio con un asterisco rojo al lado de la etiqueta.
+#' @param s Texto que se mostrará como etiqueta del campo obligatorio.
+#' @return Un objeto HTML que contiene el texto de la etiqueta con un asterisco rojo que indica que el campo es obligatorio.
 #' @examples
-#' # Crear una etiqueta obligatoria
-#' labelObligatorio("Nombre del Usuario")
-#'
+#' Obligatorio("Nombre")  # Añade un asterisco rojo a la etiqueta "Nombre" para indicar que es obligatorio.
 #' @export
-labelObligatorio <- function(label) {
-  # Retorna una lista de etiquetas HTML que incluye el texto y un asterisco para marcar como obligatorio
+Obligatorio <- function(s) {
+  # Genera un campo de etiqueta con un asterisco rojo indicando obligatoriedad
   tagList(
-    label,  # El texto de la etiqueta
-    span("*", class = "mandatory_star")  # Asterisco con clase CSS para estilo
+    # Usa h6 para crear un encabezado de tamaño pequeño con el texto de la etiqueta
+    # y un span que contiene el asterisco con estilo inline (color rojo)
+    h6(HTML(s, span("*", style = "color: red;")))
   )
 }
+
+
+

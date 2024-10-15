@@ -4,18 +4,18 @@
 \alias{ConsultaSistema}
 \title{Consulta a una base de datos SQL Server}
 \usage{
-ConsultaSistema(base, uid, pwd, query)
+ConsultaSistema(bd, uid, pwd, query)
 }
 \arguments{
-\item{base}{Una cadena que especifica la base de datos a la que conectarse. Puede ser
-uno de los siguientes valores: "syscafe", "cafesys", o "estad".
-El valor correspondiente se traduce al nombre real de la base de datos.}
-
 \item{uid}{El nombre de usuario para la conexión a la base de datos.}
 
 \item{pwd}{La contraseña del usuario para la conexión.}
 
 \item{query}{La consulta SQL que se ejecutará en la base de datos.}
+
+\item{base}{Una cadena que especifica la base de datos a la que conectarse. Puede ser
+uno de los siguientes valores: "syscafe", "cafesys", o "estad".
+El valor correspondiente se traduce al nombre real de la base de datos.}
 }
 \value{
 Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
