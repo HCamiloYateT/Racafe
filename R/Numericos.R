@@ -13,37 +13,41 @@ SiError_0 <- function(x) {
   return(x)
 }
 
-#' Calcular Variación Porcentual
+#' Calcula la variación porcentual entre dos valores.
 #'
-#' Esta función calcula la variación porcentual entre un número inicial y uno final.
-#' La variación porcentual se calcula de acuerdo con las siguientes reglas:
-#'  - Si ambos valores son 0, la variación es 0.
-#'  - Si el valor inicial es 0 y el final es distinto de 0, la variación es 0.
-#'  - Si ambos valores tienen el mismo signo (o son ambos positivos o ambos negativos), se calcula como \code{(fin - ini) / ini}.
-#'  - Si los valores tienen signos opuestos, la variación se calcula como \code{(fin - ini) / abs(ini)}.
+#' Esta función calcula la variación porcentual entre un valor inicial (`ini`) y un valor final (`fin`).
+#' La variación se calcula en relación con el valor absoluto de `ini`, y maneja correctamente
+#' los casos en que `ini` o `fin` pueden ser cero, positivos o negativos.
 #'
-#' @param ini El número inicial (denominador).
-#' @param fin El número final (numerador).
-#' @return Un valor numérico que representa la variación porcentual.
+#' @param ini Valor inicial. Puede ser un número positivo, negativo o cero.
+#' @param fin Valor final. Puede ser un número positivo, negativo o cero.
+#'
+#' @return Un número que representa la variación porcentual entre `ini` y `fin`.
+#' Si `ini` es cero y `fin` también es cero, devuelve 0. Si `ini` es cero y `fin`
+#' es diferente de cero, devuelve el signo de `fin` (1 o -1).
+#' En caso de que ambos sean distintos de cero, calcula la variación como
+#' \eqn{(fin - ini) / |ini|}.
+#'
 #' @examples
-#' Variacion(10, 15)   # Devuelve 0.5 (50% de aumento)
-#' Variacion(0, 10)    # Devuelve 0 (por convención en este caso)
-#' Variacion(-10, 5)   # Devuelve 1.5 (150% de aumento, en valor absoluto del denominador)
+#' Variacion(10, 15)   # Devuelve 0.5, lo que representa un aumento del 50%.
+#' Variacion(-10, -5)  # Devuelve 0.5, lo que representa un aumento del 50%.
+#' Variacion(0, 5)     # Devuelve 1, porque pasa de 0 a un valor positivo.
+#' Variacion(0, -5)    # Devuelve -1, porque pasa de 0 a un valor negativo.
+#' Variacion(10, -5)   # Devuelve -1.5, representa una disminución significativa.
+#'
 #' @export
 Variacion <- function(ini, fin) {
-  # Verificar casos especiales para evitar divisiones innecesarias
   if (ini == 0 & fin == 0) {
     return(0)
-  } else if (ini == 0) {
-    return(0)  # Si el inicial es 0, la variación es 0 por convención
-  } else if (ini * fin >= 0) {
-    # Si ambos números tienen el mismo signo, calcular la variación normal
-    return((fin - ini) / ini)
-  } else {
-    # Si los números tienen signos opuestos, calcular la variación sobre el valor absoluto del inicial
+  }
+  else if (ini == 0) {
+    return(sign(fin))
+  }
+  else {
     return((fin - ini) / abs(ini))
   }
 }
+
 
 #' Calcular la Moda de un Vector
 #'
