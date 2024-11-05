@@ -2,37 +2,26 @@
 % Please edit documentation in R/Outputs.R
 \name{ImprimeSankey}
 \alias{ImprimeSankey}
-\title{Imprime un diagrama de Sankey interactivo}
+\title{Imprime un diagrama de Sankey utilizando datos agrupados.}
 \usage{
 ImprimeSankey(data, vars, fun, var = NULL, colores)
 }
 \arguments{
-\item{data}{Un `data.frame` o `tibble` que contiene los datos de entrada.}
+\item{data}{Un data frame que contiene los datos a visualizar.}
 
-\item{vars}{Un vector de nombres de columnas que se utilizarán para las variables del Sankey.}
+\item{vars}{Un vector de caracteres que especifica las variables a agrupar.}
 
-\item{fun}{Una cadena que especifica la función de agregación a aplicar. Puede ser "n" para contar
-las observaciones o cualquier otra función numérica (e.g., "sum", "mean").}
+\item{fun}{Una función de resumen que se aplicará a `var` (por ejemplo, "n" para contar).}
 
-\item{var}{Un nombre de columna adicional que se usará si `fun` no es "n" (opcional).}
+\item{var}{Una variable numérica opcional que se utilizará con `fun` para calcular el resumen.}
 
-\item{colores}{Un vector de colores para cada variable en `vars`.}
+\item{colores}{Un vector de caracteres que define los colores para cada variable en `vars`.}
 }
 \value{
-Un objeto `list` que contiene el gráfico de Sankey, los nodos y los enlaces con sus
-        respectivos valores y descripciones.
+Una lista que contiene el objeto `plot` del diagrama de Sankey,
+        el data frame `nodos` y el data frame `links`.
 }
 \description{
-Esta función crea un diagrama de Sankey a partir de los datos proporcionados, con nodos y enlaces
-que representan las transiciones entre las categorías de las variables especificadas. Los nodos
-están coloreados según las variables y las frecuencias de las transiciones se muestran al pasar el
-ratón sobre ellos.
-}
-\examples{
-# Ejemplo de uso
-data <- data.frame(Origen = c("TOTAL", "TOTAL", "TOTAL"),
-                   SegmentoRacafe = c("A", "B", "C"),
-                   Margen = c(100, 200, 300))
-result <- ImprimeSankey(data, c("SegmentoRacafe"), "sum", "Margen", c("red", "blue", "green"))
-result$plot
+Esta función crea un diagrama de Sankey que representa las relaciones entre múltiples variables.
+Permite resumir los datos utilizando una función específica y personalizar los colores de los nodos.
 }
