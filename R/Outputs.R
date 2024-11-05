@@ -51,20 +51,30 @@ CajaIco <- function(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra =
   )
 }
 
-#' Genera un diagrama de Sankey basado en un conjunto de datos
+#' Imprime un diagrama de Sankey interactivo
 #'
-#' La función `ImprimeSankey` crea un diagrama de Sankey interactivo a partir de un conjunto de datos, utilizando variables y colores definidos por el usuario.
+#' Esta función crea un diagrama de Sankey a partir de los datos proporcionados, con nodos y enlaces
+#' que representan las transiciones entre las categorías de las variables especificadas. Los nodos
+#' están coloreados según las variables y las frecuencias de las transiciones se muestran al pasar el
+#' ratón sobre ellos.
 #'
-#' @param data Data frame que contiene los datos a graficar.
-#' @param vars Vector de nombres de variables que serán utilizadas en el diagrama de Sankey.
-#' @param fun Función de resumen a aplicar (por ejemplo, "n" para el conteo de filas).
-#' @param var Nombre de la variable que se utilizará en la función de resumen (solo necesario si `fun` no es "n").
-#' @param colores Vector de colores que corresponde a cada una de las variables especificadas en `vars`.
+#' @param data Un `data.frame` o `tibble` que contiene los datos de entrada.
+#' @param vars Un vector de nombres de columnas que se utilizarán para las variables del Sankey.
+#' @param fun Una cadena que especifica la función de agregación a aplicar. Puede ser "n" para contar
+#'            las observaciones o cualquier otra función numérica (e.g., "sum", "mean").
+#' @param var Un nombre de columna adicional que se usará si `fun` no es "n" (opcional).
+#' @param colores Un vector de colores para cada variable en `vars`.
 #'
-#' @return Una lista con dos elementos: el gráfico de Sankey (`plot`) y los data frames de nodos y arcos.
+#' @return Un objeto `list` que contiene el gráfico de Sankey, los nodos y los enlaces con sus
+#'         respectivos valores y descripciones.
+#'
 #' @examples
 #' # Ejemplo de uso
-#' ImprimeSankey(data = df, vars = c("variable1", "variable2"), fun = "mean", var = "variable3", colores = c("blue", "green"))
+#' data <- data.frame(Origen = c("TOTAL", "TOTAL", "TOTAL"),
+#'                    SegmentoRacafe = c("A", "B", "C"),
+#'                    Margen = c(100, 200, 300))
+#' result <- ImprimeSankey(data, c("SegmentoRacafe"), "sum", "Margen", c("red", "blue", "green"))
+#' result$plot
 ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
 
   # Verifica que el número de colores coincida con el número de variables
@@ -73,38 +83,24 @@ ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
   }
 
   # Crear una tabla de frecuencias para los valores únicos en las variables especificadas
-  tb <- table(unlist(sapply(vars, function(x) unique(data[[x]]))) %>% as.character())
-  tb <- tb[tb > 1] %>% unlist() %>% names()
+  tb <- table(unlist(sapply(vars, function(x) unique(data[[x]]))))
+  tb <- tb[tb > 1] %>% names()
 
-  # Resumir los datos utilizando la función especificada
-  if (fun == "n") {
-    # Contar filas si `fun` es "n"
-    aux1 <- data %>%
-      group_by(Origen = "TOTAL", across(all_of(vars))) %>%
-      summarise(Tot = n(), .groups = 'drop') %>%
-      mutate(across(all_of(vars), ~ ifelse(. %in% c(tb, "", NA),
-                                           paste0(cur_column(), .), .)))
-  } else {
-    # Aplicar la función especificada a `var` si `fun` no es "n"
-    aux1 <- data %>%
-      group_by(Origen = "TOTAL", across(all_of(vars))) %>%
-      summarise(Tot = !!parse_expr(paste0(fun, "(",
-                                          var, ", na.rm = TRUE)")), .groups = 'drop') %>%
-      mutate(across(all_of(vars), ~ ifelse(. %in% c(tb, "", NA),
-                                           paste0(cur_column(), .), .)))
-  }
+  # Resumir los datos según la función especificada
+  aux1 <- data %>%
+    group_by(Origen = "TOTAL", across(all_of(vars))) %>%
+    summarise(Tot = ifelse(fun == "n", n(), eval(parse(text = paste0(fun, "(", var, ", na.rm = TRUE)")))), .groups = 'drop') %>%
+    mutate(across(all_of(vars), ~ ifelse(. %in% c(tb, "", NA), paste0(cur_column(), .), .)))
 
-  # Preparar etiquetas de nodos y colores
+  # Preparar las etiquetas de nodos y colores
   vec <- c("Origen", vars)
-  nds <- c("TOTAL", unlist(sapply(vars, function(x) unique(aux1[[x]]))) %>% as.character())
+  nds <- c("TOTAL", unlist(sapply(vars, function(x) Unicos(aux1[[x]]))))
 
-  # Generar paletas de colores personalizadas para cada variable en `vars`
   aux_col <- unlist(sapply(vars, function(x) {
-    i = {parent.frame()$i[]}
-    color_base <- colores[i]
+    color_base <- colores[which(vars == x)]
     n_colores <- length(unique(aux1[[x]]))
-    paleta <- colorRampPalette(c(lighten(color_base, 0.5), color_base, darken(color_base, 0.5)))(n_colores)
-  })) %>% as.character()
+    colorRampPalette(c(lighten(color_base, 0.5), color_base, darken(color_base, 0.5)))(n_colores)
+  }))
 
   # Crear descripciones de texto para cada nodo
   aux_txt <- unlist(sapply(vec, function(x) {
@@ -116,39 +112,28 @@ ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
       mutate(txt = paste0("<b>Clientes: </b>", comma(Tot, accuracy = 1),
                           "<br><b>Pct. del Total: </b>", percent(Pct, accuracy = 0.01))) %>%
       pull(txt)
-  })) %>% as.character()
+  }))
 
-  # Crear etiquetas para cada variable en los nodos
-  aux_var <- unlist(sapply(vec, function(x) {
-    tot <- sum(aux1$Tot)
-    aux1 %>%
-      group_by(across(all_of(x))) %>%
-      summarise(Tot = sum(Tot), Pct = Tot / tot, .groups = 'drop') %>%
-      mutate(Var = x) %>%
-      pull(Var)
-  })) %>% as.character()
-
-  # Crear el data frame de nodos con etiquetas, colores y descripciones
+  # Crear el data frame de nodos
   nodos <- data.frame(
     label = nds,
     label2 = Reduce(function(x, pattern) gsub(pattern, "", x), vars, nds),
     indices = seq_along(nds) - 1,
     colores = c("black", aux_col),
-    AuxTexto = aux_txt,
-    Var = aux_var
+    AuxTexto = aux_txt
   ) %>%
     mutate(texto = paste0("<b>", label2, "</b><br>", AuxTexto))
 
-  # Crear el data frame de enlaces (links) entre nodos
+  # Crear el data frame de enlaces (links)
   n <- length(vec) - 1
   aux_lista <- lapply(1:n, function(i) c(vec[i], vec[i + 1]))
   links <- do.call("bind_rows", lapply(aux_lista, function(x) {
     aux1 %>%
       group_by(across(all_of(x))) %>%
       summarise(Tot = sum(Tot), .groups = 'drop') %>%
-      left_join(nodos %>% select(label, indices, VarSource = Var) %>% rename(source = indices), by = setNames("label", x[1]))  %>%
-      left_join(nodos %>% select(label, indices, VarTarget = Var) %>% rename(target = indices), by = setNames("label", x[2])) %>%
-      select(source, target, value = Tot, VarSource, VarTarget)
+      left_join(nodos %>% select(label, indices) %>% rename(source = indices), by = setNames("label", x[1]))  %>%
+      left_join(nodos %>% select(label, indices) %>% rename(target = indices), by = setNames("label", x[2])) %>%
+      select(source, target, value = Tot)
   }))
 
   # Calcular valores totales para los enlaces
@@ -169,7 +154,7 @@ ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
       )
     )
 
-  # Crear el diagrama de Sankey con `plotly`
+  # Crear el diagrama de Sankey
   sankey <- plot_ly(
     type = "sankey",
     arrangement= "fixed",
@@ -179,7 +164,7 @@ ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
       thickness = 20,
       line = list(color = "black", width = 0.5),
       label = nodos$label2,
-      color = nodos$color,
+      color = nodos$colores,
       hovertemplate = paste0("%{customdata}%", "<extra></extra>"),
       customdata = nodos$texto
     ),
@@ -196,3 +181,4 @@ ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
 
   return(list(plot = sankey, nodos = nodos, arcos = links))
 }
+

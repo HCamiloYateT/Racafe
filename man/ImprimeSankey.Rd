@@ -2,28 +2,37 @@
 % Please edit documentation in R/Outputs.R
 \name{ImprimeSankey}
 \alias{ImprimeSankey}
-\title{Genera un diagrama de Sankey basado en un conjunto de datos}
+\title{Imprime un diagrama de Sankey interactivo}
 \usage{
 ImprimeSankey(data, vars, fun, var = NULL, colores)
 }
 \arguments{
-\item{data}{Data frame que contiene los datos a graficar.}
+\item{data}{Un `data.frame` o `tibble` que contiene los datos de entrada.}
 
-\item{vars}{Vector de nombres de variables que serán utilizadas en el diagrama de Sankey.}
+\item{vars}{Un vector de nombres de columnas que se utilizarán para las variables del Sankey.}
 
-\item{fun}{Función de resumen a aplicar (por ejemplo, "n" para el conteo de filas).}
+\item{fun}{Una cadena que especifica la función de agregación a aplicar. Puede ser "n" para contar
+las observaciones o cualquier otra función numérica (e.g., "sum", "mean").}
 
-\item{var}{Nombre de la variable que se utilizará en la función de resumen (solo necesario si `fun` no es "n").}
+\item{var}{Un nombre de columna adicional que se usará si `fun` no es "n" (opcional).}
 
-\item{colores}{Vector de colores que corresponde a cada una de las variables especificadas en `vars`.}
+\item{colores}{Un vector de colores para cada variable en `vars`.}
 }
 \value{
-Una lista con dos elementos: el gráfico de Sankey (`plot`) y los data frames de nodos y arcos.
+Un objeto `list` que contiene el gráfico de Sankey, los nodos y los enlaces con sus
+        respectivos valores y descripciones.
 }
 \description{
-La función `ImprimeSankey` crea un diagrama de Sankey interactivo a partir de un conjunto de datos, utilizando variables y colores definidos por el usuario.
+Esta función crea un diagrama de Sankey a partir de los datos proporcionados, con nodos y enlaces
+que representan las transiciones entre las categorías de las variables especificadas. Los nodos
+están coloreados según las variables y las frecuencias de las transiciones se muestran al pasar el
+ratón sobre ellos.
 }
 \examples{
 # Ejemplo de uso
-ImprimeSankey(data = df, vars = c("variable1", "variable2"), fun = "mean", var = "variable3", colores = c("blue", "green"))
+data <- data.frame(Origen = c("TOTAL", "TOTAL", "TOTAL"),
+                   SegmentoRacafe = c("A", "B", "C"),
+                   Margen = c(100, 200, 300))
+result <- ImprimeSankey(data, c("SegmentoRacafe"), "sum", "Margen", c("red", "blue", "green"))
+result$plot
 }
