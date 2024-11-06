@@ -2,26 +2,29 @@
 % Please edit documentation in R/Outputs.R
 \name{ImprimeSankey}
 \alias{ImprimeSankey}
-\title{Imprime un diagrama de Sankey utilizando datos agrupados.}
+\title{Imprime un diagrama de Sankey con datos de agrupación}
 \usage{
 ImprimeSankey(data, vars, fun, var = NULL, colores)
 }
 \arguments{
-\item{data}{Un data frame que contiene los datos a visualizar.}
+\item{data}{Data frame con los datos de entrada para el diagrama de Sankey.}
 
-\item{vars}{Un vector de caracteres que especifica las variables a agrupar.}
+\item{vars}{Vector de nombres de columnas a utilizar en el diagrama.}
 
-\item{fun}{Una función de resumen que se aplicará a `var` (por ejemplo, "n" para contar).}
+\item{fun}{Función de agregación a aplicar, como "n" para contar o funciones estadísticas (e.g., "sum", "mean").}
 
-\item{var}{Una variable numérica opcional que se utilizará con `fun` para calcular el resumen.}
+\item{var}{Nombre de la variable sobre la cual se aplica `fun` (opcional).}
 
-\item{colores}{Un vector de caracteres que define los colores para cada variable en `vars`.}
+\item{colores}{Vector de colores a aplicar a cada variable especificada en `vars`.}
 }
 \value{
-Una lista que contiene el objeto `plot` del diagrama de Sankey,
-        el data frame `nodos` y el data frame `links`.
+Una lista con el gráfico Sankey (`plot`) y los datos de nodos y enlaces (`nodos`, `arcos`).
 }
 \description{
-Esta función crea un diagrama de Sankey que representa las relaciones entre múltiples variables.
-Permite resumir los datos utilizando una función específica y personalizar los colores de los nodos.
+Esta función crea un diagrama de Sankey con la biblioteca `plotly`, basado en las agrupaciones especificadas
+en los datos de entrada y permite visualizar relaciones entre variables.
+}
+\examples{
+ImprimeSankey(data = df, vars = c("Var1", "Var2"), fun = "n", colores = c("blue", "green"))
+
 }
