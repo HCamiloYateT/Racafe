@@ -192,7 +192,9 @@ ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
     )
   ) %>%
     layout(clickmode = "event+select") %>%
-    event_register("plotly_click")
+    event_register("plotly_click") %>%
+    config(locale = "es",displayModeBar=F)
+
 
   return(list(plot = sankey, nodos = nodos, arcos = links))
 }
