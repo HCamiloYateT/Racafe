@@ -141,3 +141,71 @@ EsVacio <- function(x) {
   is.null(x) || is.na(x) || x == ""
 }
 
+#' Verificar si un valor es un entero positivo
+#'
+#' Esta función verifica si una cadena representa un entero positivo.
+#'
+#' @param s Cadena de texto a evaluar.
+#' @return
+#' `TRUE` si la cadena representa un entero positivo (sin ceros a la izquierda),
+#' `FALSE` en caso contrario.
+#' @examples
+#' EsEnteroPositivo("123") # TRUE
+#' EsEnteroPositivo("001") # FALSE
+#' EsEnteroPositivo("-5")  # FALSE
+EsEnteroPositivo <- function(s) {
+  grepl("^[1-9]\\d*$", s)
+}
+
+#' Verificar si una cadena es un número positivo
+#'
+#' Comprueba si una cadena representa un número positivo válido (entero o decimal).
+#'
+#' @param cadena Cadena de texto a evaluar.
+#' @return
+#' `TRUE` si la cadena representa un número positivo,
+#' `FALSE` en caso contrario.
+#' @examples
+#' EsNumero("123")      # TRUE
+#' EsNumero("12.34")    # TRUE
+#' EsNumero("-5")       # FALSE
+#' EsNumero("abc")      # FALSE
+EsNumero <- function(cadena) {
+  es_valido <- grepl("^\\d*\\.?\\d+$", cadena) && as.numeric(cadena) > 0
+  return(es_valido)
+}
+
+#' Verificar si una cadena es un número de teléfono válido
+#'
+#' Evalúa si una cadena corresponde a un número de teléfono válido en un formato
+#' específico: debe comenzar con "3" o "6" y tener exactamente 10 dígitos.
+#'
+#' @param tel Cadena de texto que representa el número de teléfono.
+#' @return
+#' `TRUE` si la cadena corresponde a un número de teléfono válido,
+#' `FALSE` en caso contrario.
+#' @examples
+#' EsNumTelefono("3001234567") # TRUE
+#' EsNumTelefono("6123456789") # TRUE
+#' EsNumTelefono("1234567890") # FALSE
+EsNumTelefono <- function(tel) {
+  grepl("^[36]\\d{9}$", tel)
+}
+
+#' Verificar si una cadena es un correo electrónico válido
+#'
+#' Comprueba si una cadena corresponde a un correo electrónico válido.
+#'
+#' @param email Cadena de texto que representa el correo electrónico.
+#' @return
+#' `TRUE` si la cadena corresponde a un correo electrónico válido,
+#' `FALSE` en caso contrario.
+#' @examples
+#' EsEmail("test@example.com")  # TRUE
+#' EsEmail("user.name@domain") # FALSE
+#' EsEmail("@example.com")     # FALSE
+EsEmail <- function(email) {
+  patron <- "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+  grepl(patron, email)
+}
+
