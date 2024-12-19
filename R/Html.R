@@ -8,7 +8,7 @@
 #' Saltos(3)  # Devuelve "<br/><br/><br/>"
 #' @export
 Saltos <- function(n = 1) {
-  strrep('<br/>', n)
+  strrep('<br/>', n) %>% HTML()
 }
 
 #' Insertar Espacios en HTML
