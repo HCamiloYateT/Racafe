@@ -21,7 +21,7 @@ Saltos <- function(n = 1) {
 #' Espacios(4)  # Devuelve "&emsp;&emsp;&emsp;&emsp;"
 #' @export
 Espacios <- function(n = 1) {
-  strrep('&emsp;', n)
+  strrep('&emsp;', n) %>% HTML()
 }
 
 #' @title Obligatorio: Añade un asterisco rojo a un campo obligatorio
