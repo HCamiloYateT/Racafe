@@ -1,11 +1,22 @@
 Package: racafe
 Type: Package
-Title: Funciones utilitarias para aplicaciones
+Title: Funciones Utilitarias para Proyectos de Análisis en R
 Version: 0.1.0
-Author: Camilo Yate
-Maintainer: Camilo Yate <hcyate@racafe.com>
-Description: Funciones de manejo de cadenas de caracteres, fechas, numeros, formatos y varios
-License: MIT
+Authors@R: 
+    person("Camilo", "Apellido", email = "hcyate@racafe.com",
+           role = c("aut", "cre"))
+Description: Este paquete proporciona un conjunto de funciones utilitarias 
+    diseñadas para facilitar el análisis de datos, visualización, 
+    y tareas comunes en R. Incluye herramientas para formateo de números, 
+    manejo de datos y funciones de apoyo a proyectos analíticos.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
+Imports: 
+    scales (>= 1.2.1),
+    dplyr,
+    tidyr
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
