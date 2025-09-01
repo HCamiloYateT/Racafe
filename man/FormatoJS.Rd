@@ -2,31 +2,21 @@
 % Please edit documentation in R/Formatos.R
 \name{FormatoJS}
 \alias{FormatoJS}
-\title{Definir Formato de Visualización de Números en JavaScript}
+\title{Definir formato para JavaScript}
 \usage{
 FormatoJS(formato)
 }
 \arguments{
-\item{formato}{Un string que especifica el formato deseado para los números. Puede ser uno de los siguientes:
-- "coma": Números con comas como separadores de miles y sin decimales.
-- "numero": Números con dos decimales.
-- "dinero": Números con símbolo "$", comas como separadores de miles y sin decimales.
-- "porcentaje": Números expresados como porcentaje con un decimal.}
+\item{formato}{Cadena de texto: "coma", "numero", "dinero" o "porcentaje".}
 }
 \value{
-Un string que representa el formato correspondiente para usar en JavaScript para la visualización de números.
+Un string con una función en JavaScript que formatea números.
 }
 \description{
-Esta función define el formato de visualización de números para ser usado en JavaScript.
-Los formatos disponibles son: "coma" (números con comas como separadores de miles),
-"numero" (números con dos decimales), "dinero" (números con símbolo de dólar y separadores de miles, sin decimales),
-y "porcentaje" (números expresados como porcentaje con un decimal).
+Genera una función en formato string para aplicar en JavaScript.
 }
 \examples{
-# Formato con comas
 FormatoJS("coma")
-
-# Formato de dinero
 FormatoJS("dinero")
 
 }

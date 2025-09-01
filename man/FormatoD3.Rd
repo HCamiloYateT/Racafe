@@ -2,31 +2,21 @@
 % Please edit documentation in R/Formatos.R
 \name{FormatoD3}
 \alias{FormatoD3}
-\title{Definir Formato de Visualización de Números en D3.js}
+\title{Definir formato para D3.js}
 \usage{
 FormatoD3(formato)
 }
 \arguments{
-\item{formato}{Un string que especifica el formato deseado para los números. Puede ser uno de los siguientes:
-- "coma": Números con comas como separadores de miles, sin decimales.
-- "numero": Números con dos decimales.
-- "dinero": Números con símbolo "$" y comas como separadores de miles, sin decimales.
-- "porcentaje": Números expresados como porcentaje con dos decimales.}
+\item{formato}{Cadena de texto: "coma", "numero", "dinero" o "porcentaje".}
 }
 \value{
-Un string que representa el formato para visualizar los números en una gráfica utilizando D3.js.
+Un string que representa el formato en D3.js.
 }
 \description{
-Esta función define el formato de visualización de números en una gráfica utilizando la biblioteca D3.js.
-Los formatos disponibles son: "coma" (números con comas como separadores de miles),
-"numero" (números con dos decimales), "dinero" (números con símbolo de dólar y comas como separadores de miles),
-y "porcentaje" (números expresados como porcentaje con dos decimales).
+Genera un string de formato compatible con la librería D3.js.
 }
 \examples{
-# Formato con comas
 FormatoD3("coma")
-
-# Formato de dinero
 FormatoD3("dinero")
 
 }

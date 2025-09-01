@@ -2,23 +2,23 @@
 % Please edit documentation in R/Formatos.R
 \name{col_kpi}
 \alias{col_kpi}
-\title{Obtener el color para un indicador}
+\title{Color para KPI}
 \usage{
 col_kpi(x, prop = TRUE)
 }
 \arguments{
-\item{x}{El valor del indicador.}
+\item{x}{Valor numérico.}
 
-\item{prop}{Un valor lógico que indica si el indicador es proporcional (TRUE) o no (FALSE).
-El valor predeterminado es TRUE.}
+\item{prop}{Lógico, indica si el KPI es proporcional (default: TRUE).}
 }
 \value{
-El color correspondiente como una cadena hexadecimal.
+Cadena con un color en formato hexadecimal.
 }
 \description{
-Esta función devuelve el color correspondiente para un indicador, según si es proporcional o no.
+Asigna color según si el valor es positivo, negativo o cero, y según proporcionalidad.
 }
 \examples{
-col_kpi(1, TRUE)  # Indicador proporcional positivo (color verde).
-col_kpi(-1, FALSE)  # Indicador no proporcional negativo (color rojo).
+col_kpi(1, TRUE)
+col_kpi(-1, FALSE)
+
 }

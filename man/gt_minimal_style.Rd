@@ -7,23 +7,17 @@
 gt_minimal_style(gt_table)
 }
 \arguments{
-\item{gt_table}{Un objeto de clase `gt_tbl` creado previamente con el paquete `gt`.}
+\item{gt_table}{Objeto de clase `gt_tbl` generado con el paquete `gt`.}
 }
 \value{
-Un objeto `gt_tbl` con estilos de tabla personalizados.
+Un objeto `gt_tbl` con estilos personalizados.
 }
 \description{
-Aplica un tema visual limpio y minimalista a un objeto de tabla creado con
-el paquete **gt**, eliminando casi todos los bordes y resaltando únicamente
-los encabezados de columna con una línea sutil.
+Aplica un diseño limpio y minimalista a un objeto creado con
+el paquete **gt**, eliminando bordes y resaltando encabezados con una línea sutil.
 }
 \examples{
 library(gt)
-library(dplyr)
-
-# Ejemplo básico
-df <- head(mtcars)
-tab <- gt(df)
-gt_minimal_style(tab)
+gt(head(mtcars)) \%>\% gt_minimal_style()
 
 }

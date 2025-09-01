@@ -2,20 +2,21 @@
 % Please edit documentation in R/Formatos.R
 \name{chr_kpi}
 \alias{chr_kpi}
-\title{Obtener un carácter que represente la dirección de un indicador}
+\title{Símbolo para KPI}
 \usage{
 chr_kpi(x)
 }
 \arguments{
-\item{x}{El número del cual se desea obtener el carácter representativo.}
+\item{x}{Valor numérico.}
 }
 \value{
-Un carácter: '▲' para valores positivos, '▼' para negativos y '▬' para valores iguales a 0.
+Un carácter: ▲ (positivo), ▼ (negativo), ▬ (cero).
 }
 \description{
-Esta función devuelve un carácter que representa el crecimiento o decrecimiento de un indicador numérico.
+Devuelve un símbolo gráfico que representa la dirección de un indicador.
 }
 \examples{
-chr_kpi(1)  # Devuelve "▲" para crecimiento positivo.
-chr_kpi(-1)  # Devuelve "▼" para decrecimiento negativo.
+chr_kpi(1)
+chr_kpi(-1)
+
 }

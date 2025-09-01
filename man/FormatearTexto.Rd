@@ -2,7 +2,7 @@
 % Please edit documentation in R/Formatos.R
 \name{FormatearTexto}
 \alias{FormatearTexto}
-\title{Formatear Texto con Opciones de Estilo}
+\title{Formatear texto en HTML}
 \usage{
 FormatearTexto(
   x,
@@ -14,31 +14,26 @@ FormatearTexto(
 )
 }
 \arguments{
-\item{x}{El texto a formatear.}
+\item{x}{Cadena de texto.}
 
-\item{negrita}{Un valor lógico (`TRUE` o `FALSE`) que indica si el texto debe aparecer en negrita (por defecto es `TRUE`).}
+\item{negrita}{Lógico, si el texto se muestra en negrita.}
 
-\item{color}{El color en formato hexadecimal (por defecto es "#000000").}
+\item{color}{Cadena con el color en formato hexadecimal.}
 
-\item{tamano_pct}{El tamaño de la fuente en porcentaje (por defecto es 1, es decir, tamaño normal).}
+\item{tamano_pct}{Tamaño relativo en porcentaje (1 = 100%).}
 
-\item{alineacion}{La alineación del texto. Puede ser "left", "center" o "right" (por defecto es "left").}
+\item{alineacion}{Alineación: "left", "center" o "right".}
 
-\item{transform}{La transformación del texto. Opciones: "none", "capitalize", "uppercase", "lowercase" (por defecto es "capitalize").}
+\item{transform}{Transformación del texto: "none", "capitalize", "uppercase", "lowercase".}
 }
 \value{
-El texto formateado en HTML con las opciones seleccionadas.
+Texto en HTML con estilos aplicados.
 }
 \description{
-Esta función permite formatear un texto con diversas opciones de estilo, como
-resaltar en negrita, cambiar el color, ajustar el tamaño de la fuente, alinear el texto
-y transformar el texto a mayúsculas, minúsculas o capitalización de la primera letra.
+Aplica opciones de estilo visual a un texto plano.
 }
 \examples{
-# Formatear texto en negrita, color azul y tamaño 120\%
-FormatearTexto("Texto formateado", negrita = TRUE, color = "#0000FF", tamano_pct = 1.2)
-
-# Texto en mayúsculas y alineado al centro
-FormatearTexto("Texto en mayúsculas", transform = "uppercase", alineacion = "center")
+FormatearTexto("Texto", color = "#0000FF", tamano_pct = 1.2)
+FormatearTexto("Ejemplo", transform = "uppercase", alineacion = "center")
 
 }

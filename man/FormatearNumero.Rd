@@ -2,7 +2,7 @@
 % Please edit documentation in R/Formatos.R
 \name{FormatearNumero}
 \alias{FormatearNumero}
-\title{Formatear un Número con Opciones de Estilo y Colores}
+\title{Formatear número en HTML}
 \usage{
 FormatearNumero(
   x,
@@ -14,32 +14,26 @@ FormatearNumero(
 )
 }
 \arguments{
-\item{x}{El número o vector de números a formatear.}
+\item{x}{Número o vector numérico.}
 
-\item{formato}{El formato deseado para el número. Opciones incluyen:
-"coma" (con separadores de miles), "numero", "dinero", "miles", "porcentaje".}
+\item{formato}{Formato numérico (usado en \code{DefinirFormato}).}
 
-\item{negrita}{Un valor lógico (`TRUE` o `FALSE`) que indica si el número debe aparecer en negrita (por defecto es `TRUE`).}
+\item{negrita}{Lógico, si el número debe mostrarse en negrita (default: TRUE).}
 
-\item{color}{El color en formato hexadecimal (por defecto es "#000000"). Si no se proporciona `meta`, este color será usado.}
+\item{color}{Cadena con el color en formato hexadecimal (default: "#000000").}
 
-\item{meta}{Un valor o vector numérico que representa el umbral o meta para cambiar el color. (opcional)}
+\item{meta}{Valor umbral para asignar colores (opcional).}
 
-\item{prop}{Un valor lógico (`TRUE` o `FALSE`) que indica si se debe usar una escala de colores proporcional al valor de `x` con respecto a `meta` (por defecto es `TRUE`).}
+\item{prop}{Lógico, si los colores son proporcionales respecto a \code{meta}.}
 }
 \value{
-Un número formateado en HTML con opciones de estilo (negrita, color) y el formato numérico especificado.
+Texto en HTML con estilos aplicados.
 }
 \description{
-Esta función permite formatear un número de acuerdo con un formato específico,
-con opciones para aplicar negrita y cambiar el color en función de un umbral
-o meta. Se puede utilizar para resaltar visualmente los números en gráficos o tablas.
+Aplica formato numérico y estilos visuales (color, negrita) en HTML.
 }
 \examples{
-# Formatear un número en formato "dinero" con color proporcional
-FormatearNumero(2500, "dinero", negrita = TRUE, meta = 2000)
-
-# Formatear un número en formato "porcentaje" sin negrita y con color específico
+FormatearNumero(2500, "dinero", meta = 2000)
 FormatearNumero(0.75, "porcentaje", negrita = FALSE, color = "#00FF00")
 
 }

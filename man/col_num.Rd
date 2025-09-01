@@ -2,21 +2,22 @@
 % Please edit documentation in R/Formatos.R
 \name{col_num}
 \alias{col_num}
-\title{Asignar color basado en valor numérico}
+\title{Color según número}
 \usage{
 col_num(x)
 }
 \arguments{
-\item{x}{Un valor numérico o vector de valores numéricos.}
+\item{x}{Valor numérico o vector.}
 }
 \value{
-Un carácter que representa el color en formato hexadecimal: `#000000` para valores mayores o iguales a cero y `#943126` para valores negativos.
+Vector de colores en formato hexadecimal.
 }
 \description{
-Esta función asigna un color a un número dependiendo de si es positivo, cero o negativo.
+Asigna color a un número: negro si es mayor o igual a cero y rojo oscuro si es negativo.
 }
 \examples{
-col_num(5)   # Devuelve "#000000"
-col_num(-3)  # Devuelve "#943126"
-col_num(c(5, -3, 0))  # Devuelve un vector con colores correspondientes a cada valor
+col_num(5)
+col_num(-3)
+col_num(c(5, -3, 0))
+
 }
