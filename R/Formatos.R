@@ -271,6 +271,79 @@ FormatearTexto <- function(x, negrita = TRUE, color = "#000000", tamano_pct = 1,
   return(res)
 }
 
+#' @title Estilo minimalista para tablas gt
+#' @description
+#' Aplica un tema visual limpio y minimalista a un objeto de tabla creado con
+#' el paquete **gt**, eliminando casi todos los bordes y resaltando únicamente
+#' los encabezados de columna con una línea sutil.
+#'
+#' @param gt_table Un objeto de clase `gt_tbl` creado previamente con el paquete `gt`.
+#'
+#' @return Un objeto `gt_tbl` con estilos de tabla personalizados.
+#'
+#' @examples
+#' library(gt)
+#' library(dplyr)
+#'
+#' # Ejemplo básico
+#' df <- head(mtcars)
+#' tab <- gt(df)
+#' gt_minimal_style(tab)
+#'
+gt_minimal_style <- function(gt_table) {
+  require(gt)
+
+  gt_table %>%
+    # Opciones generales de la tabla
+    tab_options(
+      table.width = pct(100),            # Ancho total al 100%
+      table.font.size = 12,              # Tamaño de fuente
+      data_row.padding = px(3),          # Espaciado en filas de datos
+      summary_row.padding = px(3),       # Espaciado en filas de resumen
+      grand_summary_row.padding = px(3), # Espaciado en filas de gran resumen
+      footnotes.padding = px(3),         # Espaciado en notas al pie
+      source_notes.padding = px(3),      # Espaciado en notas de fuente
+      row_group.padding = px(3),         # Espaciado en grupos de filas
+
+      # Eliminación de bordes por defecto
+      table.border.top.style = "none",
+      table.border.bottom.style = "none",
+      table.border.left.style = "none",
+      table.border.right.style = "none",
+      column_labels.border.top.style = "none",
+      column_labels.border.bottom.style = "none",
+      table_body.border.top.style = "none",
+      table_body.hlines.style = "none",
+      table_body.border.bottom.style = "none",
+
+      # Colores base: blanco para encabezado y fondo
+      column_labels.background.color = "white",
+      heading.background.color = "white",
+
+      # Negrita en encabezados de columnas
+      column_labels.font.weight = "bold"
+    ) %>%
+    # CSS personalizado para controlar bordes y estilos más allá de tab_options
+    opt_css(css = "
+      .gt_table {
+        border-collapse: collapse !important;
+        border: none !important;
+        background-color: white !important;
+      }
+      .gt_table td {
+        border: none !important;
+      }
+      .gt_col_heading {
+        font-weight: bold !important;
+        background-color: white !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: 2px solid #00000033 !important; # línea fina gris bajo encabezado
+      }
+    ")
+}
+
 #' Obtener el color para un indicador
 #'
 #' Esta función devuelve el color correspondiente para un indicador, según si es proporcional o no.
@@ -283,6 +356,7 @@ FormatearTexto <- function(x, negrita = TRUE, color = "#000000", tamano_pct = 1,
 #' col_kpi(1, TRUE)  # Indicador proporcional positivo (color verde).
 #' col_kpi(-1, FALSE)  # Indicador no proporcional negativo (color rojo).
 #' @export
+
 col_kpi <- function(x, prop = TRUE){
   # Definir los colores para los casos proporcionales y no proporcionales
   case_when(
