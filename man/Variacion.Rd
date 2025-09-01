@@ -2,32 +2,27 @@
 % Please edit documentation in R/Numericos.R
 \name{Variacion}
 \alias{Variacion}
-\title{Calcula la variación porcentual entre dos valores.}
+\title{Calcula la variación relativa entre dos valores}
 \usage{
 Variacion(ini, fin)
 }
 \arguments{
-\item{ini}{Valor inicial. Puede ser un número positivo, negativo o cero.}
+\item{ini}{Vector numérico con los valores iniciales.}
 
-\item{fin}{Valor final. Puede ser un número positivo, negativo o cero.}
+\item{fin}{Vector numérico con los valores finales.}
 }
 \value{
-Un número que representa la variación porcentual entre `ini` y `fin`.
-Si `ini` es cero y `fin` también es cero, devuelve 0. Si `ini` es cero y `fin`
-es diferente de cero, devuelve el signo de `fin` (1 o -1).
-En caso de que ambos sean distintos de cero, calcula la variación como
-\eqn{(fin - ini) / |ini|}.
+Un vector numérico con la variación relativa entre `ini` y `fin`.
+  - Retorna `NA` si alguno de los valores es `NA`.
+  - Retorna `0` si ambos valores son `0`.
+  - Retorna `sign(y)` si `ini` es `0` y `fin` no es `0`.
+  - En otros casos, retorna `(y - x) / abs(x)`.
 }
 \description{
-Esta función calcula la variación porcentual entre un valor inicial (`ini`) y un valor final (`fin`).
-La variación se calcula en relación con el valor absoluto de `ini`, y maneja correctamente
-los casos en que `ini` o `fin` pueden ser cero, positivos o negativos.
+Esta función calcula la variación relativa entre dos vectores de valores iniciales y finales.
+Si el valor inicial es cero, se define una variación especial basada en el signo del valor final.
 }
 \examples{
-Variacion(10, 15)   # Devuelve 0.5, lo que representa un aumento del 50\%.
-Variacion(-10, -5)  # Devuelve 0.5, lo que representa un aumento del 50\%.
-Variacion(0, 5)     # Devuelve 1, porque pasa de 0 a un valor positivo.
-Variacion(0, -5)    # Devuelve -1, porque pasa de 0 a un valor negativo.
-Variacion(10, -5)   # Devuelve -1.5, representa una disminución significativa.
-
+Variacion(c(10, 0, NA, 5), c(15, 5, 20, 10))
+# Retorna: c(0.5, 1, NA, 1)
 }

@@ -46,7 +46,7 @@ CajaIco <- function(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra =
   column(12,
          div(class = "row", style = s_caj,
              column(6, style = s_ico, icon(icono)),  # Añadiendo el ícono
-             column(6, style = s_con, tags$p(style = s_tex, texto))  # Añadiendo el texto
+             column(10, style = s_con, tags$p(style = s_tex, texto))  # Añadiendo el texto
          )
   )
 }
