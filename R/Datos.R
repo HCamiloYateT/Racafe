@@ -2,17 +2,20 @@
 #'
 #' Esta función se conecta a una base de datos SQL Server y ejecuta una consulta SQL.
 #' Dependiendo del valor del parámetro `bd`, se selecciona la base de datos correspondiente.
-#' Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante.
-#'
+#' Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante
+#' y convierte a fecha las variables que empiezan por "Fec" o se llaman exactamente "Fecha".
+#' 
 #' @param bd Una cadena de texto que especifica el nombre de la base de datos a la que conectarse.
 #'           Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".
 #' @param uid El nombre de usuario para la conexión a la base de datos.
 #' @param pwd La contraseña del usuario para la conexión.
 #' @param query La consulta SQL que se ejecutará en la base de datos.
-#'
+#' @param server La dirección del servidor SQL Server. Por defecto "172.16.19.21".
+#' @param port El puerto del servidor SQL Server. Por defecto 1433.
+#' 
 #' @return Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
 #' @export
-ConsultaSistema <- function(bd, uid, pwd, query) {
+ConsultaSistema <- function(bd, uid, pwd, query, server = "172.16.19.21", port = 1433) {
 
   # Asigna el nombre de la base de datos en función del valor de `bd`
   base <- dplyr::case_when(
@@ -26,21 +29,26 @@ ConsultaSistema <- function(bd, uid, pwd, query) {
   # Establece la conexión con la base de datos SQL Server
   con <- DBI::dbConnect(odbc::odbc(),
                         Driver = "ODBC Driver 18 for SQL Server",
-                        Server = "172.16.19.21",
+                        Server = server,
                         Database = base,
                         uid = uid,
                         pwd = pwd,
-                        port = 1433,
+                        port = port,
                         TrustServerCertificate = "yes")
 
-  # Ejecuta la consulta SQL y limpia los nombres de las columnas
-  df <- DBI::dbGetQuery(con, query) |>
-    dplyr::mutate(dplyr::across(dplyr::where(is.character), racafe::LimpiarNombres))
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
 
-  # Cierra la conexión con la base de datos
-  DBI::dbDisconnect(con)
+  df <- tryCatch(
+    DBI::dbGetQuery(con, query) |>
+      dplyr::mutate(
+        dplyr::across(dplyr::where(is.character), racafe::LimpiarNombres),
+        dplyr::across(c(dplyr::starts_with("Fec"), dplyr::matches("^Fecha$")), as.Date)
+      ),
+    error = function(e) {
+      stop("Error al ejecutar la consulta: ", e$message)
+    }
+  )
 
-  # Retorna el dataframe con los resultados
   df
 }
 
