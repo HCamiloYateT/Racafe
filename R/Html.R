@@ -6,6 +6,8 @@
 #' @return Una cadena de texto que contiene \code{<br/>} repetido \code{n} veces.
 #' @examples
 #' Saltos(3)  # Devuelve "<br/><br/><br/>"
+#' @importFrom htmltools HTML
+#' @importFrom magrittr %>%
 #' @export
 Saltos <- function(n = 1) {
   htmltools::HTML(strrep('<br/>', n))

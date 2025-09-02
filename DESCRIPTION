@@ -27,7 +27,8 @@ Imports:
     htmltools,
     shiny,
     colorspace,
-    plotly
-Suggests: 
+    plotly,
+    magrittr
+Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

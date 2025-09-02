@@ -11,13 +11,13 @@
 #' @return Un objeto de tipo `fluidRow` con el diseño del input.
 #' @examples
 #' # Ejemplo para un input de dinero
-#' InputGenerico("dinero_input", "Monto:", 1000, type = "dinero")
-#'
+#' InputNumerico("dinero_input", "Monto:", 1000, type = "dinero")
+#' 
 #' # Ejemplo para un input de porcentaje
-#' InputGenerico("porcentaje_input", "Porcentaje:", 50, type = "porcentaje")
-#'
+#' InputNumerico("porcentaje_input", "Porcentaje:", 50, type = "porcentaje")
+#' 
 #' # Ejemplo para un input numérico general
-#' InputGenerico("numero_input", "Cantidad:", 10, max = 100, min = 0, dec = 3, type = "numero")
+#' InputNumerico("numero_input", "Cantidad:", 10, max = 100, min = 0, dec = 3, type = "numero")
 InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, type = "numero") {
   # Configuración específica según el tipo de input
   config <- switch(type,
