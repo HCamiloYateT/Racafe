@@ -1,3 +1,4 @@
 exportPattern("^[[:alpha:]]+")
 importFrom(htmltools,HTML)
 importFrom(magrittr,"%>%")
+importFrom(scales, comma, percent)
