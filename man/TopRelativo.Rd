@@ -17,9 +17,9 @@ TopRelativo(
 \arguments{
 \item{data}{El conjunto de datos en el cual se encuentra la variable a recodificar.}
 
-\item{var_recode}{El nombre de la variable que se desea recodificar.}
+\item{var_recode}{Variable que se desea recodificar. Se pasa sin comillas.}
 
-\item{var_top}{El nombre de la variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen.}
+\item{var_top}{Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.}
 
 \item{fun_Top}{La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).}
 
