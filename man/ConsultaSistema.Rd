@@ -4,7 +4,7 @@
 \alias{ConsultaSistema}
 \title{Consulta a una base de datos SQL Server.}
 \usage{
-ConsultaSistema(bd, uid, pwd, query)
+ConsultaSistema(bd, uid, pwd, query, server = "172.16.19.21", port = 1433)
 }
 \arguments{
 \item{bd}{Una cadena de texto que especifica el nombre de la base de datos a la que conectarse.
@@ -15,12 +15,16 @@ Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".}
 \item{pwd}{La contraseña del usuario para la conexión.}
 
 \item{query}{La consulta SQL que se ejecutará en la base de datos.}
+
+\item{server}{La dirección del servidor SQL Server. Por defecto "172.16.19.21".}
+
+\item{port}{El puerto del servidor SQL Server. Por defecto 1433.}
 }
 \value{
-Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
+Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados y con las variables de fecha convertidas.
 }
 \description{
 Esta función se conecta a una base de datos SQL Server y ejecuta una consulta SQL.
 Dependiendo del valor del parámetro `bd`, se selecciona la base de datos correspondiente.
-Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante.
+Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante y convierte a fecha las variables que empiezan por "Fec" o se llaman exactamente "Fecha".
 }
