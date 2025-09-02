@@ -262,7 +262,7 @@ gt_minimal_style <- function(gt_table) {
 #'
 #' @export
 col_kpi <- function(x, prop = TRUE) {
-  case_when(
+  dplyr::case_when(
     x == 0 ~ "#000000",
     prop & x > 0 ~ "#0B5345",
     prop & x < 0 ~ "#943126",
@@ -285,7 +285,7 @@ col_kpi <- function(x, prop = TRUE) {
 #'
 #' @export
 chr_kpi <- function(x) {
-  case_when(
+  dplyr::case_when(
     x == 0 ~ "▬",
     x > 0 ~ "▲",
     x < 0 ~ "▼"
@@ -307,7 +307,7 @@ chr_kpi <- function(x) {
 #'
 #' @export
 col_num <- function(x) {
-  case_when(
+  dplyr::case_when(
     x >= 0 ~ "#000000",
     x < 0 ~ "#943126"
   )

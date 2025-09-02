@@ -1,3 +1,4 @@
 exportPattern("^[[:alpha:]]+")
+importFrom(dplyr,case_when)
 importFrom(htmltools,HTML)
 importFrom(magrittr,"%>%")
