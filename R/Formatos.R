@@ -198,9 +198,9 @@ FormatearTexto <- function(x, negrita = TRUE, color = "#000000", tamano_pct = 1,
 #' library(gt)
 #' gt(head(mtcars)) %>% gt_minimal_style()
 #'
+#' @import gt
 #' @export
 gt_minimal_style <- function(gt_table) {
-  require(gt)
 
   gt_table %>%
     # Opciones generales de la tabla
@@ -266,6 +266,7 @@ gt_minimal_style <- function(gt_table) {
 #' col_kpi(1, TRUE)
 #' col_kpi(-1, FALSE)
 #'
+#' @importFrom dplyr case_when
 #' @export
 col_kpi <- function(x, prop = TRUE) {
   case_when(
@@ -289,6 +290,7 @@ col_kpi <- function(x, prop = TRUE) {
 #' chr_kpi(1)
 #' chr_kpi(-1)
 #'
+#' @importFrom dplyr case_when
 #' @export
 chr_kpi <- function(x) {
   case_when(
@@ -311,6 +313,7 @@ chr_kpi <- function(x) {
 #' col_num(-3)
 #' col_num(c(5, -3, 0))
 #'
+#' @importFrom dplyr case_when
 #' @export
 col_num <- function(x) {
   case_when(
