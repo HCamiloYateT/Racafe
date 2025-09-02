@@ -21,10 +21,11 @@ Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".}
 \item{port}{El puerto del servidor SQL Server. Por defecto 1433.}
 }
 \value{
-Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados y con las variables de fecha convertidas.
+Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
 }
 \description{
 Esta función se conecta a una base de datos SQL Server y ejecuta una consulta SQL.
 Dependiendo del valor del parámetro `bd`, se selecciona la base de datos correspondiente.
-Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante y convierte a fecha las variables que empiezan por "Fec" o se llaman exactamente "Fecha".
+Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante
+y convierte a fecha las variables que empiezan por "Fec" o se llaman exactamente "Fecha".
 }

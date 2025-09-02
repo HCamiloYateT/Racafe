@@ -14,7 +14,7 @@ InputNumerico(
   type = "numero",
   label_col = 6,
   input_col = 6,
-  width = "100%"
+  width = "100\%"
 )
 }
 \arguments{
