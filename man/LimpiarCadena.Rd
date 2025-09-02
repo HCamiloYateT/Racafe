@@ -33,6 +33,7 @@ Un vector de caracteres con las cadenas de texto limpias, después de aplicar la
 \description{
 Esta función limpia y normaliza una cadena o un vector de texto aplicando diferentes transformaciones,
 tales como la eliminación de espacios, números, caracteres especiales y acentos, según se especifique.
+Los valores `NA` se conservan en sus posiciones originales.
 }
 \examples{
 LimpiarCadena(c("Â¡Hola, mundo!", "Texto con números 123 y acentos áéíóú."))

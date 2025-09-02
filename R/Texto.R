@@ -20,6 +20,7 @@ LimpiarNombres <- function(s) {
 #'
 #' Esta función limpia y normaliza una cadena o un vector de texto aplicando diferentes transformaciones,
 #' tales como la eliminación de espacios, números, caracteres especiales y acentos, según se especifique.
+#' Los valores `NA` se conservan en sus posiciones originales.
 #'
 #' @param x Un vector de caracteres con las cadenas de texto a limpiar.
 #' @param rem_espacios Un valor lógico (TRUE o FALSE) que indica si se deben eliminar todos los espacios en blanco.
@@ -36,28 +37,36 @@ LimpiarNombres <- function(s) {
 #' # Devuelve: "HOLA MUNDO" "TEXTO CON NUMEROS Y ACENTOS AEIOU"
 #' @export
 LimpiarCadena <- function(x, rem_espacios = FALSE, rem_numeros = TRUE, rem_caresp = TRUE, rem_acentos = TRUE) {
+  # Identificar posiciones con NA y trabajar solo con los elementos válidos
+  pos_na <- is.na(x)
+  x_valid <- x[!pos_na]
+
   # Convertir a mayúsculas y eliminar espacios repetidos
-  x <- trimws(stringr::str_to_upper(gsub("([\\s])\\1+", "\\1", x, perl = TRUE)))
+  x_valid <- trimws(stringr::str_to_upper(gsub("([\\s])\\1+", "\\1", x_valid, perl = TRUE)))
 
   # Eliminar espacios si se indica
   if (rem_espacios) {
-    x <- gsub("\\s", "", x)
+    x_valid <- gsub("\\s", "", x_valid)
   }
 
   # Eliminar números si se indica
   if (rem_numeros) {
-    x <- gsub("\\d", "", x)
+    x_valid <- gsub("\\d", "", x_valid)
   }
 
   # Eliminar caracteres especiales si se indica
   if (rem_caresp) {
-    x <- gsub("[^[:alnum:][:space:]]", "", x)
+    x_valid <- gsub("[^[:alnum:][:space:]]", "", x_valid)
   }
 
   # Eliminar acentos si se indica
   if (rem_acentos) {
-    x <- iconv(x, from = 'UTF-8', to = 'ASCII//TRANSLIT')
+    x_valid <- iconv(x_valid, from = 'UTF-8', to = 'ASCII//TRANSLIT')
   }
+
+  # Reconstruir el vector original, preservando los NA
+  x[pos_na] <- NA
+  x[!pos_na] <- x_valid
 
   return(x)
 }
