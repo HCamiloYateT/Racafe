@@ -97,8 +97,9 @@ EdadCumplida <- function(from, to) {
   from <- as.Date(from)
   to <- as.Date(to)
 
-  # Calcular la diferencia en años
-  age <- as.numeric(difftime(to, from, units = "days")) / 365.25
+  # Calcular la diferencia en años utilizando un intervalo
+  int <- lubridate::interval(from, to)
+  age <- lubridate::time_length(int, "years")
 
   # Redondear a la cantidad entera de años
   return(floor(age))
