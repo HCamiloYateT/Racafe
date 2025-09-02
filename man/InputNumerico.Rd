@@ -11,7 +11,10 @@ InputNumerico(
   dec = 2,
   max = NULL,
   min = NULL,
-  type = "numero"
+  type = "numero",
+  label_col = 6,
+  input_col = 6,
+  width = "100%"
 )
 }
 \arguments{
@@ -28,6 +31,12 @@ InputNumerico(
 \item{min}{Valor mínimo permitido (por defecto NULL).}
 
 \item{type}{Tipo de input: "dinero", "porcentaje" o "numero".}
+
+\item{label_col}{Ancho de la columna para la etiqueta (por defecto 6).}
+
+\item{input_col}{Ancho de la columna para el campo numérico (por defecto 6).}
+
+\item{width}{Ancho del control `autonumericInput` (por defecto "100%").}
 }
 \value{
 Un objeto de tipo `fluidRow` con el diseño del input.
