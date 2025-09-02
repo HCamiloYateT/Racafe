@@ -58,8 +58,8 @@ ConsultaSistema <- function(bd, uid, pwd, query, server = "172.16.19.21", port =
 #' Recodifica las categorías menos frecuentes de una variable según su valor absoluto o una función de resumen y las agrupa en una nueva categoría.
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.
-#' @param var_recode El nombre de la variable que se desea recodificar.
-#' @param var_top El nombre de la variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen.
+#' @param var_recode Variable que se desea recodificar. Se pasa sin comillas.
+#' @param var_top Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.
 #' @param fun_Top La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).
 #' @param n El número mÃ¡ximo de categorías principales a conservar (predeterminado: 10).
 #' @param nom_var El nombre para la nueva variable recodificada.
@@ -68,34 +68,41 @@ ConsultaSistema <- function(bd, uid, pwd, query, server = "172.16.19.21", port =
 #' @export
 TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_recodificar = "OTROS"){
 
+  var_recode <- dplyr::enquo(var_recode)
+  var_top <- dplyr::enquo(var_top)
+  by_var <- dplyr::as_name(var_recode)
+
   datos <- data
 
   # Calcula las frecuencias o las estadísticas según la función proporcionada
   if (fun_Top == "n"){
+    tot <- nrow(datos)
     aux1 <- datos |>
-      dplyr::mutate(Tot = dplyr::n()) |>
-      dplyr::group_by_at(var_recode) |>
-      dplyr::summarise(Var = dplyr::n(),
-                       Pct = Var/unique(Tot))
+      dplyr::group_by(across(all_of(by_var))) |>
+      dplyr::summarise(Var = dplyr::n(), .groups = "drop") |>
+      dplyr::mutate(Pct = Var/ tot)
   } else {
+    fun <- match.fun(fun_Top)
+    tot <- fun(dplyr::pull(datos, !!var_top), na.rm = TRUE)
     aux1 <- datos |>
-      dplyr::mutate(Tot = !!rlang::parse_expr(paste(fun_Top, "(", var_top, ", na.rm = TRUE)"))) |>
-      dplyr::group_by_at(var_recode) |>
-      dplyr::summarise(Var = !!rlang::parse_expr(paste0(fun_Top, "(", var_top, ", na.rm = TRUE)")),
-                       Pct = Var/unique(Tot))
+      dplyr::group_by(across(all_of(by_var))) |>
+      dplyr::summarise(Var = fun(!!var_top, na.rm = TRUE), .groups = "drop") |>
+      dplyr::mutate(Pct = Var/ tot)
   }
 
   # Organiza los datos, recodifica las categorías menos frecuentes
   aux2 <- aux1 |>
     dplyr::arrange(dplyr::desc(Var)) |>
     dplyr::mutate(Seq = dplyr::row_number(),
-                  !!nom_var := ifelse(Seq <= n, as.character(!!rlang::parse_expr(var_recode)), lab_recodificar)
-    ) |>
-    dplyr::select(dplyr::all_of(var_recode), dplyr::all_of(nom_var))
+                  !!nom_var := dplyr::case_when(
+                    Seq <= n ~ as.character(!!var_recode),
+                    TRUE ~ lab_recodificar
+                  )) |>
+    dplyr::select(dplyr::all_of(by_var), dplyr::all_of(nom_var))
 
   # Recodifica las categorías en el dataset original
   data <- datos |>
-    dplyr::left_join(aux2, by = var_recode) |>
+    dplyr::left_join(aux2, by = by_var) |>
     dplyr::mutate(!!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
                   !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf))
 
@@ -108,8 +115,8 @@ TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_r
 #' Recodifica las categorías menos frecuentes de una variable según su valor relativo o una función de resumen y las agrupa en una nueva categoría.
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.
-#' @param var_recode El nombre de la variable que se desea recodificar.
-#' @param var_top El nombre de la variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen.
+#' @param var_recode Variable que se desea recodificar. Se pasa sin comillas.
+#' @param var_top Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.
 #' @param fun_Top La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).
 #' @param pct_min El porcentaje mínimo necesario para considerar una categoría principal (predeterminado: 0.05).
 #' @param nom_var El nombre para la nueva variable recodificada.
@@ -117,35 +124,40 @@ TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_r
 #' @return El conjunto de datos con la variable recodificada según las categorías principales y las categorías recodificadas.
 #' @export
 TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_var, lab_recodificar = "OTROS") {
+  var_recode <- dplyr::enquo(var_recode)
+  var_top <- dplyr::enquo(var_top)
+  by_var <- dplyr::as_name(var_recode)
   datos <- data
 
   # Calcula las frecuencias o estadísticas relativas de acuerdo a la función proporcionada
   if (fun_Top == "n"){
+    tot <- nrow(datos)
     aux1 <- datos |>
-      dplyr::mutate(Tot = dplyr::n()) |>
-      dplyr::group_by_at(var_recode) |>
-      dplyr::summarise(Var = dplyr::n(),
-                       Pct = Var / unique(Tot))
+      dplyr::group_by(across(all_of(by_var))) |>
+      dplyr::summarise(Var = dplyr::n(), .groups = "drop") |>
+      dplyr::mutate(Pct = Var / tot)
   } else {
+    fun <- match.fun(fun_Top)
+    tot <- fun(dplyr::pull(datos, !!var_top), na.rm = TRUE)
     aux1 <- datos |>
-      dplyr::mutate(Tot = !!rlang::parse_expr(paste(fun_Top, "(", var_top, ", na.rm = TRUE)"))) |>
-      dplyr::group_by_at(var_recode) |>
-      dplyr::summarise(Var = !!rlang::parse_expr(paste0(fun_Top, "(", var_top, ", na.rm = TRUE)")),
-                       Pct = Var / unique(Tot))
+      dplyr::group_by(across(all_of(by_var))) |>
+      dplyr::summarise(Var = fun(!!var_top, na.rm = TRUE), .groups = "drop") |>
+      dplyr::mutate(Pct = Var / tot)
   }
 
   # Organiza los datos, recodifica las categorías menos frecuentes
   aux2 <- aux1 |>
     dplyr::arrange(dplyr::desc(Var)) |>
     dplyr::mutate(Seq = dplyr::row_number(),
-                  !!nom_var := !!rlang::parse_expr(paste0("ifelse(Pct > pct_min, as.character(",
-                                                           var_recode, "), '",
-                                                           lab_recodificar, "')"))) |>
-    dplyr::select(dplyr::all_of(var_recode), dplyr::all_of(nom_var))
+                  !!nom_var := dplyr::case_when(
+                    Pct > pct_min ~ as.character(!!var_recode),
+                    TRUE ~ lab_recodificar
+                  )) |>
+    dplyr::select(dplyr::all_of(by_var), dplyr::all_of(nom_var))
 
   # Recodifica las categorías en el dataset original
   data <- datos |>
-    dplyr::left_join(aux2, by = var_recode) |>
+    dplyr::left_join(aux2, by = by_var) |>
     dplyr::mutate(!!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
                   !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf))
 
