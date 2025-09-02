@@ -11,7 +11,7 @@
 #' @export
 LimpiarNombres <- function(s) {
   # Quitar espacios extra, reducir múltiples espacios a uno, y convertir a mayúsculas
-  x <- trimws(str_to_upper(gsub("([\\s])\\1+", "\\1", s, perl = TRUE)))
+  x <- trimws(stringr::str_to_upper(gsub("([\\s])\\1+", "\\1", s, perl = TRUE)))
 
   return(x)
 }
@@ -36,10 +36,8 @@ LimpiarNombres <- function(s) {
 #' # Devuelve: "HOLA MUNDO" "TEXTO CON NUMEROS Y ACENTOS AEIOU"
 #' @export
 LimpiarCadena <- function(x, rem_espacios = FALSE, rem_numeros = TRUE, rem_caresp = TRUE, rem_acentos = TRUE) {
-  require(stringr)
-
   # Convertir a mayúsculas y eliminar espacios repetidos
-  x <- trimws(str_to_upper(gsub("([\\s])\\1+", "\\1", x, perl = TRUE)))
+  x <- trimws(stringr::str_to_upper(gsub("([\\s])\\1+", "\\1", x, perl = TRUE)))
 
   # Eliminar espacios si se indica
   if (rem_espacios) {
@@ -121,10 +119,8 @@ UnirCadenas <- function(..., sep = " ", collapse = NULL, na.rm = FALSE) {
 #' Unicos(c("b", "a", NA, "a", "c"))    # Devuelve: "a", "b", "c"
 #' @export
 Unicos <- function(x) {
-  require(dplyr)
-  x[!is.na(x)]  %>%   # Elimina los valores NA
-    unique() %>%     # Extrae los valores únicos
-    sort()         # Ordena los valores
+  x <- x[!is.na(x)]
+  sort(unique(x))
 }
 
 #' @title Verifica si un valor es NULL, NA o una cadena vacía

@@ -14,7 +14,6 @@
 #' DefinirFormato("coma")(1234567.89)
 #' DefinirFormato("dinero")(1234567.89)
 #'
-#' @import scales
 #' @export
 DefinirFormato <- function(formato) {
   if (formato == "coma") {
@@ -130,7 +129,6 @@ FormatoHOT <- function(formato) {
 #' FormatearNumero(2500, "dinero", meta = 2000)
 #' FormatearNumero(0.75, "porcentaje", negrita = FALSE, color = "#00FF00")
 #'
-#' @import shiny
 #' @export
 FormatearNumero <- function(x, formato, negrita = TRUE, color = "#000000", meta = NA, prop = TRUE) {
   form <- DefinirFormato(formato)
@@ -150,9 +148,9 @@ FormatearNumero <- function(x, formato, negrita = TRUE, color = "#000000", meta 
 
   # Generar HTML
   if (negrita) {
-    paste0("<span style='font-weight:bold;color:", col, "'>", form(x), "</span>") %>% HTML
+    htmltools::HTML(paste0("<span style='font-weight:bold;color:", col, "'>", form(x), "</span>"))
   } else {
-    paste0("<span style='color:", col, "'>", form(x), "</span>") %>% HTML
+    htmltools::HTML(paste0("<span style='color:", col, "'>", form(x), "</span>"))
   }
 }
 
@@ -173,7 +171,6 @@ FormatearNumero <- function(x, formato, negrita = TRUE, color = "#000000", meta 
 #' FormatearTexto("Texto", color = "#0000FF", tamano_pct = 1.2)
 #' FormatearTexto("Ejemplo", transform = "uppercase", alineacion = "center")
 #'
-#' @import shiny
 #' @export
 FormatearTexto <- function(x, negrita = TRUE, color = "#000000", tamano_pct = 1, alineacion = "left", transform = "none") {
   neg <- paste0("font-weight:", ifelse(negrita, "bold", "normal"), ";")
@@ -182,7 +179,7 @@ FormatearTexto <- function(x, negrita = TRUE, color = "#000000", tamano_pct = 1,
   ali <- paste0("text-align:", alineacion, ";")
   tra <- paste0("text-transform:", transform, ";")
 
-  paste0("<span style='", neg, col, tam, ali, tra, "'>", x, "</span>") %>% HTML
+  htmltools::HTML(paste0("<span style='", neg, col, tam, ali, tra, "'>", x, "</span>"))
 }
 
 #' Estilo minimalista para tablas gt
@@ -200,19 +197,16 @@ FormatearTexto <- function(x, negrita = TRUE, color = "#000000", tamano_pct = 1,
 #'
 #' @export
 gt_minimal_style <- function(gt_table) {
-  require(gt)
-
-  gt_table %>%
-    # Opciones generales de la tabla
-    tab_options(
-      table.width = pct(100),            # Ancho total al 100%
+  gt_table |>
+    gt::tab_options(
+      table.width = gt::pct(100),            # Ancho total al 100%
       table.font.size = 12,              # Tamaño de fuente
-      data_row.padding = px(3),          # Espaciado en filas de datos
-      summary_row.padding = px(3),       # Espaciado en filas de resumen
-      grand_summary_row.padding = px(3), # Espaciado en filas de gran resumen
-      footnotes.padding = px(3),         # Espaciado en notas al pie
-      source_notes.padding = px(3),      # Espaciado en notas de fuente
-      row_group.padding = px(3),         # Espaciado en grupos de filas
+      data_row.padding = gt::px(3),          # Espaciado en filas de datos
+      summary_row.padding = gt::px(3),       # Espaciado en filas de resumen
+      grand_summary_row.padding = gt::px(3), # Espaciado en filas de gran resumen
+      footnotes.padding = gt::px(3),         # Espaciado en notas al pie
+      source_notes.padding = gt::px(3),      # Espaciado en notas de fuente
+      row_group.padding = gt::px(3),         # Espaciado en grupos de filas
 
       # Eliminación de bordes por defecto
       table.border.top.style = "none",
@@ -231,9 +225,9 @@ gt_minimal_style <- function(gt_table) {
 
       # Negrita en encabezados de columnas
       column_labels.font.weight = "bold"
-    ) %>%
+    ) |>
     # CSS personalizado para controlar bordes y estilos más allá de tab_options
-    opt_css(css = "
+    gt::opt_css(css = "
       .gt_table {
         border-collapse: collapse !important;
         border: none !important;

@@ -14,12 +14,8 @@
 #' @export
 ConsultaSistema <- function(bd, uid, pwd, query) {
 
-  # Cargar las librerías necesarias
-  require(DBI)       # Para la conexión y manejo de bases de datos
-  require(tidyverse) # Para manipulación de datos (dplyr, tidyr, etc.)
-
   # Asigna el nombre de la base de datos en función del valor de `bd`
-  base <- case_when(
+  base <- dplyr::case_when(
     bd == "syscafe" ~ "ContabRacafe",
     bd == "cafesys" ~ "Cafesys",
     bd == "estad" ~ "EstadRacafe"
@@ -28,24 +24,24 @@ ConsultaSistema <- function(bd, uid, pwd, query) {
   if (is.na(base)) stop("las bases de datos disponibles son: 'syscafe', 'cafesys' o 'estad'")
 
   # Establece la conexión con la base de datos SQL Server
-  con <- dbConnect(odbc::odbc(),
-                   Driver = "ODBC Driver 18 for SQL Server",
-                   Server = "172.16.19.21",
-                   Database = base,
-                   uid = uid,
-                   pwd = pwd,
-                   port = 1433,
-                   TrustServerCertificate = "yes")
+  con <- DBI::dbConnect(odbc::odbc(),
+                        Driver = "ODBC Driver 18 for SQL Server",
+                        Server = "172.16.19.21",
+                        Database = base,
+                        uid = uid,
+                        pwd = pwd,
+                        port = 1433,
+                        TrustServerCertificate = "yes")
 
   # Ejecuta la consulta SQL y limpia los nombres de las columnas
-  df <- dbGetQuery(con, query) %>%
-    mutate(across(where(is.character), racafe::LimpiarNombres))
+  df <- DBI::dbGetQuery(con, query) |>
+    dplyr::mutate(dplyr::across(dplyr::where(is.character), racafe::LimpiarNombres))
 
   # Cierra la conexión con la base de datos
-  dbDisconnect(con)
+  DBI::dbDisconnect(con)
 
   # Retorna el dataframe con los resultados
-  return(df)
+  df
 }
 
 
@@ -61,44 +57,41 @@ ConsultaSistema <- function(bd, uid, pwd, query) {
 #' @param nom_var El nombre para la nueva variable recodificada.
 #' @param lab_recodificar El nombre o etiqueta para las categorías recodificadas (predeterminado: "OTROS").
 #' @return El conjunto de datos con la variable recodificada según las categorías principales y las categorías recodificadas.
-#' @import dplyr forcats rlang
 #' @export
 TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_recodificar = "OTROS"){
 
-  require(rlang)
-  require(forcats)
-  datos = data
+  datos <- data
 
   # Calcula las frecuencias o las estadísticas según la función proporcionada
   if (fun_Top == "n"){
-    aux1 <- datos %>%
-      mutate(Tot = n()) %>%
-      group_by_at(var_recode) %>%
-      summarise(Var = n(),
-                Pct = Var/unique(Tot))
+    aux1 <- datos |>
+      dplyr::mutate(Tot = dplyr::n()) |>
+      dplyr::group_by_at(var_recode) |>
+      dplyr::summarise(Var = dplyr::n(),
+                       Pct = Var/unique(Tot))
   } else {
-    aux1 <- datos %>%
-      mutate(Tot = !!parse_expr(paste(fun_Top, "(", var_top, ", na.rm = TRUE)"))) %>%
-      group_by_at(var_recode) %>%
-      summarise(Var = !!parse_expr(paste0(fun_Top, "(", var_top, ", na.rm = TRUE)")),
-                Pct = Var/unique(Tot))
+    aux1 <- datos |>
+      dplyr::mutate(Tot = !!rlang::parse_expr(paste(fun_Top, "(", var_top, ", na.rm = TRUE)"))) |>
+      dplyr::group_by_at(var_recode) |>
+      dplyr::summarise(Var = !!rlang::parse_expr(paste0(fun_Top, "(", var_top, ", na.rm = TRUE)")),
+                       Pct = Var/unique(Tot))
   }
 
   # Organiza los datos, recodifica las categorías menos frecuentes
-  aux2 <- aux1 %>%
-    arrange(desc(Var)) %>%
-    mutate(Seq = row_number(),
-           !!nom_var := ifelse(Seq <= n, as.character(!!parse_expr(var_recode)), lab_recodificar)
-    ) %>%
-    select(all_of(var_recode), all_of(nom_var))
+  aux2 <- aux1 |>
+    dplyr::arrange(dplyr::desc(Var)) |>
+    dplyr::mutate(Seq = dplyr::row_number(),
+                  !!nom_var := ifelse(Seq <= n, as.character(!!rlang::parse_expr(var_recode)), lab_recodificar)
+    ) |>
+    dplyr::select(dplyr::all_of(var_recode), dplyr::all_of(nom_var))
 
   # Recodifica las categorías en el dataset original
-  data <- datos %>%
-    left_join(aux2, by = var_recode) %>%
-    mutate(!!nom_var := factor(!!sym(nom_var), levels = c(unique(aux2[[nom_var]])), ordered = TRUE),
-           !!nom_var := fct_relevel(!!sym(nom_var), lab_recodificar, after = Inf))  # Asegura que 'lab_recodificar' está al final
+  data <- datos |>
+    dplyr::left_join(aux2, by = var_recode) |>
+    dplyr::mutate(!!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
+                  !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf))
 
-  return(data)
+  data
 }
 
 
@@ -114,43 +107,41 @@ TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_r
 #' @param nom_var El nombre para la nueva variable recodificada.
 #' @param lab_recodificar El nombre o etiqueta para las categorías recodificadas (predeterminado: "OTROS").
 #' @return El conjunto de datos con la variable recodificada según las categorías principales y las categorías recodificadas.
-#' @import dplyr forcats rlang
 #' @export
 TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_var, lab_recodificar = "OTROS") {
-
-  datos = data
+  datos <- data
 
   # Calcula las frecuencias o estadísticas relativas de acuerdo a la función proporcionada
   if (fun_Top == "n"){
-    aux1 <- datos %>%
-      mutate(Tot = n()) %>%
-      group_by_at(var_recode) %>%
-      summarise(Var = n(),
-                Pct = Var / unique(Tot))
+    aux1 <- datos |>
+      dplyr::mutate(Tot = dplyr::n()) |>
+      dplyr::group_by_at(var_recode) |>
+      dplyr::summarise(Var = dplyr::n(),
+                       Pct = Var / unique(Tot))
   } else {
-    aux1 <- datos %>%
-      mutate(Tot = !!parse_expr(paste(fun_Top, "(", var_top, ", na.rm = TRUE)"))) %>%
-      group_by_at(var_recode) %>%
-      summarise(Var = !!parse_expr(paste0(fun_Top, "(", var_top, ", na.rm = TRUE)")),
-                Pct = Var / unique(Tot))
+    aux1 <- datos |>
+      dplyr::mutate(Tot = !!rlang::parse_expr(paste(fun_Top, "(", var_top, ", na.rm = TRUE)"))) |>
+      dplyr::group_by_at(var_recode) |>
+      dplyr::summarise(Var = !!rlang::parse_expr(paste0(fun_Top, "(", var_top, ", na.rm = TRUE)")),
+                       Pct = Var / unique(Tot))
   }
 
   # Organiza los datos, recodifica las categorías menos frecuentes
-  aux2 <- aux1 %>%
-    arrange(desc(Var)) %>%
-    mutate(Seq = row_number(),
-           !!nom_var := !!parse_expr(paste0("ifelse(Pct > pct_min, as.character(",
-                                            var_recode, "), '",
-                                            lab_recodificar, "')"))) %>%
-    select(all_of(var_recode), all_of(nom_var))
+  aux2 <- aux1 |>
+    dplyr::arrange(dplyr::desc(Var)) |>
+    dplyr::mutate(Seq = dplyr::row_number(),
+                  !!nom_var := !!rlang::parse_expr(paste0("ifelse(Pct > pct_min, as.character(",
+                                                           var_recode, "), '",
+                                                           lab_recodificar, "')"))) |>
+    dplyr::select(dplyr::all_of(var_recode), dplyr::all_of(nom_var))
 
   # Recodifica las categorías en el dataset original
-  data <- datos %>%
-    left_join(aux2, by = var_recode) %>%
-    mutate(!!nom_var := factor(!!sym(nom_var), levels = c(unique(aux2[[nom_var]])), ordered = TRUE),
-           !!nom_var := fct_relevel(!!sym(nom_var), lab_recodificar, after = Inf))  # Asegura que 'lab_recodificar' está al final
+  data <- datos |>
+    dplyr::left_join(aux2, by = var_recode) |>
+    dplyr::mutate(!!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
+                  !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf))
 
-  return(data)
+  data
 }
 
 #' Adiciona botones interactivos a una tabla.
@@ -166,7 +157,7 @@ TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_va
 #' @return Un `data.frame` o `tibble` con nuevas columnas para los botones seleccionados.
 #' @export
 AdicionarBotones <- function(tabla, botones) {
-  req(tabla)  # Asegura que la tabla no sea nula
+  shiny::req(tabla)  # Asegura que la tabla no sea nula
 
   # Verifica si la tabla tiene filas
   if (nrow(tabla) > 0) {
@@ -184,12 +175,12 @@ AdicionarBotones <- function(tabla, botones) {
 
     # Crea nuevas columnas en la tabla para cada botón seleccionado
     for (boton in botones_seleccionados) {
-      tabla <- tabla %>%
-        mutate(!!boton := HTML(botones_html[[boton]]))
+      tabla <- tabla |>
+        dplyr::mutate(!!boton := htmltools::HTML(botones_html[[boton]]))
     }
   }
 
-  return(tabla)  # Devuelve la tabla modificada
+  tabla  # Devuelve la tabla modificada
 }
 
 

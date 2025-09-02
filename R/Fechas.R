@@ -6,7 +6,7 @@
 #' @param x La fecha de la cual se desea obtener el primer día. Puede ser un objeto de clase \code{Date} o \code{POSIXt}.
 #' @param uni La unidad de tiempo que se desea usar para el cálculo. Puede ser "month", "year", entre otras. El valor predeterminado es "month".
 #' @return Un objeto de clase \code{Date} que representa el primer día de la unidad temporal de la fecha dada.
-#' @import lubridate
+#'
 #' @examples
 #' PrimerDia("2023-10-15")  # Devuelve "2023-10-01"
 #' PrimerDia(as.Date("2023-05-22"))  # Devuelve "2023-05-01"
@@ -14,7 +14,6 @@
 #' @export
 PrimerDia <- function(x, uni = "month") {
   # Verificar si x es una fecha válida y convertir a tipo Date
-  require(lubridate)
   x <- lubridate::floor_date(as.Date(x), unit = uni)
   return(x)
 }
@@ -33,8 +32,7 @@ PrimerDia <- function(x, uni = "month") {
 #' @param anho_abr Un valor lógico que indica si se debe incluir el año abreviado (predeterminado: TRUE).
 #' @param sep_texto Un valor lógico que indica si se debe incluir un separador de texto entre las partes de la fecha (predeterminado: TRUE).
 #' @return Un vector de cadenas de texto que representa las fechas en el formato especificado.
-#' @import lubridate
-#' @import stringr
+#'
 #' @examples
 #' FechaTexto(as.Date(c("2023-10-15", "2022-05-22")))
 #' FechaTexto(as.Date(c("2023-10-15", "2022-05-22")), dia_nombre = FALSE)
@@ -42,10 +40,6 @@ PrimerDia <- function(x, uni = "month") {
 FechaTexto <- function(x, dia = TRUE, dia_nombre = TRUE, dia_nom_abr = TRUE,
                        mes = TRUE, mes_abr = TRUE, anho = TRUE,
                        anho_abr = TRUE, sep_texto = TRUE) {
-
-  # Requiere las librerías necesarias
-  require(lubridate)
-  require(stringr)
 
   # Definición de los días de la semana
   dia_l <- c('Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo')
@@ -61,12 +55,12 @@ FechaTexto <- function(x, dia = TRUE, dia_nombre = TRUE, dia_nom_abr = TRUE,
 
   # Día de la semana
   dn <- ifelse(dia_nombre,
-               ifelse(dia_nom_abr, dia_c[wday(x, week_start = 1)], dia_l[wday(x, week_start = 1)]),
+               ifelse(dia_nom_abr, dia_c[lubridate::wday(x, week_start = 1)], dia_l[lubridate::wday(x, week_start = 1)]),
                NA)
 
   # Mes
   m <- ifelse(mes,
-              ifelse(mes_abr, mes_c[month(x)], mes_l[month(x)]),
+              ifelse(mes_abr, mes_c[lubridate::month(x)], mes_l[lubridate::month(x)]),
               NA)
 
   # Año
@@ -75,7 +69,7 @@ FechaTexto <- function(x, dia = TRUE, dia_nombre = TRUE, dia_nom_abr = TRUE,
               NA)
 
   # Día
-  d <- ifelse(dia, day(x), NA)
+  d <- ifelse(dia, lubridate::day(x), NA)
 
   # Construcción del resultado
   res <- paste(dn, paste(m, y, sep = ifelse(sep_texto, " de ", "")), sep = ifelse(sep_texto, ", ", ""))
@@ -93,7 +87,7 @@ FechaTexto <- function(x, dia = TRUE, dia_nombre = TRUE, dia_nom_abr = TRUE,
 #' @param from La fecha de nacimiento (fecha inicial).
 #' @param to La fecha actual (fecha final).
 #' @return La edad en años entre las dos fechas.
-#' @import lubridate
+#'
 #' @examples
 #' EdadCumplida(as.Date("1990-05-25"), Sys.Date())  # Devuelve la edad actual
 #' EdadCumplida(as.Date("1985-10-10"), as.Date("2023-01-01"))  # Devuelve 37
