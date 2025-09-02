@@ -3,7 +3,7 @@ Type: Package
 Title: Funciones Utilitarias para Proyectos de Análisis en R
 Version: 0.1.0
 Authors@R: 
-    person("Camilo", "Apellido", email = "hcyate@racafe.com",
+    person("Camilo", "Yate", email = "hcyate@racafe.com",
            role = c("aut", "cre"))
 Description: Este paquete proporciona un conjunto de funciones utilitarias 
     diseñadas para facilitar el análisis de datos, visualización, 
