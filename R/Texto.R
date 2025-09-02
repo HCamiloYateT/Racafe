@@ -1,3 +1,6 @@
+#' @importFrom stringr str_to_upper
+NULL
+
 #' Limpiar y Normalizar Nombres
 #'
 #' Esta función limpia y normaliza una cadena de texto eliminando espacios repetidos y
@@ -11,7 +14,7 @@
 #' @export
 LimpiarNombres <- function(s) {
   # Quitar espacios extra, reducir múltiples espacios a uno, y convertir a mayúsculas
-  x <- trimws(stringr::str_to_upper(gsub("([\\s])\\1+", "\\1", s, perl = TRUE)))
+  x <- trimws(str_to_upper(gsub("([\\s])\\1+", "\\1", s, perl = TRUE)))
 
   return(x)
 }
@@ -42,7 +45,7 @@ LimpiarCadena <- function(x, rem_espacios = FALSE, rem_numeros = TRUE, rem_cares
   x_valid <- x[!pos_na]
 
   # Convertir a mayúsculas y eliminar espacios repetidos
-  x_valid <- trimws(stringr::str_to_upper(gsub("([\\s])\\1+", "\\1", x_valid, perl = TRUE)))
+  x_valid <- trimws(str_to_upper(gsub("([\\s])\\1+", "\\1", x_valid, perl = TRUE)))
 
   # Eliminar espacios si se indica
   if (rem_espacios) {
