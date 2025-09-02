@@ -14,6 +14,7 @@
 #' DefinirFormato("coma")(1234567.89)
 #' DefinirFormato("dinero")(1234567.89)
 #'
+#' @importFrom scales label_number
 #' @export
 DefinirFormato <- function(formato) {
   if (formato == "coma") {
