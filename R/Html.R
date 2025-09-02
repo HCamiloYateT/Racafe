@@ -10,7 +10,7 @@
 #' @importFrom magrittr %>%
 #' @export
 Saltos <- function(n = 1) {
-  strrep('<br/>', n) %>% HTML()
+  htmltools::HTML(strrep('<br/>', n))
 }
 
 #' Insertar Espacios en HTML
@@ -23,7 +23,7 @@ Saltos <- function(n = 1) {
 #' Espacios(4)  # Devuelve "&emsp;&emsp;&emsp;&emsp;"
 #' @export
 Espacios <- function(n = 1) {
-  strrep('&emsp;', n) %>% HTML()
+  htmltools::HTML(strrep('&emsp;', n))
 }
 
 #' @title Obligatorio: Añade un asterisco rojo a un campo obligatorio
@@ -36,7 +36,7 @@ Espacios <- function(n = 1) {
 #' @export
 Obligatorio <- function(s) {
   # Crea un encabezado HTML de nivel 6 con el texto y un asterisco rojo.
-  h6(paste(s, span("*", style = "color: red;")) %>% HTML)
+  shiny::h6(htmltools::HTML(paste(s, shiny::span("*", style = "color: red;"))))
 }
 
 

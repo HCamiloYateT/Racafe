@@ -17,7 +17,17 @@ Imports:
     scales (>= 1.2.1),
     dplyr,
     tidyr,
+    DBI,
+    odbc,
+    rlang,
+    forcats,
+    stringr,
+    lubridate,
+    gt,
     htmltools,
+    shiny,
+    colorspace,
+    plotly,
     magrittr
 Suggests:
     testthat (>= 3.0.0)
