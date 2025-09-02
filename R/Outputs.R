@@ -117,8 +117,8 @@ ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
       group_by(across(all_of(x))) %>%
       summarise(Tot = sum(Tot), Pct = Tot / tot, .groups = 'drop') %>%
       rowwise() %>%
-      mutate(txt = paste0("<b>Clientes: </b>", comma(Tot, accuracy = 1),
-                          "<br><b>Pct. del Total: </b>", percent(Pct, accuracy = 0.01))) %>%
+      mutate(txt = paste0("<b>Clientes: </b>", scales::comma(Tot, accuracy = 1),
+                          "<br><b>Pct. del Total: </b>", scales::percent(Pct, accuracy = 0.01))) %>%
       select(label = 1, txt)
   }))
 
@@ -163,9 +163,9 @@ ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
       PctSource = value / value_total,
       texto = paste0("<b>Origen: </b>", Origen,
                      "<br><b>Destino: </b>", Destino,
-                     "<br><b>Clientes: </b>", comma(value, accuracy = 1),
-                     "<br><b>Pct. del Total: </b>", percent(PctTot, accuracy = 0.01),
-                     "<br><b>Pct. del Origen: </b>", percent(PctSource, accuracy = 0.01))
+                     "<br><b>Clientes: </b>", scales::comma(value, accuracy = 1),
+                     "<br><b>Pct. del Total: </b>", scales::percent(PctTot, accuracy = 0.01),
+                     "<br><b>Pct. del Origen: </b>", scales::percent(PctSource, accuracy = 0.01))
     )
 
   # Crear el gráfico Sankey con `plotly`
