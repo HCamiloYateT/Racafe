@@ -69,6 +69,7 @@ CajaIco <- function(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra =
 #'
 #' @importFrom dplyr \%>% group_by summarise mutate select left_join across bind_rows
 #' @importFrom plotly plot_ly layout
+#' @importFrom plotly event_register config
 #' @export
 ImprimeSankey <- function(data, vars, fun, var = NULL, colores) {
 
