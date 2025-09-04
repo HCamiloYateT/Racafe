@@ -2,24 +2,23 @@
 #'
 #' Esta función se conecta a una base de datos SQL Server y ejecuta una consulta SQL.
 #' Dependiendo del valor del parámetro `bd`, se selecciona la base de datos correspondiente.
-#' Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante.
-#'
+#' Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante
+#' y convierte a fecha las variables que empiezan por "Fec" o se llaman exactamente "Fecha".
+#' 
 #' @param bd Una cadena de texto que especifica el nombre de la base de datos a la que conectarse.
 #'           Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".
 #' @param uid El nombre de usuario para la conexión a la base de datos.
 #' @param pwd La contraseña del usuario para la conexión.
 #' @param query La consulta SQL que se ejecutará en la base de datos.
-#'
+#' @param server La dirección del servidor SQL Server. Por defecto "172.16.19.21".
+#' @param port El puerto del servidor SQL Server. Por defecto 1433.
+#' 
 #' @return Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
 #' @export
-ConsultaSistema <- function(bd, uid, pwd, query) {
-
-  # Cargar las librerías necesarias
-  require(DBI)       # Para la conexión y manejo de bases de datos
-  require(tidyverse) # Para manipulación de datos (dplyr, tidyr, etc.)
+ConsultaSistema <- function(bd, uid, pwd, query, server = "172.16.19.21", port = 1433) {
 
   # Asigna el nombre de la base de datos en función del valor de `bd`
-  base <- case_when(
+  base <- dplyr::case_when(
     bd == "syscafe" ~ "ContabRacafe",
     bd == "cafesys" ~ "Cafesys",
     bd == "estad" ~ "EstadRacafe"
@@ -28,24 +27,29 @@ ConsultaSistema <- function(bd, uid, pwd, query) {
   if (is.na(base)) stop("las bases de datos disponibles son: 'syscafe', 'cafesys' o 'estad'")
 
   # Establece la conexión con la base de datos SQL Server
-  con <- dbConnect(odbc::odbc(),
-                   Driver = "ODBC Driver 18 for SQL Server",
-                   Server = "172.16.19.21",
-                   Database = base,
-                   uid = uid,
-                   pwd = pwd,
-                   port = 1433,
-                   TrustServerCertificate = "yes")
+  con <- DBI::dbConnect(odbc::odbc(),
+                        Driver = "ODBC Driver 18 for SQL Server",
+                        Server = server,
+                        Database = base,
+                        uid = uid,
+                        pwd = pwd,
+                        port = port,
+                        TrustServerCertificate = "yes")
 
-  # Ejecuta la consulta SQL y limpia los nombres de las columnas
-  df <- dbGetQuery(con, query) %>%
-    mutate(across(where(is.character), racafe::LimpiarNombres))
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
 
-  # Cierra la conexión con la base de datos
-  dbDisconnect(con)
+  df <- tryCatch(
+    DBI::dbGetQuery(con, query) |>
+      dplyr::mutate(
+        dplyr::across(dplyr::where(is.character), racafe::LimpiarNombres),
+        dplyr::across(c(dplyr::starts_with("Fec"), dplyr::matches("^Fecha$")), as.Date)
+      ),
+    error = function(e) {
+      stop("Error al ejecutar la consulta: ", e$message)
+    }
+  )
 
-  # Retorna el dataframe con los resultados
-  return(df)
+  df
 }
 
 
@@ -54,51 +58,55 @@ ConsultaSistema <- function(bd, uid, pwd, query) {
 #' Recodifica las categorías menos frecuentes de una variable según su valor absoluto o una función de resumen y las agrupa en una nueva categoría.
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.
-#' @param var_recode El nombre de la variable que se desea recodificar.
-#' @param var_top El nombre de la variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen.
+#' @param var_recode Variable que se desea recodificar. Se pasa sin comillas.
+#' @param var_top Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.
 #' @param fun_Top La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).
 #' @param n El número mÃ¡ximo de categorías principales a conservar (predeterminado: 10).
 #' @param nom_var El nombre para la nueva variable recodificada.
 #' @param lab_recodificar El nombre o etiqueta para las categorías recodificadas (predeterminado: "OTROS").
 #' @return El conjunto de datos con la variable recodificada según las categorías principales y las categorías recodificadas.
-#' @import dplyr forcats rlang
 #' @export
 TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_recodificar = "OTROS"){
 
-  require(rlang)
-  require(forcats)
-  datos = data
+  var_recode <- dplyr::enquo(var_recode)
+  var_top <- dplyr::enquo(var_top)
+  by_var <- dplyr::as_name(var_recode)
+
+  datos <- data
 
   # Calcula las frecuencias o las estadísticas según la función proporcionada
   if (fun_Top == "n"){
-    aux1 <- datos %>%
-      mutate(Tot = n()) %>%
-      group_by_at(var_recode) %>%
-      summarise(Var = n(),
-                Pct = Var/unique(Tot))
+    tot <- nrow(datos)
+    aux1 <- datos |>
+      dplyr::group_by(across(all_of(by_var))) |>
+      dplyr::summarise(Var = dplyr::n(), .groups = "drop") |>
+      dplyr::mutate(Pct = Var/ tot)
   } else {
-    aux1 <- datos %>%
-      mutate(Tot = !!parse_expr(paste(fun_Top, "(", var_top, ", na.rm = TRUE)"))) %>%
-      group_by_at(var_recode) %>%
-      summarise(Var = !!parse_expr(paste0(fun_Top, "(", var_top, ", na.rm = TRUE)")),
-                Pct = Var/unique(Tot))
+    fun <- match.fun(fun_Top)
+    tot <- fun(dplyr::pull(datos, !!var_top), na.rm = TRUE)
+    aux1 <- datos |>
+      dplyr::group_by(across(all_of(by_var))) |>
+      dplyr::summarise(Var = fun(!!var_top, na.rm = TRUE), .groups = "drop") |>
+      dplyr::mutate(Pct = Var/ tot)
   }
 
   # Organiza los datos, recodifica las categorías menos frecuentes
-  aux2 <- aux1 %>%
-    arrange(desc(Var)) %>%
-    mutate(Seq = row_number(),
-           !!nom_var := ifelse(Seq <= n, as.character(!!parse_expr(var_recode)), lab_recodificar)
-    ) %>%
-    select(all_of(var_recode), all_of(nom_var))
+  aux2 <- aux1 |>
+    dplyr::arrange(dplyr::desc(Var)) |>
+    dplyr::mutate(Seq = dplyr::row_number(),
+                  !!nom_var := dplyr::case_when(
+                    Seq <= n ~ as.character(!!var_recode),
+                    TRUE ~ lab_recodificar
+                  )) |>
+    dplyr::select(dplyr::all_of(by_var), dplyr::all_of(nom_var))
 
   # Recodifica las categorías en el dataset original
-  data <- datos %>%
-    left_join(aux2, by = var_recode) %>%
-    mutate(!!nom_var := factor(!!sym(nom_var), levels = c(unique(aux2[[nom_var]])), ordered = TRUE),
-           !!nom_var := fct_relevel(!!sym(nom_var), lab_recodificar, after = Inf))  # Asegura que 'lab_recodificar' está al final
+  data <- datos |>
+    dplyr::left_join(aux2, by = by_var) |>
+    dplyr::mutate(!!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
+                  !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf))
 
-  return(data)
+  data
 }
 
 
@@ -107,50 +115,53 @@ TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_r
 #' Recodifica las categorías menos frecuentes de una variable según su valor relativo o una función de resumen y las agrupa en una nueva categoría.
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.
-#' @param var_recode El nombre de la variable que se desea recodificar.
-#' @param var_top El nombre de la variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen.
+#' @param var_recode Variable que se desea recodificar. Se pasa sin comillas.
+#' @param var_top Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.
 #' @param fun_Top La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).
 #' @param pct_min El porcentaje mínimo necesario para considerar una categoría principal (predeterminado: 0.05).
 #' @param nom_var El nombre para la nueva variable recodificada.
 #' @param lab_recodificar El nombre o etiqueta para las categorías recodificadas (predeterminado: "OTROS").
 #' @return El conjunto de datos con la variable recodificada según las categorías principales y las categorías recodificadas.
-#' @import dplyr forcats rlang
 #' @export
 TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_var, lab_recodificar = "OTROS") {
-
-  datos = data
+  var_recode <- dplyr::enquo(var_recode)
+  var_top <- dplyr::enquo(var_top)
+  by_var <- dplyr::as_name(var_recode)
+  datos <- data
 
   # Calcula las frecuencias o estadísticas relativas de acuerdo a la función proporcionada
   if (fun_Top == "n"){
-    aux1 <- datos %>%
-      mutate(Tot = n()) %>%
-      group_by_at(var_recode) %>%
-      summarise(Var = n(),
-                Pct = Var / unique(Tot))
+    tot <- nrow(datos)
+    aux1 <- datos |>
+      dplyr::group_by(across(all_of(by_var))) |>
+      dplyr::summarise(Var = dplyr::n(), .groups = "drop") |>
+      dplyr::mutate(Pct = Var / tot)
   } else {
-    aux1 <- datos %>%
-      mutate(Tot = !!parse_expr(paste(fun_Top, "(", var_top, ", na.rm = TRUE)"))) %>%
-      group_by_at(var_recode) %>%
-      summarise(Var = !!parse_expr(paste0(fun_Top, "(", var_top, ", na.rm = TRUE)")),
-                Pct = Var / unique(Tot))
+    fun <- match.fun(fun_Top)
+    tot <- fun(dplyr::pull(datos, !!var_top), na.rm = TRUE)
+    aux1 <- datos |>
+      dplyr::group_by(across(all_of(by_var))) |>
+      dplyr::summarise(Var = fun(!!var_top, na.rm = TRUE), .groups = "drop") |>
+      dplyr::mutate(Pct = Var / tot)
   }
 
   # Organiza los datos, recodifica las categorías menos frecuentes
-  aux2 <- aux1 %>%
-    arrange(desc(Var)) %>%
-    mutate(Seq = row_number(),
-           !!nom_var := !!parse_expr(paste0("ifelse(Pct > pct_min, as.character(",
-                                            var_recode, "), '",
-                                            lab_recodificar, "')"))) %>%
-    select(all_of(var_recode), all_of(nom_var))
+  aux2 <- aux1 |>
+    dplyr::arrange(dplyr::desc(Var)) |>
+    dplyr::mutate(Seq = dplyr::row_number(),
+                  !!nom_var := dplyr::case_when(
+                    Pct > pct_min ~ as.character(!!var_recode),
+                    TRUE ~ lab_recodificar
+                  )) |>
+    dplyr::select(dplyr::all_of(by_var), dplyr::all_of(nom_var))
 
   # Recodifica las categorías en el dataset original
-  data <- datos %>%
-    left_join(aux2, by = var_recode) %>%
-    mutate(!!nom_var := factor(!!sym(nom_var), levels = c(unique(aux2[[nom_var]])), ordered = TRUE),
-           !!nom_var := fct_relevel(!!sym(nom_var), lab_recodificar, after = Inf))  # Asegura que 'lab_recodificar' está al final
+  data <- datos |>
+    dplyr::left_join(aux2, by = by_var) |>
+    dplyr::mutate(!!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
+                  !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf))
 
-  return(data)
+  data
 }
 
 #' Adiciona botones interactivos a una tabla.
@@ -166,7 +177,7 @@ TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_va
 #' @return Un `data.frame` o `tibble` con nuevas columnas para los botones seleccionados.
 #' @export
 AdicionarBotones <- function(tabla, botones) {
-  req(tabla)  # Asegura que la tabla no sea nula
+  shiny::req(tabla)  # Asegura que la tabla no sea nula
 
   # Verifica si la tabla tiene filas
   if (nrow(tabla) > 0) {
@@ -184,12 +195,12 @@ AdicionarBotones <- function(tabla, botones) {
 
     # Crea nuevas columnas en la tabla para cada botón seleccionado
     for (boton in botones_seleccionados) {
-      tabla <- tabla %>%
-        mutate(!!boton := HTML(botones_html[[boton]]))
+      tabla <- tabla |>
+        dplyr::mutate(!!boton := htmltools::HTML(botones_html[[boton]]))
     }
   }
 
-  return(tabla)  # Devuelve la tabla modificada
+  tabla  # Devuelve la tabla modificada
 }
 
 

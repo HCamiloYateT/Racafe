@@ -7,18 +7,23 @@
 #' @param max Valor máximo permitido (por defecto NULL).
 #' @param min Valor mínimo permitido (por defecto NULL).
 #' @param type Tipo de input: "dinero", "porcentaje" o "numero".
+#' @param label_col Ancho de la columna para la etiqueta (por defecto 6).
+#' @param input_col Ancho de la columna para el campo numérico (por defecto 6).
+#' @param width Ancho del control `autonumericInput` (por defecto "100%").
 #'
 #' @return Un objeto de tipo `fluidRow` con el diseño del input.
 #' @examples
 #' # Ejemplo para un input de dinero
-#' InputGenerico("dinero_input", "Monto:", 1000, type = "dinero")
-#'
+#' InputNumerico("dinero_input", "Monto:", 1000, type = "dinero")
+#' 
 #' # Ejemplo para un input de porcentaje
-#' InputGenerico("porcentaje_input", "Porcentaje:", 50, type = "porcentaje")
-#'
+#' InputNumerico("porcentaje_input", "Porcentaje:", 50, type = "porcentaje")
+#' 
 #' # Ejemplo para un input numérico general
-#' InputGenerico("numero_input", "Cantidad:", 10, max = 100, min = 0, dec = 3, type = "numero")
-InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, type = "numero") {
+#' InputNumerico("numero_input", "Cantidad:", 10, max = 100, min = 0, dec = 3, type = "numero")
+InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, type = "numero", label_col = 6, input_col = 6, width = "100%") {
+  type <- match.arg(type, c("dinero", "porcentaje", "numero"))
+
   # Configuración específica según el tipo de input
   config <- switch(type,
                    dinero = list(currencySymbol = "$", decimalPlaces = dec, max = max, min = min),
@@ -27,9 +32,9 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
                    stop("Tipo de input no soportado. Use 'dinero', 'porcentaje' o 'numero'."))
 
   # Construcción del componente visual
-  res <- fluidRow(
-    column(6, FormatearTexto(label, tamano_pct = 0.8)),
-    column(6, autonumericInput(
+  res <- shiny::fluidRow(
+    shiny::column(label_col, FormatearTexto(label, tamano_pct = 0.8)),
+    shiny::column(input_col, shiny::autonumericInput(
       id,
       label = NULL,
       value = value,
@@ -38,7 +43,7 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
       currencySymbol = config$currencySymbol,
       currencySymbolPlacement = config$currencySymbolPlacement,
       decimalPlaces = config$decimalPlaces,
-      width = "100%",
+      width = width,
       style = "height: 25px !important; font-size: 14px;"
     ))
   )

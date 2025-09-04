@@ -19,5 +19,5 @@ Loadpkg <- function(pkg) {
   }
 
   # Cargar los paquetes requeridos y devolver vector lógico de éxito/fracaso
-  sapply(pkg, require, character.only = TRUE)
+  sapply(pkg, library, character.only = TRUE, logical.return = TRUE)
 }
