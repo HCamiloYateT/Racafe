@@ -243,7 +243,7 @@ gt_minimal_style <- function(gt_table) {
         border-top: none !important;
         border-left: none !important;
         border-right: none !important;
-        border-bottom: 2px solid #00000033 !important; # línea fina gris bajo encabezado
+        border-bottom: 2px solid #00000033 !important;
       }
     ")
 }
