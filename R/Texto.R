@@ -171,15 +171,20 @@ EsEnteroPositivo <- function(s) {
 #'
 #' @param cadena Cadena de texto a evaluar.
 #' @return
-#' `TRUE` si la cadena representa un número positivo,
-#' `FALSE` en caso contrario.
+#' Un vector lógico del mismo largo que `cadena`: `TRUE` si la cadena
+#' representa un número positivo y `FALSE` en caso contrario. Para valores
+#' `NA` y cadenas vacías se devuelve `FALSE`.
 #' @examples
 #' EsNumero("123")      # TRUE
 #' EsNumero("12.34")    # TRUE
 #' EsNumero("-5")       # FALSE
 #' EsNumero("abc")      # FALSE
+#' EsNumero(NA)         # FALSE
+#' EsNumero("")         # FALSE
 EsNumero <- function(cadena) {
-  es_valido <- grepl("^\\d*\\.?\\d+$", cadena) && as.numeric(cadena) > 0
+  es_valido <- grepl("^\\d*\\.?\\d+$", cadena) &
+    suppressWarnings(!is.na(as.numeric(cadena))) &
+    suppressWarnings(as.numeric(cadena) > 0)
   return(es_valido)
 }
 

@@ -64,9 +64,11 @@ Este repositorio contiene un paquete de R creado específicamente para **Racafé
 ```r
 # EsEnteroPositivo("123")
 ```
-- `EsNumero(cadena)`: Comprueba si la cadena es un número positivo.
+- `EsNumero(cadena)`: Comprueba si la cadena es un número positivo. Los valores `NA` y las cadenas vacías retornan `FALSE`.
 ```r
 # EsNumero("12.3")
+# EsNumero("")
+# EsNumero(NA)
 ```
 - `EsNumTelefono(tel)`: Verifica si una cadena corresponde a un número de teléfono válido.
 ```r
