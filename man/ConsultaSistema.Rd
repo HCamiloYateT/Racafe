@@ -4,7 +4,14 @@
 \alias{ConsultaSistema}
 \title{Consulta a una base de datos SQL Server.}
 \usage{
-ConsultaSistema(bd, uid, pwd, query, server = "172.16.19.21", port = 1433)
+ConsultaSistema(
+  bd,
+  uid = Sys.getenv("SYS_UID"),
+  pwd = Sys.getenv("SYS_PWD"),
+  query,
+  server = "172.16.19.21",
+  port = 1433
+)
 }
 \arguments{
 \item{bd}{Una cadena de texto que especifica el nombre de la base de datos a la que conectarse.

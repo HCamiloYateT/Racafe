@@ -10,7 +10,9 @@ EsNumero(cadena)
 \item{cadena}{Cadena de texto a evaluar.}
 }
 \value{
-Un vector lógico del mismo largo que `cadena`: `TRUE` si la cadena representa un número positivo y `FALSE` en caso contrario. Para valores `NA` y cadenas vacías se devuelve `FALSE`.
+Un vector lógico del mismo largo que `cadena`: `TRUE` si la cadena
+representa un número positivo y `FALSE` en caso contrario. Para valores
+`NA` y cadenas vacías se devuelve `FALSE`.
 }
 \description{
 Comprueba si una cadena representa un número positivo válido (entero o decimal).

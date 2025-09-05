@@ -4,7 +4,7 @@
 #' Dependiendo del valor del parámetro `bd`, se selecciona la base de datos correspondiente.
 #' Después de ejecutar la consulta, limpia los nombres de las columnas en el dataframe resultante
 #' y convierte a fecha las variables que empiezan por "Fec" o se llaman exactamente "Fecha".
-#' 
+#'
 #' @param bd Una cadena de texto que especifica el nombre de la base de datos a la que conectarse.
 #'           Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".
 #' @param uid El nombre de usuario para la conexión a la base de datos.
@@ -12,10 +12,11 @@
 #' @param query La consulta SQL que se ejecutará en la base de datos.
 #' @param server La dirección del servidor SQL Server. Por defecto "172.16.19.21".
 #' @param port El puerto del servidor SQL Server. Por defecto 1433.
-#' 
+#'
 #' @return Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
 #' @export
-ConsultaSistema <- function(bd, uid, pwd, query, server = "172.16.19.21", port = 1433) {
+
+ConsultaSistema <- function(bd, uid = uid = Sys.getenv("SYS_UID"), pwd = pwd = Sys.getenv("SYS_PWD"), query, server = "172.16.19.21", port = 1433) {
 
   # Asigna el nombre de la base de datos en función del valor de `bd`
   base <- dplyr::case_when(
@@ -52,6 +53,121 @@ ConsultaSistema <- function(bd, uid, pwd, query, server = "172.16.19.21", port =
   df
 }
 
+#' Conectar a la base de datos MySQL usando variables de entorno
+#'
+#' Establece una conexión a la base de datos MySQL usando las variables de entorno:
+#' DB_NAME, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_ENCODING.
+#'
+#' @return Un objeto de conexión DBI (DBIConnection).
+#' @details Esta función ejecuta `SET NAMES 'utf8'` luego de abrir la conexión.
+#' Asegúrate de que las variables de entorno estén definidas en el entorno donde se ejecuta el paquete.
+#' @examples
+#' \dontrun{
+#' Sys.setenv(DB_NAME = "mi_bd", DB_HOST = "localhost", DB_PORT = "3306",
+#'            DB_USER = "usuario", DB_PASSWORD = "secreto", DB_ENCODING = "latin1")
+#' con <- ConectarBD()
+#' DBI::dbDisconnect(con)
+#' }
+#' @export
+#' @importFrom DBI dbConnect dbGetQuery
+#' @importFrom RMySQL MySQL
+ConectarBD <- function() {
+  con <- dbConnect(
+    RMySQL::MySQL(),
+    dbname = Sys.getenv("DB_NAME"),
+    host = Sys.getenv("DB_HOST"),
+    port = as.integer(Sys.getenv("DB_PORT")),
+    user = Sys.getenv("DB_USER"),
+    password = Sys.getenv("DB_PASSWORD"),
+    DBMSencoding = Sys.getenv("DB_ENCODING")
+  )
+  dbGetQuery(con, "SET NAMES 'utf8'")
+  return(con)
+}
+
+#' Escribir (sobrescribir) un data.frame en la base de datos
+#'
+#' Escribe un data.frame en la tabla especificada. Si la tabla existe, se sobrescribe.
+#'
+#' @param df Un data.frame o tibble que se va a escribir en la base de datos.
+#' @param tabla Nombre de la tabla destino (carácter).
+#' @return Invisiblemente TRUE si la operación tiene éxito (comportamiento de dbWriteTable).
+#' @examples
+#' \dontrun{
+#' df <- data.frame(x = 1:3, y = letters[1:3])
+#' EscribirDatos(df, "mi_tabla")
+#' }
+#' @export
+#' @importFrom DBI dbDisconnect dbWriteTable
+EscribirDatos <- function(df, tabla) {
+  con <- ConectarBD()
+  on.exit(DBI::dbDisconnect(con))
+  invisible(DBI::dbWriteTable(con, tabla, df, row.names = FALSE, overwrite = TRUE, encoding = "latin1"))
+}
+
+#' Agregar (append) un data.frame a una tabla existente
+#'
+#' Añade las filas de un data.frame a una tabla ya existente en la base de datos.
+#'
+#' @param df Un data.frame o tibble con las filas a añadir.
+#' @param tabla Nombre de la tabla destino (carácter).
+#' @return Invisiblemente TRUE si la operación tiene éxito (comportamiento de dbWriteTable).
+#' @examples
+#' \dontrun{
+#' df_nuevos <- data.frame(x = 4:6, y = letters[4:6])
+#' AgregarDatos(df_nuevos, "mi_tabla")
+#' }
+#' @export
+#' @importFrom DBI dbDisconnect dbWriteTable
+AgregarDatos <- function(df, tabla) {
+  con <- ConectarBD()
+  on.exit(DBI::dbDisconnect(con))
+  invisible(DBI::dbWriteTable(con, tabla, df, row.names = FALSE, append = TRUE, encoding = "latin1"))
+}
+
+#' Cargar datos desde una tabla de la base de datos
+#'
+#' Recupera filas de la tabla indicada. Se puede pasar una condición WHERE opcional.
+#'
+#' @param tabla Nombre de la tabla a leer (carácter).
+#' @param condicion (opc.) Cadena con la cláusula WHERE (sin la palabra WHERE). Ej: "fecha >= '2025-01-01'".
+#' @return Un data.frame con las filas resultantes de la consulta.
+#' @examples
+#' \dontrun{
+#' df <- CargarDatos("mi_tabla")
+#' df_filtrado <- CargarDatos("mi_tabla", "x > 10")
+#' }
+#' @export
+#' @importFrom DBI dbDisconnect dbGetQuery
+CargarDatos <- function(tabla, condicion = NULL) {
+  con <- ConectarBD()
+  on.exit(DBI::dbDisconnect(con))
+
+  consulta <- paste("SELECT * FROM", tabla)
+  if (!is.null(condicion)) {
+    consulta <- paste(consulta, "WHERE", condicion)
+  }
+
+  DBI::dbGetQuery(con, consulta)
+}
+
+#' Ejecutar una consulta SQL arbitraria
+#'
+#' Ejecuta una consulta SQL y retorna el resultado como data.frame.
+#'
+#' @param consulta Cadena con la consulta SQL a ejecutar.
+#' @return Un data.frame con el resultado de la consulta.
+#' @examples
+#' \dontrun{
+#' resultado <- Consulta("SELECT COUNT(*) AS n FROM mi_tabla")
+#' }
+#' @export
+#' @importFrom DBI dbDisconnect dbGetQuery
+Consulta <- function(consulta) {
+  con <- ConectarBD()
+  on.exit(DBI::dbDisconnect(con))
+  DBI::dbGetQuery(con, consulta)
+}
 
 # Función interna que calcula tablas auxiliares y recodifica según el criterio
 .top_auxiliar <- function(datos, var_recode, var_top, fun_Top, criterio, tipo, nom_var, lab_recodificar) {
@@ -91,7 +207,7 @@ ConsultaSistema <- function(bd, uid, pwd, query, server = "172.16.19.21", port =
 }
 
 #' Recodificación de Categorías Menos Frecuentes
-#' 
+#'
 #' Recodifica las categorías menos frecuentes de una variable según su valor absoluto o una función de resumen y las agrupa en una nueva categoría.
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.

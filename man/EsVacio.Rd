@@ -10,10 +10,11 @@ EsVacio(x)
 \item{x}{Valor o vector de valores a verificar.}
 }
 \value{
-Un valor lógico: \code{TRUE} si \code{x} es \code{NULL} o si algún elemento es \code{NA} o una cadena vacía (tras aplicar \code{trimws}); en caso contrario \code{FALSE}.
+Un valor lógico: `TRUE` si `x` es `NULL` o si algún elemento es `NA` o una cadena vacía
+(tras aplicar `trimws`), de lo contrario `FALSE`.
 }
 \description{
-Esta función evalúa un valor y determina si es \code{NULL}, \code{NA} o una cadena vacía (\code{""}). Se aceptan vectores.
+Esta función evalúa un valor y determina si es NULL, NA o una cadena vacía ("").
 }
 \examples{
 EsVacio(NULL)              # TRUE
