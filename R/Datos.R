@@ -633,30 +633,32 @@ AdicionarBotones <- function(tabla, botones) {
 #' Combina múltiples data frames en uno solo, ignorando aquellos que están vacíos.
 #'
 #' Esta función toma varios data frames como entrada y los combina en un solo
-#' data frame. Los data frames vacíos se ignoran para evitar errores al
-#' realizar la unión.
+#' data frame. Los valores `NULL` o que no sean data frame se ignoran, y los
+#' data frames vacíos se omiten para evitar errores al realizar la unión.
 #'
-#' @param ... Data frames a combinar. Puede recibir uno o más data frames.
+#' @param ... Objetos a combinar. Solo se utilizan los data frames con filas;
+#'            los valores `NULL` y objetos no válidos se ignoran.
 #'
 #' @return Un data frame que resulta de la combinación de los data frames
-#'         proporcionados. Si no hay data frames no vacíos, se devuelve un
-#'         data frame vacío.
+#'         proporcionados. Si no hay data frames válidos o no vacíos, se
+#'         devuelve un data frame vacío.
 #'
 #' @examples
 #' df1 <- data.frame(a = 1:3, b = letters[1:3])
 #' df2 <- data.frame(a = numeric(0), b = character(0))  # Data frame vacío
 #' df3 <- data.frame(a = 4:5, b = letters[4:5])
 #'
-#' # Combina df1 y df3, ignorando df2
-#' result <- bind_rows_na(df1, df2, df3)
+#' # Combina df1 y df3, ignorando df2 y otros valores no válidos
+#' result <- bind_rows_na(df1, df2, df3, NULL, "texto")
 #'
 #' @export
 bind_rows_na <- function(...) {
-  # Crear una lista de data frames a partir de los argumentos
+  # Crear una lista de objetos a partir de los argumentos
   df_list <- list(...)
 
-  # Filtrar solo aquellos data frames que tienen filas
-  df_list <- df_list[sapply(df_list, nrow) > 0]
+  # Conservar únicamente los data frames no vacíos
+  df_list <- Filter(is.data.frame, df_list)
+  df_list <- Filter(NROW, df_list)
 
   # Combinar los data frames filtrados
   dplyr::bind_rows(df_list)
