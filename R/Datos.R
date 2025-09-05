@@ -169,6 +169,334 @@ Consulta <- function(consulta) {
   DBI::dbGetQuery(con, consulta)
 }
 
+#' @title ObtenerTokenAcceso
+#' @description Obtiene un token de acceso (client_credentials) para Microsoft Graph API usando los datos de configuración `config$ms_graph`.
+#' @return Cadena con el token de acceso.
+#' @examples
+#' # token <- ObtenerTokenAcceso()
+ObtenerTokenAcceso <- function() {
+  # Validaciones mínimas de configuración
+  if (!exists("config") || is.null(config$ms_graph)) {
+    stop("No se encontró el objeto 'config$ms_graph'. Debe contener tenant_id, client_id y client_secret.")
+  }
+  req_fields <- c("tenant_id", "client_id", "client_secret")
+  faltantes <- req_fields[!req_fields %in% names(config$ms_graph)]
+  if (length(faltantes) > 0) {
+    stop("Faltan campos en config$ms_graph: ", paste(faltantes, collapse = ", "))
+  }
+
+  url <- paste0(
+    "https://login.microsoftonline.com/",
+    config$ms_graph$tenant_id,
+    "/oauth2/v2.0/token"
+  )
+
+  payload <- list(
+    grant_type = "client_credentials",
+    client_id = config$ms_graph$client_id,
+    client_secret = config$ms_graph$client_secret,
+    scope = "https://graph.microsoft.com/.default"
+  )
+
+  resp <- httr::POST(url, body = payload, encode = "form")
+  if (httr::http_error(resp)) {
+    stop("Error al obtener token de acceso: ", httr::content(resp, as = "text"))
+  }
+  data <- httr::content(resp, as = "parsed", type = "application/json")
+  token <- data$access_token
+  if (is.null(token)) stop("No se recibió 'access_token' en la respuesta.")
+  token
+}
+
+#' @title CabecerasGraph
+#' @description Construye cabeceras HTTP con el token Bearer para Microsoft Graph.
+#' @return Objeto de cabeceras para usar con httr.
+#' @examples
+#' # headers <- CabecerasGraph()
+CabecerasGraph <- function() {
+  token <- ObtenerTokenAcceso()
+  httr::add_headers(
+    Authorization = paste("Bearer", token),
+    "Content-Type" = "application/json"
+  )
+}
+
+#' @title ObtenerIdDrive
+#' @description Obtiene el ID de OneDrive (drive id) de un usuario de dominio racafe.com.
+#' @param usuario Cadena con el alias o correo (sin dominio) del usuario.
+#' @return Cadena con el identificador de la unidad (drive id) del usuario.
+#' @examples
+#' # drive_id <- ObtenerIdUnidad("hcyate")
+ObtenerIdDrive <- function(usuario) {
+  stopifnot(is.character(usuario), length(usuario) == 1)
+  headers <- CabecerasGraph()
+  url <- paste0("https://graph.microsoft.com/v1.0/users/", usuario, "@racafe.com/drive")
+  resp <- httr::GET(url, headers)
+  if (httr::http_error(resp)) {
+    stop("Error al obtener el ID de la unidad: ", httr::content(resp, as = "text"))
+  }
+  data <- httr::content(resp, as = "parsed", type = "application/json")
+  id <- data$id
+  if (is.null(id)) stop("No se encontró 'id' de la unidad para el usuario: ", usuario)
+  id
+}
+
+#' @title CargarExcelDesdeOneDrive
+#' @description Descarga un archivo Excel desde OneDrive y lo abre como objeto de openxlsx2::wb_load sin persistir el archivo.
+#' @param usuario Alias del usuario sin dominio (ej. "juan.perez").
+#' @param ruta Ruta dentro de OneDrive donde se encuentra el archivo.
+#' @param archivo Nombre del archivo Excel (con extensión).
+#' @return Objeto workbook de openxlsx2.
+#' @examples
+#' # wb <- CargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx")
+CargarExcelDesdeOneDrive <- function(usuario, ruta, archivo) {
+  stopifnot(is.character(usuario), is.character(ruta), is.character(archivo))
+  headers <- CabecerasGraph()
+  drive_id <- ObtenerIdUnidad(usuario)
+
+  # Construcción de URL cuidando codificación por segmentos
+  path_full <- paste(ruta, archivo, sep = "/")
+  url <- paste0(
+    "https://graph.microsoft.com/v1.0/drives/",
+    drive_id, "/root:/",
+    utils::URLencode(path_full, reserved = TRUE),
+    ":/content"
+  )
+
+  resp <- httr::GET(url, headers)
+  if (httr::status_code(resp) == 200) {
+    tmp <- tempfile(fileext = ".xlsx")
+    on.exit({
+      if (file.exists(tmp)) file.remove(tmp)
+    }, add = TRUE)
+    writeBin(httr::content(resp, "raw"), tmp)
+    wb <- openxlsx2::wb_load(tmp)
+    return(wb)
+  } else {
+    stop("Error al descargar archivo: ",
+         httr::status_code(resp), " - ",
+         httr::content(resp, "text"))
+  }
+}
+
+#' @title DescargarExcelDesdeOneDrive
+#' @description Descarga un archivo Excel desde OneDrive y lo guarda localmente con el nombre indicado.
+#' @param usuario Alias del usuario sin dominio.
+#' @param ruta Ruta dentro de OneDrive.
+#' @param archivo Nombre del archivo en OneDrive.
+#' @param nombre_salida Nombre base del archivo de salida (sin extensión).
+#' @return TRUE si la descarga fue exitosa, en caso contrario lanza error.
+#' @examples
+#' # ok <- DescargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx", "informe_local")
+DescargarExcelDesdeOneDrive <- function(usuario, ruta, archivo, nombre_salida) {
+  stopifnot(is.character(usuario), is.character(ruta), is.character(archivo), is.character(nombre_salida))
+  headers <- CabecerasGraph()
+  drive_id <- ObtenerIdUnidad(usuario)
+
+  path_full <- paste(ruta, archivo, sep = "/")
+  url <- paste0(
+    "https://graph.microsoft.com/v1.0/drives/",
+    drive_id, "/root:/",
+    utils::URLencode(path_full, reserved = TRUE),
+    ":/content"
+  )
+
+  resp <- httr::GET(url, headers)
+  if (httr::status_code(resp) == 200) {
+    out <- paste0(nombre_salida, ".xlsx")
+    writeBin(httr::content(resp, "raw"), out)
+    return(TRUE)
+  } else {
+    stop("Error al descargar archivo: ",
+         httr::status_code(resp), " - ",
+         httr::content(resp, "text"))
+  }
+}
+
+#' @title ListarCarpetas
+#' @description Lista el nombre de las carpetas en la raíz del OneDrive del usuario.
+#' @param usuario Alias del usuario sin dominio.
+#' @return Vector de caracteres con nombres de carpetas.
+#' @examples
+#' # carpetas <- ListarCarpetas("juan.perez")
+ListarCarpetas <- function(usuario) {
+  headers <- CabecerasGraph()
+  drive_id <- ObtenerIdUnidad(usuario)
+  url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/root/children")
+  resp <- httr::GET(url, headers)
+  if (httr::http_error(resp)) {
+    stop("Error al obtener carpetas: ", httr::content(resp, as = "text"))
+  }
+  data <- httr::content(resp, as = "parsed", type = "application/json")
+  folders <- vapply(
+    data$value,
+    function(it) if (!is.null(it$folder)) it$name else NA_character_,
+    FUN.VALUE = character(1)
+  )
+  stats::na.omit(folders)
+}
+
+#' @title ObtenerIdCarpeta
+#' @description Obtiene el ID de una carpeta en la raíz del OneDrive del usuario por su nombre.
+#' @param usuario Alias del usuario sin dominio.
+#' @param nombre_carpeta Nombre exacto de la carpeta.
+#' @return Cadena con el ID de la carpeta si existe; en caso contrario, error.
+#' @examples
+#' # carpeta_id <- ObtenerIdCarpeta("juan.perez", "Reportes")
+ObtenerIdCarpeta <- function(usuario, nombre_carpeta) {
+  headers <- CabecerasGraph()
+  drive_id <- ObtenerIdUnidad(usuario)
+  url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/root/children")
+  resp <- httr::GET(url, headers)
+  if (httr::http_error(resp)) {
+    stop("Error al obtener carpetas: ", httr::content(resp, as = "text"))
+  }
+  data <- httr::content(resp, as = "parsed", type = "application/json")
+  for (item in data$value) {
+    if (!is.null(item$folder) && isTRUE(item$name == nombre_carpeta)) {
+      return(item$id)
+    }
+  }
+  stop("Carpeta no encontrada: ", nombre_carpeta)
+}
+
+#' @title ListarContenidoCarpetaNombre
+#' @description Lista los elementos (archivos y carpetas) dentro de una carpeta especificada por nombre en la raíz.
+#' @param usuario Alias del usuario sin dominio.
+#' @param nombre_carpeta Nombre de la carpeta.
+#' @return Tibble con columnas: name, type, id.
+#' @examples
+#' # df <- ListarContenidoCarpetaPorNombre("juan.perez", "Reportes")
+ListarContenidoCarpetaNombre <- function(usuario, nombre_carpeta) {
+  carpeta_id <- ObtenerIdCarpeta(usuario, nombre_carpeta)
+  ListarContenidoCarpetaPorId(usuario, carpeta_id)
+}
+
+#' @title ListarContenidoCarpetaId
+#' @description Lista los elementos (archivos y carpetas) dentro de una carpeta (por ID).
+#' @param usuario Alias del usuario sin dominio.
+#' @param carpeta_id ID de la carpeta.
+#' @return Tibble con columnas: name, type, id.
+#' @examples
+#' # df <- ListarContenidoCarpetaPorId("juan.perez", "0123ABC...")
+ListarContenidoCarpetaId <- function(usuario, carpeta_id) {
+  headers <- CabecerasGraph()
+  drive_id <- ObtenerIdUnidad(usuario)
+  url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/items/", carpeta_id, "/children")
+  resp <- httr::GET(url, headers)
+  if (httr::http_error(resp)) {
+    stop("Error al listar contenido de carpeta: ", httr::content(resp, as = "text"))
+  }
+  data <- httr::content(resp, as = "parsed", type = "application/json")
+
+  elements <- lapply(data$value, function(item) {
+    list(
+      name = item$name,
+      type = if (!is.null(item$folder)) "Folder" else "File",
+      id   = item$id
+    )
+  })
+
+  tibble::as_tibble(do.call(rbind, lapply(elements, as.data.frame)))
+}
+
+#' @title ListarContenidoCarpetaRecursivo
+#' @description Lista recursivamente todos los archivos dentro de una carpeta (por ID) incluyendo sus rutas relativas.
+#' @param usuario Alias del usuario sin dominio.
+#' @param carpeta_id ID de la carpeta raíz a explorar.
+#' @param ruta_padre Ruta relativa acumulada (para uso interno).
+#' @return Lista de listas con elementos: name, type = "File", id, path.
+#' @examples
+#' # lst <- ListarContenidoCarpetaRecursivo("juan.perez", "0123ABC...")
+ListarContenidoCarpetaRecursivo <- function(usuario, carpeta_id, ruta_padre = "") {
+  headers <- CabecerasGraph()
+  drive_id <- ObtenerIdUnidad(usuario)
+  url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/items/", carpeta_id, "/children")
+  resp <- httr::GET(url, headers)
+  if (httr::http_error(resp)) {
+    stop("Error al listar contenido de carpeta: ", httr::content(resp, as = "text"))
+  }
+  data <- httr::content(resp, as = "parsed", type = "application/json")
+
+  elementos <- list()
+  for (item in data$value) {
+    ruta_item <- file.path(ruta_padre, item$name)
+    if (!is.null(item$folder)) {
+      sub <- ListarContenidoCarpetaRecursivo(usuario, item$id, ruta_item)
+      elementos <- append(elementos, sub)
+    } else {
+      elementos <- append(elementos, list(list(
+        name = item$name,
+        type = "File",
+        id   = item$id,
+        path = ruta_item
+      )))
+    }
+  }
+  elementos
+}
+
+#' @title ListarTodoContenidoCarpeta
+#' @description Retorna un tibble con todos los archivos dentro de una carpeta (por ID) de manera recursiva.
+#' @param usuario Alias del usuario sin dominio.
+#' @param carpeta_id ID de la carpeta raíz.
+#' @return Tibble con columnas: name, type, id, path.
+#' @examples
+#' # df <- ListarTodoContenidoCarpeta("juan.perez", "0123ABC...")
+ListarTodoContenidoCarpeta <- function(usuario, carpeta_id) {
+  elementos <- ListarContenidoCarpetaRecursivo(usuario, carpeta_id)
+  tibble::as_tibble(do.call(rbind, lapply(elementos, as.data.frame)))
+}
+
+#' @title DescargarArchivoId
+#' @description Descarga el contenido de un archivo (por ID) de OneDrive a un archivo temporal y devuelve su ruta.
+#' @param archivo_id ID del archivo en OneDrive.
+#' @param usuario Alias del usuario sin dominio.
+#' @return Ruta del archivo temporal creado.
+#' @examples
+#' # tmp <- DescargarArchivoId("ABC123...", "juan.perez")
+DescargarArchivoId <- function(archivo_id, usuario) {
+  headers <- CabecerasGraph()
+  drive_id <- ObtenerIdUnidad(usuario)
+  url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/items/", archivo_id, "/content")
+
+  tmp <- tempfile(fileext = ".xlsx")
+  resp <- httr::GET(url, headers, httr::write_disk(tmp, overwrite = TRUE))
+  if (httr::http_error(resp)) {
+    # Limpieza si falló
+    if (file.exists(tmp)) unlink(tmp)
+    stop("Error al descargar archivo: ", httr::content(resp, as = "text"))
+  }
+  tmp
+}
+
+#' @title ListarHojasExcelOneDrive
+#' @description Descarga un archivo Excel (por ID) y retorna el vector de nombres de hojas.
+#' @param archivo_id ID del archivo en OneDrive.
+#' @param usuario Alias del usuario sin dominio.
+#' @return Vector de caracteres con los nombres de hojas del Excel.
+#' @examples
+#' # hojas <- ListarHojasExcelOneDrive("ABC123...", "juan.perez")
+ListarHojasExcelOneDrive <- function(archivo_id, usuario) {
+  ruta <- DescargarArchivoPorId(archivo_id, usuario)
+  on.exit({ if (file.exists(ruta)) file.remove(ruta) }, add = TRUE)
+  readxl::excel_sheets(ruta)
+}
+
+#' @title LeerExcelDesdeOneDrive
+#' @description Descarga un archivo Excel (por ID) y lo carga con readxl::read_excel con los argumentos adicionales provistos.
+#' @param archivo_id ID del archivo en OneDrive.
+#' @param usuario Alias del usuario sin dominio.
+#' @param ... Argumentos adicionales para readxl::read_excel.
+#' @return Un tibble/data.frame con los datos leídos.
+#' @examples
+#' # df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 1)
+LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
+  ruta <- DescargarArchivoPorId(archivo_id, usuario)
+  on.exit({ if (file.exists(ruta)) file.remove(ruta) }, add = TRUE)
+  readxl::read_excel(ruta, ...)
+}
+
 # Función interna que calcula tablas auxiliares y recodifica según el criterio
 .top_auxiliar <- function(datos, var_recode, var_top, fun_Top, criterio, tipo, nom_var, lab_recodificar) {
   by_var <- rlang::as_name(var_recode)
