@@ -163,12 +163,6 @@ Este repositorio contiene un paquete de R creado específicamente para **Racafé
 # pick_opt(letters[1:5])
 ```
 
-### Librerías
-- `Loadpkg(pkg)`: Instala (si es necesario) y carga paquetes de R.
-```r
-# Loadpkg(c("ggplot2", "dplyr"))
-```
-
 ### Numéricos
 - `SiError_0(x)`: Reemplaza valores `NaN` e infinitos por 0.
 ```r
@@ -196,3 +190,10 @@ Este repositorio contiene un paquete de R creado específicamente para **Racafé
 ```r
 # ImprimeSankey(df, c("Var1", "Var2"), "n", colores = c("blue", "green"))
 ```
+
+### Librerías
+- `Loadpkg(pkg)`: Instala (si es necesario) y carga paquetes de R.
+```r
+# Loadpkg(c("ggplot2", "dplyr"))
+```
+
