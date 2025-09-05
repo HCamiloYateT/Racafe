@@ -53,8 +53,45 @@ ConsultaSistema <- function(bd, uid, pwd, query, server = "172.16.19.21", port =
 }
 
 
+# Función interna que calcula tablas auxiliares y recodifica según el criterio
+.top_auxiliar <- function(datos, var_recode, var_top, fun_Top, criterio, tipo, nom_var, lab_recodificar) {
+  by_var <- rlang::as_name(var_recode)
+
+  if (fun_Top == "n") {
+    tot <- nrow(datos)
+    aux1 <- datos |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(by_var))) |>
+      dplyr::summarise(Var = dplyr::n(), .groups = "drop") |>
+      dplyr::mutate(Pct = Var / tot)
+  } else {
+    fun <- match.fun(fun_Top)
+    tot <- fun(dplyr::pull(datos, !!var_top), na.rm = TRUE)
+    aux1 <- datos |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(by_var))) |>
+      dplyr::summarise(Var = fun(!!var_top, na.rm = TRUE), .groups = "drop") |>
+      dplyr::mutate(Pct = Var / tot)
+  }
+
+  aux2 <- aux1 |>
+    dplyr::arrange(dplyr::desc(Var)) |>
+    dplyr::mutate(Seq = dplyr::row_number(),
+                  !!nom_var := dplyr::case_when(
+                    tipo == "n" & Seq <= criterio ~ as.character(!!var_recode),
+                    tipo == "pct" & Pct > criterio ~ as.character(!!var_recode),
+                    TRUE ~ lab_recodificar
+                  )) |>
+    dplyr::select(dplyr::all_of(by_var), dplyr::all_of(nom_var))
+
+  datos |>
+    dplyr::left_join(aux2, by = by_var) |>
+    dplyr::mutate(
+      !!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
+      !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf)
+    )
+}
+
 #' Recodificación de Categorías Menos Frecuentes
-#'
+#' 
 #' Recodifica las categorías menos frecuentes de una variable según su valor absoluto o una función de resumen y las agrupa en una nueva categoría.
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.
@@ -66,47 +103,11 @@ ConsultaSistema <- function(bd, uid, pwd, query, server = "172.16.19.21", port =
 #' @param lab_recodificar El nombre o etiqueta para las categorías recodificadas (predeterminado: "OTROS").
 #' @return El conjunto de datos con la variable recodificada según las categorías principales y las categorías recodificadas.
 #' @export
-TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_recodificar = "OTROS"){
+TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n = 10, nom_var, lab_recodificar = "OTROS") {
 
   var_recode <- dplyr::enquo(var_recode)
   var_top <- dplyr::enquo(var_top)
-  by_var <- dplyr::as_name(var_recode)
-
-  datos <- data
-
-  # Calcula las frecuencias o las estadísticas según la función proporcionada
-  if (fun_Top == "n"){
-    tot <- nrow(datos)
-    aux1 <- datos |>
-      dplyr::group_by(across(all_of(by_var))) |>
-      dplyr::summarise(Var = dplyr::n(), .groups = "drop") |>
-      dplyr::mutate(Pct = Var/ tot)
-  } else {
-    fun <- match.fun(fun_Top)
-    tot <- fun(dplyr::pull(datos, !!var_top), na.rm = TRUE)
-    aux1 <- datos |>
-      dplyr::group_by(across(all_of(by_var))) |>
-      dplyr::summarise(Var = fun(!!var_top, na.rm = TRUE), .groups = "drop") |>
-      dplyr::mutate(Pct = Var/ tot)
-  }
-
-  # Organiza los datos, recodifica las categorías menos frecuentes
-  aux2 <- aux1 |>
-    dplyr::arrange(dplyr::desc(Var)) |>
-    dplyr::mutate(Seq = dplyr::row_number(),
-                  !!nom_var := dplyr::case_when(
-                    Seq <= n ~ as.character(!!var_recode),
-                    TRUE ~ lab_recodificar
-                  )) |>
-    dplyr::select(dplyr::all_of(by_var), dplyr::all_of(nom_var))
-
-  # Recodifica las categorías en el dataset original
-  data <- datos |>
-    dplyr::left_join(aux2, by = by_var) |>
-    dplyr::mutate(!!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
-                  !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf))
-
-  data
+  .top_auxiliar(data, var_recode, var_top, fun_Top, n, "n", nom_var, lab_recodificar)
 }
 
 
@@ -123,45 +124,10 @@ TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_r
 #' @param lab_recodificar El nombre o etiqueta para las categorías recodificadas (predeterminado: "OTROS").
 #' @return El conjunto de datos con la variable recodificada según las categorías principales y las categorías recodificadas.
 #' @export
-TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min=0.05, nom_var, lab_recodificar = "OTROS") {
+TopRelativo <- function(data, var_recode, var_top, fun_Top, pct_min = 0.05, nom_var, lab_recodificar = "OTROS") {
   var_recode <- dplyr::enquo(var_recode)
   var_top <- dplyr::enquo(var_top)
-  by_var <- dplyr::as_name(var_recode)
-  datos <- data
-
-  # Calcula las frecuencias o estadísticas relativas de acuerdo a la función proporcionada
-  if (fun_Top == "n"){
-    tot <- nrow(datos)
-    aux1 <- datos |>
-      dplyr::group_by(across(all_of(by_var))) |>
-      dplyr::summarise(Var = dplyr::n(), .groups = "drop") |>
-      dplyr::mutate(Pct = Var / tot)
-  } else {
-    fun <- match.fun(fun_Top)
-    tot <- fun(dplyr::pull(datos, !!var_top), na.rm = TRUE)
-    aux1 <- datos |>
-      dplyr::group_by(across(all_of(by_var))) |>
-      dplyr::summarise(Var = fun(!!var_top, na.rm = TRUE), .groups = "drop") |>
-      dplyr::mutate(Pct = Var / tot)
-  }
-
-  # Organiza los datos, recodifica las categorías menos frecuentes
-  aux2 <- aux1 |>
-    dplyr::arrange(dplyr::desc(Var)) |>
-    dplyr::mutate(Seq = dplyr::row_number(),
-                  !!nom_var := dplyr::case_when(
-                    Pct > pct_min ~ as.character(!!var_recode),
-                    TRUE ~ lab_recodificar
-                  )) |>
-    dplyr::select(dplyr::all_of(by_var), dplyr::all_of(nom_var))
-
-  # Recodifica las categorías en el dataset original
-  data <- datos |>
-    dplyr::left_join(aux2, by = by_var) |>
-    dplyr::mutate(!!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
-                  !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf))
-
-  data
+  .top_auxiliar(data, var_recode, var_top, fun_Top, pct_min, "pct", nom_var, lab_recodificar)
 }
 
 #' Adiciona botones interactivos a una tabla.

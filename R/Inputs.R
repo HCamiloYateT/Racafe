@@ -24,12 +24,27 @@
 InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, type = "numero", label_col = 6, input_col = 6, width = "100%") {
   type <- match.arg(type, c("dinero", "porcentaje", "numero"))
 
+  # Validaciones de tipo de datos
+  stopifnot(is.numeric(value))
+  if (!is.null(max)) stopifnot(is.numeric(max))
+  if (!is.null(min)) stopifnot(is.numeric(min))
+
   # Configuración específica según el tipo de input
   config <- switch(type,
                    dinero = list(currencySymbol = "$", decimalPlaces = dec, max = max, min = min),
                    porcentaje = list(currencySymbol = "%", currencySymbolPlacement = "s", decimalPlaces = 2, max = 100, min = 0),
                    numero = list(currencySymbol = NULL, decimalPlaces = dec, max = max, min = min),
                    stop("Tipo de input no soportado. Use 'dinero', 'porcentaje' o 'numero'."))
+
+  # Validaciones de rangos
+  if (!is.null(config$min) && !is.null(config$max)) {
+    stopifnot(config$min <= config$max)
+    stopifnot(config$min <= value, value <= config$max)
+  } else if (!is.null(config$min)) {
+    stopifnot(config$min <= value)
+  } else if (!is.null(config$max)) {
+    stopifnot(value <= config$max)
+  }
 
   # Construcción del componente visual
   res <- shiny::fluidRow(
