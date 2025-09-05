@@ -366,10 +366,10 @@ ObtenerIdCarpeta <- function(usuario, nombre_carpeta) {
 #' @param nombre_carpeta Nombre de la carpeta.
 #' @return Tibble con columnas: name, type, id.
 #' @examples
-#' # df <- ListarContenidoCarpetaPorNombre("juan.perez", "Reportes")
+#' # df <- ListarContenidoCarpetaNombre("juan.perez", "Reportes")
 ListarContenidoCarpetaNombre <- function(usuario, nombre_carpeta) {
   carpeta_id <- ObtenerIdCarpeta(usuario, nombre_carpeta)
-  ListarContenidoCarpetaPorId(usuario, carpeta_id)
+  ListarContenidoCarpetaId(usuario, carpeta_id)
 }
 
 #' @title ListarContenidoCarpetaId
@@ -378,7 +378,7 @@ ListarContenidoCarpetaNombre <- function(usuario, nombre_carpeta) {
 #' @param carpeta_id ID de la carpeta.
 #' @return Tibble con columnas: name, type, id.
 #' @examples
-#' # df <- ListarContenidoCarpetaPorId("juan.perez", "0123ABC...")
+#' # df <- ListarContenidoCarpetaId("juan.perez", "0123ABC...")
 ListarContenidoCarpetaId <- function(usuario, carpeta_id) {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
