@@ -476,9 +476,10 @@ DescargarArchivoId <- function(archivo_id, usuario) {
 #' @param usuario Alias del usuario sin dominio.
 #' @return Vector de caracteres con los nombres de hojas del Excel.
 #' @examples
+#' # tmp <- DescargarArchivoId("ABC123...", "juan.perez")
 #' # hojas <- ListarHojasExcelOneDrive("ABC123...", "juan.perez")
 ListarHojasExcelOneDrive <- function(archivo_id, usuario) {
-  ruta <- DescargarArchivoPorId(archivo_id, usuario)
+  ruta <- DescargarArchivoId(archivo_id, usuario)
   on.exit({ if (file.exists(ruta)) file.remove(ruta) }, add = TRUE)
   readxl::excel_sheets(ruta)
 }
@@ -490,9 +491,10 @@ ListarHojasExcelOneDrive <- function(archivo_id, usuario) {
 #' @param ... Argumentos adicionales para readxl::read_excel.
 #' @return Un tibble/data.frame con los datos leídos.
 #' @examples
+#' # tmp <- DescargarArchivoId("ABC123...", "juan.perez")
 #' # df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 1)
 LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
-  ruta <- DescargarArchivoPorId(archivo_id, usuario)
+  ruta <- DescargarArchivoId(archivo_id, usuario)
   on.exit({ if (file.exists(ruta)) file.remove(ruta) }, add = TRUE)
   readxl::read_excel(ruta, ...)
 }
