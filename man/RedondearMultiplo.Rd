@@ -9,13 +9,16 @@ RedondearMultiplo(x, multiple)
 \arguments{
 \item{x}{Un número. Valor que se desea redondear.}
 
-\item{multiple}{Un número. Múltiplo al que se redondeará el valor de \code{x}.}
+\item{multiple}{Un número. Múltiplo al que se redondeará el valor de \code{x}. Debe ser distinto de 0.}
 }
 \value{
 El número redondeado al múltiplo más cercano del valor especificado en \code{multiple}.
 }
 \description{
 La función redondea un número al múltiplo más cercano de un valor especificado, similar a `REDOND.MULT` en Excel.
+}
+\details{
+Si \code{multiple} es 0, la función lanza un error.
 }
 \examples{
 RedondearMultiplo(453, 100) # Devuelve 500
