@@ -34,8 +34,8 @@ PrimerDia <- function(x, uni = "month") {
 #' @return Un vector de cadenas de texto que representa las fechas en el formato especificado.
 #'
 #' @examples
-#' FechaTexto(as.Date(c("2023-10-15", "2022-05-22")))
-#' FechaTexto(as.Date(c("2023-10-15", "2022-05-22")), dia_nombre = FALSE)
+#' FechaTexto(as.Date("2023-10-15"), dia = TRUE)
+#' FechaTexto(as.Date("2023-10-15"), dia = TRUE, dia_nombre = FALSE)
 #' @export
 FechaTexto <- function(x, dia = TRUE, dia_nombre = TRUE, dia_nom_abr = TRUE,
                        mes = TRUE, mes_abr = TRUE, anho = TRUE,
@@ -72,7 +72,18 @@ FechaTexto <- function(x, dia = TRUE, dia_nombre = TRUE, dia_nom_abr = TRUE,
   d <- ifelse(dia, lubridate::day(x), NA)
 
   # Construcción del resultado
-  res <- paste(dn, paste(m, y, sep = ifelse(sep_texto, " de ", "")), sep = ifelse(sep_texto, ", ", ""))
+  construir <- function(dn, d, m, y) {
+    partes_fecha <- c()
+    if (!is.na(d)) partes_fecha <- c(partes_fecha, d)
+    if (!is.na(m)) partes_fecha <- c(partes_fecha, m)
+    if (!is.na(y)) partes_fecha <- c(partes_fecha, y)
+    fecha_txt <- paste(partes_fecha, collapse = ifelse(sep_texto, ' de ', ''))
+    partes_totales <- c()
+    if (!is.na(dn)) partes_totales <- c(partes_totales, dn)
+    if (fecha_txt != '') partes_totales <- c(partes_totales, fecha_txt)
+    paste(partes_totales, collapse = ifelse(sep_texto && length(partes_totales) > 1, ', ', ''))
+  }
+  res <- mapply(construir, dn, d, m, y, USE.NAMES = FALSE)
 
   # Retornar el resultado
   return(res)
