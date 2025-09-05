@@ -42,6 +42,6 @@ Un vector de cadenas de texto que representa las fechas en el formato especifica
 Esta función convierte una fecha en un formato de texto personalizado, permitiendo seleccionar qué partes de la fecha mostrar (día, mes, año).
 }
 \examples{
-FechaTexto(as.Date(c("2023-10-15", "2022-05-22")))
-FechaTexto(as.Date(c("2023-10-15", "2022-05-22")), dia_nombre = FALSE)
+FechaTexto(as.Date("2023-10-15"), dia = TRUE)
+FechaTexto(as.Date("2023-10-15"), dia = TRUE, dia_nombre = FALSE)
 }
