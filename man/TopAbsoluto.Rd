@@ -19,11 +19,11 @@ TopAbsoluto(
 
 \item{var_recode}{Variable que se desea recodificar. Se pasa sin comillas.}
 
-\item{var_top}{Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.}
+\item{var_top}{Variable a partir de la cual se calcularán las frecuencias o la función de resumen. Se pasa sin comillas.}
 
 \item{fun_Top}{La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).}
 
-\item{n}{El número mÃ¡ximo de categorías principales a conservar (predeterminado: 10).}
+\item{n}{El número máximo de categorías principales a conservar (predeterminado: 10).}
 
 \item{nom_var}{El nombre para la nueva variable recodificada.}
 

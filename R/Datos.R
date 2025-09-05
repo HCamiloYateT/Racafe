@@ -540,9 +540,9 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.
 #' @param var_recode Variable que se desea recodificar. Se pasa sin comillas.
-#' @param var_top Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.
+#' @param var_top Variable a partir de la cual se calcularán las frecuencias o la función de resumen. Se pasa sin comillas.
 #' @param fun_Top La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).
-#' @param n El número mÃ¡ximo de categorías principales a conservar (predeterminado: 10).
+#' @param n El número máximo de categorías principales a conservar (predeterminado: 10).
 #' @param nom_var El nombre para la nueva variable recodificada.
 #' @param lab_recodificar El nombre o etiqueta para las categorías recodificadas (predeterminado: "OTROS").
 #' @return El conjunto de datos con la variable recodificada según las categorías principales y las categorías recodificadas.
@@ -561,7 +561,7 @@ TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n = 10, nom_var, lab
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.
 #' @param var_recode Variable que se desea recodificar. Se pasa sin comillas.
-#' @param var_top Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.
+#' @param var_top Variable a partir de la cual se calcularán las frecuencias o la función de resumen. Se pasa sin comillas.
 #' @param fun_Top La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).
 #' @param pct_min El porcentaje mínimo necesario para considerar una categoría principal (predeterminado: 0.05).
 #' @param nom_var El nombre para la nueva variable recodificada.
