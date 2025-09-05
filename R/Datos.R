@@ -16,7 +16,7 @@
 #' @return Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
 #' @export
 
-ConsultaSistema <- function(bd, uid = uid = Sys.getenv("SYS_UID"), pwd = pwd = Sys.getenv("SYS_PWD"), query, server = "172.16.19.21", port = 1433) {
+ConsultaSistema <- function(bd, uid = Sys.getenv("SYS_UID"), pwd = Sys.getenv("SYS_PWD"), query, server = "172.16.19.21", port = 1433) {
 
   # Asigna el nombre de la base de datos en función del valor de `bd`
   base <- dplyr::case_when(
