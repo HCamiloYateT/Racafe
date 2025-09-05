@@ -137,16 +137,18 @@ Unicos <- function(x) {
 
 #' @title Verifica si un valor es NULL, NA o una cadena vacía
 #' @description Esta función evalúa un valor y determina si es NULL, NA o una cadena vacía ("").
-#' @param x Un valor a verificar.
-#' @return Un valor lógico: TRUE si el valor es NULL, NA o "", de lo contrario FALSE.
+#' @param x Valor o vector de valores a verificar.
+#' @return Un valor lógico: `TRUE` si `x` es `NULL` o si algún elemento es `NA` o una cadena vacía
+#' (tras aplicar `trimws`), de lo contrario `FALSE`.
 #' @examples
-#' es_vacio(NULL)    # TRUE
-#' es_vacio(NA)      # TRUE
-#' es_vacio("")      # TRUE
-#' es_vacio("texto") # FALSE
+#' EsVacio(NULL)              # TRUE
+#' EsVacio(c(NA, ""))        # TRUE
+#' EsVacio(c("texto", NA))   # TRUE
+#' EsVacio(c(" ", "texto")) # TRUE
+#' EsVacio(c("a", "b"))     # FALSE
 #' @export
 EsVacio <- function(x) {
-  is.null(x) || is.na(x) || x == ""
+  is.null(x) || any(is.na(x) | trimws(x) == "")
 }
 
 #' Verificar si un valor es un entero positivo
