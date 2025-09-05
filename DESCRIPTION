@@ -36,6 +36,10 @@ Imports:
     RMySQL,
     openxlsx2,
     readxl,
+    httr,
+    readxl,
+    openxlsx2,
+    RMySQL,
     tibble,
     stats,
     utils

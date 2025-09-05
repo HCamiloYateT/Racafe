@@ -174,6 +174,7 @@ Consulta <- function(consulta) {
 #' @return Cadena con el token de acceso.
 #' @examples
 #' # token <- ObtenerTokenAcceso()
+#' @export
 ObtenerTokenAcceso <- function() {
   # Validaciones mínimas de configuración
   if (!exists("config") || is.null(config$ms_graph)) {
@@ -213,6 +214,7 @@ ObtenerTokenAcceso <- function() {
 #' @return Objeto de cabeceras para usar con httr.
 #' @examples
 #' # headers <- CabecerasGraph()
+#' @export
 CabecerasGraph <- function() {
   token <- ObtenerTokenAcceso()
   httr::add_headers(
@@ -227,6 +229,7 @@ CabecerasGraph <- function() {
 #' @return Cadena con el identificador de la unidad (drive id) del usuario.
 #' @examples
 #' # drive_id <- ObtenerIdUnidad("hcyate")
+#' @export
 ObtenerIdDrive <- function(usuario) {
   stopifnot(is.character(usuario), length(usuario) == 1)
   headers <- CabecerasGraph()
@@ -249,6 +252,7 @@ ObtenerIdDrive <- function(usuario) {
 #' @return Objeto workbook de openxlsx2.
 #' @examples
 #' # wb <- CargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx")
+#' @export
 CargarExcelDesdeOneDrive <- function(usuario, ruta, archivo) {
   stopifnot(is.character(usuario), is.character(ruta), is.character(archivo))
   headers <- CabecerasGraph()
@@ -288,6 +292,7 @@ CargarExcelDesdeOneDrive <- function(usuario, ruta, archivo) {
 #' @return TRUE si la descarga fue exitosa, en caso contrario lanza error.
 #' @examples
 #' # ok <- DescargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx", "informe_local")
+#' @export
 DescargarExcelDesdeOneDrive <- function(usuario, ruta, archivo, nombre_salida) {
   stopifnot(is.character(usuario), is.character(ruta), is.character(archivo), is.character(nombre_salida))
   headers <- CabecerasGraph()
@@ -319,6 +324,7 @@ DescargarExcelDesdeOneDrive <- function(usuario, ruta, archivo, nombre_salida) {
 #' @return Vector de caracteres con nombres de carpetas.
 #' @examples
 #' # carpetas <- ListarCarpetas("juan.perez")
+#' @export
 ListarCarpetas <- function(usuario) {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -343,6 +349,7 @@ ListarCarpetas <- function(usuario) {
 #' @return Cadena con el ID de la carpeta si existe; en caso contrario, error.
 #' @examples
 #' # carpeta_id <- ObtenerIdCarpeta("juan.perez", "Reportes")
+#' @export
 ObtenerIdCarpeta <- function(usuario, nombre_carpeta) {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -366,10 +373,11 @@ ObtenerIdCarpeta <- function(usuario, nombre_carpeta) {
 #' @param nombre_carpeta Nombre de la carpeta.
 #' @return Tibble con columnas: name, type, id.
 #' @examples
-#' # df <- ListarContenidoCarpetaPorNombre("juan.perez", "Reportes")
+#' @export
+#' # df <- ListarContenidoCarpetaNombre("juan.perez", "Reportes")
 ListarContenidoCarpetaNombre <- function(usuario, nombre_carpeta) {
   carpeta_id <- ObtenerIdCarpeta(usuario, nombre_carpeta)
-  ListarContenidoCarpetaPorId(usuario, carpeta_id)
+  ListarContenidoCarpetaId(usuario, carpeta_id)
 }
 
 #' @title ListarContenidoCarpetaId
@@ -378,7 +386,8 @@ ListarContenidoCarpetaNombre <- function(usuario, nombre_carpeta) {
 #' @param carpeta_id ID de la carpeta.
 #' @return Tibble con columnas: name, type, id.
 #' @examples
-#' # df <- ListarContenidoCarpetaPorId("juan.perez", "0123ABC...")
+#' # df <- ListarContenidoCarpetaId("juan.perez", "0123ABC...")
+#' @export
 ListarContenidoCarpetaId <- function(usuario, carpeta_id) {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -408,6 +417,7 @@ ListarContenidoCarpetaId <- function(usuario, carpeta_id) {
 #' @return Lista de listas con elementos: name, type = "File", id, path.
 #' @examples
 #' # lst <- ListarContenidoCarpetaRecursivo("juan.perez", "0123ABC...")
+#' @export
 ListarContenidoCarpetaRecursivo <- function(usuario, carpeta_id, ruta_padre = "") {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -443,6 +453,7 @@ ListarContenidoCarpetaRecursivo <- function(usuario, carpeta_id, ruta_padre = ""
 #' @return Tibble con columnas: name, type, id, path.
 #' @examples
 #' # df <- ListarTodoContenidoCarpeta("juan.perez", "0123ABC...")
+#' @export
 ListarTodoContenidoCarpeta <- function(usuario, carpeta_id) {
   elementos <- ListarContenidoCarpetaRecursivo(usuario, carpeta_id)
   tibble::as_tibble(do.call(rbind, lapply(elementos, as.data.frame)))
@@ -455,6 +466,7 @@ ListarTodoContenidoCarpeta <- function(usuario, carpeta_id) {
 #' @return Ruta del archivo temporal creado.
 #' @examples
 #' # tmp <- DescargarArchivoId("ABC123...", "juan.perez")
+#' @export
 DescargarArchivoId <- function(archivo_id, usuario) {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -476,9 +488,11 @@ DescargarArchivoId <- function(archivo_id, usuario) {
 #' @param usuario Alias del usuario sin dominio.
 #' @return Vector de caracteres con los nombres de hojas del Excel.
 #' @examples
+#' # tmp <- DescargarArchivoId("ABC123...", "juan.perez")
 #' # hojas <- ListarHojasExcelOneDrive("ABC123...", "juan.perez")
+#' @export
 ListarHojasExcelOneDrive <- function(archivo_id, usuario) {
-  ruta <- DescargarArchivoPorId(archivo_id, usuario)
+  ruta <- DescargarArchivoId(archivo_id, usuario)
   on.exit({ if (file.exists(ruta)) file.remove(ruta) }, add = TRUE)
   readxl::excel_sheets(ruta)
 }
@@ -490,9 +504,11 @@ ListarHojasExcelOneDrive <- function(archivo_id, usuario) {
 #' @param ... Argumentos adicionales para readxl::read_excel.
 #' @return Un tibble/data.frame con los datos leídos.
 #' @examples
+#' # tmp <- DescargarArchivoId("ABC123...", "juan.perez")
 #' # df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 1)
+#' @export
 LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
-  ruta <- DescargarArchivoPorId(archivo_id, usuario)
+  ruta <- DescargarArchivoId(archivo_id, usuario)
   on.exit({ if (file.exists(ruta)) file.remove(ruta) }, add = TRUE)
   readxl::read_excel(ruta, ...)
 }
@@ -540,9 +556,9 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.
 #' @param var_recode Variable que se desea recodificar. Se pasa sin comillas.
-#' @param var_top Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.
+#' @param var_top Variable a partir de la cual se calcularán las frecuencias o la función de resumen. Se pasa sin comillas.
 #' @param fun_Top La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).
-#' @param n El número mÃ¡ximo de categorías principales a conservar (predeterminado: 10).
+#' @param n El número máximo de categorías principales a conservar (predeterminado: 10).
 #' @param nom_var El nombre para la nueva variable recodificada.
 #' @param lab_recodificar El nombre o etiqueta para las categorías recodificadas (predeterminado: "OTROS").
 #' @return El conjunto de datos con la variable recodificada según las categorías principales y las categorías recodificadas.
@@ -561,7 +577,7 @@ TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n = 10, nom_var, lab
 #'
 #' @param data El conjunto de datos en el cual se encuentra la variable a recodificar.
 #' @param var_recode Variable que se desea recodificar. Se pasa sin comillas.
-#' @param var_top Variable a partir de la cual se calcularÃ¡n las frecuencias o la función de resumen. Se pasa sin comillas.
+#' @param var_top Variable a partir de la cual se calcularán las frecuencias o la función de resumen. Se pasa sin comillas.
 #' @param fun_Top La función de resumen a aplicar en caso de no utilizar las frecuencias absolutas (por ejemplo, "mean", "sum", etc.).
 #' @param pct_min El porcentaje mínimo necesario para considerar una categoría principal (predeterminado: 0.05).
 #' @param nom_var El nombre para la nueva variable recodificada.
@@ -617,30 +633,32 @@ AdicionarBotones <- function(tabla, botones) {
 #' Combina múltiples data frames en uno solo, ignorando aquellos que están vacíos.
 #'
 #' Esta función toma varios data frames como entrada y los combina en un solo
-#' data frame. Los data frames vacíos se ignoran para evitar errores al
-#' realizar la unión.
+#' data frame. Los valores `NULL` o que no sean data frame se ignoran, y los
+#' data frames vacíos se omiten para evitar errores al realizar la unión.
 #'
-#' @param ... Data frames a combinar. Puede recibir uno o más data frames.
+#' @param ... Objetos a combinar. Solo se utilizan los data frames con filas;
+#'            los valores `NULL` y objetos no válidos se ignoran.
 #'
 #' @return Un data frame que resulta de la combinación de los data frames
-#'         proporcionados. Si no hay data frames no vacíos, se devuelve un
-#'         data frame vacío.
+#'         proporcionados. Si no hay data frames válidos o no vacíos, se
+#'         devuelve un data frame vacío.
 #'
 #' @examples
 #' df1 <- data.frame(a = 1:3, b = letters[1:3])
 #' df2 <- data.frame(a = numeric(0), b = character(0))  # Data frame vacío
 #' df3 <- data.frame(a = 4:5, b = letters[4:5])
 #'
-#' # Combina df1 y df3, ignorando df2
-#' result <- bind_rows_na(df1, df2, df3)
+#' # Combina df1 y df3, ignorando df2 y otros valores no válidos
+#' result <- bind_rows_na(df1, df2, df3, NULL, "texto")
 #'
 #' @export
 bind_rows_na <- function(...) {
-  # Crear una lista de data frames a partir de los argumentos
+  # Crear una lista de objetos a partir de los argumentos
   df_list <- list(...)
 
-  # Filtrar solo aquellos data frames que tienen filas
-  df_list <- df_list[sapply(df_list, nrow) > 0]
+  # Conservar únicamente los data frames no vacíos
+  df_list <- Filter(is.data.frame, df_list)
+  df_list <- Filter(NROW, df_list)
 
   # Combinar los data frames filtrados
   dplyr::bind_rows(df_list)
