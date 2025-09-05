@@ -58,6 +58,11 @@ Moda <- function(x, na.rm = TRUE) {
     x <- x[!is.na(x)]
   }
 
+  # Si el vector está vacío después de eliminar NA, devolver NA
+  if (length(x) == 0) {
+    return(NA)
+  }
+
   # Calcular los valores únicos y determinar la frecuencia máxima
   ux <- unique(x)
   return(ux[which.max(tabulate(match(x, ux)))])
