@@ -3,6 +3,90 @@
 Este repositorio contiene un paquete de R creado específicamente para **Racafé**, el cual incluye una serie de funciones misceláneas diseñadas para facilitar y optimizar la creación de reportes. Las funciones incluidas permiten la generación de gráficos, cálculos de KPIs, manipulación de datos y otros procesos útiles en el contexto de análisis y reportes corporativos.
 ## Funciones del paquete
 
+### Conexión y escritura de bases
+- `ConectarBD()`: Establece una conexión a la base de datos usando variables de entorno.
+```r
+con <- ConectarBD()
+DBI::dbDisconnect(con)
+```
+- `EscribirDatos(df, tabla)`: Sobrescribe una tabla con el contenido de un `data.frame`.
+```r
+df <- data.frame(x = 1:3, y = letters[1:3])
+EscribirDatos(df, "mi_tabla")
+```
+- `AgregarDatos(df, tabla)`: Agrega filas de un `data.frame` a una tabla existente.
+```r
+df_nuevos <- data.frame(x = 4:6, y = letters[4:6])
+AgregarDatos(df_nuevos, "mi_tabla")
+```
+- `CargarDatos(tabla, condicion = NULL)`: Recupera datos de una tabla opcionalmente filtrando con una condición.
+```r
+df <- CargarDatos("mi_tabla")
+df_filtrado <- CargarDatos("mi_tabla", "x > 10")
+```
+- `Consulta(consulta)`: Ejecuta una consulta SQL arbitraria y retorna un `data.frame`.
+```r
+resultado <- Consulta("SELECT COUNT(*) AS n FROM mi_tabla")
+```
+
+### Integración con OneDrive/Microsoft Graph
+- `ObtenerTokenAcceso()`: Obtiene un token de acceso para la API de Microsoft Graph.
+```r
+token <- ObtenerTokenAcceso()
+```
+- `CabecerasGraph()`: Construye las cabeceras HTTP con el token Bearer.
+```r
+headers <- CabecerasGraph()
+```
+- `ObtenerIdDrive(usuario)`: Devuelve el identificador de OneDrive del usuario.
+```r
+drive_id <- ObtenerIdDrive("juan.perez")
+```
+- `CargarExcelDesdeOneDrive(usuario, ruta, archivo)`: Descarga un Excel y lo abre como `openxlsx2::wb_load`.
+```r
+wb <- CargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx")
+```
+- `DescargarExcelDesdeOneDrive(usuario, ruta, archivo, nombre_salida)`: Guarda localmente un Excel desde OneDrive.
+```r
+DescargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx", "informe_local")
+```
+- `ListarCarpetas(usuario)`: Lista las carpetas en la raíz del OneDrive del usuario.
+```r
+carpetas <- ListarCarpetas("juan.perez")
+```
+- `ObtenerIdCarpeta(usuario, nombre_carpeta)`: Obtiene el ID de una carpeta por nombre.
+```r
+carpeta_id <- ObtenerIdCarpeta("juan.perez", "Reportes")
+```
+- `ListarContenidoCarpetaNombre(usuario, nombre_carpeta)`: Lista archivos y carpetas dentro de una carpeta por nombre.
+```r
+df <- ListarContenidoCarpetaNombre("juan.perez", "Reportes")
+```
+- `ListarContenidoCarpetaId(usuario, carpeta_id)`: Lista archivos y carpetas dentro de una carpeta por ID.
+```r
+df <- ListarContenidoCarpetaId("juan.perez", "0123ABC...")
+```
+- `ListarContenidoCarpetaRecursivo(usuario, carpeta_id)`: Recorre una carpeta por ID de forma recursiva devolviendo una lista.
+```r
+lst <- ListarContenidoCarpetaRecursivo("juan.perez", "0123ABC...")
+```
+- `ListarTodoContenidoCarpeta(usuario, carpeta_id)`: Devuelve un tibble con todos los archivos de una carpeta de manera recursiva.
+```r
+df <- ListarTodoContenidoCarpeta("juan.perez", "0123ABC...")
+```
+- `DescargarArchivoId(archivo_id, usuario)`: Descarga un archivo de OneDrive a un temporal y retorna su ruta.
+```r
+tmp <- DescargarArchivoId("ABC123...", "juan.perez")
+```
+- `ListarHojasExcelOneDrive(archivo_id, usuario)`: Lista las hojas de un Excel alojado en OneDrive.
+```r
+hojas <- ListarHojasExcelOneDrive("ABC123...", "juan.perez")
+```
+- `LeerExcelDesdeOneDrive(archivo_id, usuario, ...)`: Lee un Excel de OneDrive con `readxl::read_excel`.
+```r
+df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 1)
+```
+
 ### Datos
 - `ConsultaSistema(bd, uid, pwd, query, server = "172.16.19.21", port = 1433)`: Ejecuta una consulta en SQL Server y devuelve un `data.frame` con nombres de columnas limpios.
 ```r
