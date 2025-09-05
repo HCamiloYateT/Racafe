@@ -174,6 +174,7 @@ Consulta <- function(consulta) {
 #' @return Cadena con el token de acceso.
 #' @examples
 #' # token <- ObtenerTokenAcceso()
+#' @export
 ObtenerTokenAcceso <- function() {
   # Validaciones mínimas de configuración
   if (!exists("config") || is.null(config$ms_graph)) {
@@ -213,6 +214,7 @@ ObtenerTokenAcceso <- function() {
 #' @return Objeto de cabeceras para usar con httr.
 #' @examples
 #' # headers <- CabecerasGraph()
+#' @export
 CabecerasGraph <- function() {
   token <- ObtenerTokenAcceso()
   httr::add_headers(
@@ -227,6 +229,7 @@ CabecerasGraph <- function() {
 #' @return Cadena con el identificador de la unidad (drive id) del usuario.
 #' @examples
 #' # drive_id <- ObtenerIdUnidad("hcyate")
+#' @export
 ObtenerIdDrive <- function(usuario) {
   stopifnot(is.character(usuario), length(usuario) == 1)
   headers <- CabecerasGraph()
@@ -249,6 +252,7 @@ ObtenerIdDrive <- function(usuario) {
 #' @return Objeto workbook de openxlsx2.
 #' @examples
 #' # wb <- CargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx")
+#' @export
 CargarExcelDesdeOneDrive <- function(usuario, ruta, archivo) {
   stopifnot(is.character(usuario), is.character(ruta), is.character(archivo))
   headers <- CabecerasGraph()
@@ -288,6 +292,7 @@ CargarExcelDesdeOneDrive <- function(usuario, ruta, archivo) {
 #' @return TRUE si la descarga fue exitosa, en caso contrario lanza error.
 #' @examples
 #' # ok <- DescargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx", "informe_local")
+#' @export
 DescargarExcelDesdeOneDrive <- function(usuario, ruta, archivo, nombre_salida) {
   stopifnot(is.character(usuario), is.character(ruta), is.character(archivo), is.character(nombre_salida))
   headers <- CabecerasGraph()
@@ -319,6 +324,7 @@ DescargarExcelDesdeOneDrive <- function(usuario, ruta, archivo, nombre_salida) {
 #' @return Vector de caracteres con nombres de carpetas.
 #' @examples
 #' # carpetas <- ListarCarpetas("juan.perez")
+#' @export
 ListarCarpetas <- function(usuario) {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -343,6 +349,7 @@ ListarCarpetas <- function(usuario) {
 #' @return Cadena con el ID de la carpeta si existe; en caso contrario, error.
 #' @examples
 #' # carpeta_id <- ObtenerIdCarpeta("juan.perez", "Reportes")
+#' @export
 ObtenerIdCarpeta <- function(usuario, nombre_carpeta) {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -366,6 +373,7 @@ ObtenerIdCarpeta <- function(usuario, nombre_carpeta) {
 #' @param nombre_carpeta Nombre de la carpeta.
 #' @return Tibble con columnas: name, type, id.
 #' @examples
+#' @export
 #' # df <- ListarContenidoCarpetaNombre("juan.perez", "Reportes")
 ListarContenidoCarpetaNombre <- function(usuario, nombre_carpeta) {
   carpeta_id <- ObtenerIdCarpeta(usuario, nombre_carpeta)
@@ -379,6 +387,7 @@ ListarContenidoCarpetaNombre <- function(usuario, nombre_carpeta) {
 #' @return Tibble con columnas: name, type, id.
 #' @examples
 #' # df <- ListarContenidoCarpetaId("juan.perez", "0123ABC...")
+#' @export
 ListarContenidoCarpetaId <- function(usuario, carpeta_id) {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -408,6 +417,7 @@ ListarContenidoCarpetaId <- function(usuario, carpeta_id) {
 #' @return Lista de listas con elementos: name, type = "File", id, path.
 #' @examples
 #' # lst <- ListarContenidoCarpetaRecursivo("juan.perez", "0123ABC...")
+#' @export
 ListarContenidoCarpetaRecursivo <- function(usuario, carpeta_id, ruta_padre = "") {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -443,6 +453,7 @@ ListarContenidoCarpetaRecursivo <- function(usuario, carpeta_id, ruta_padre = ""
 #' @return Tibble con columnas: name, type, id, path.
 #' @examples
 #' # df <- ListarTodoContenidoCarpeta("juan.perez", "0123ABC...")
+#' @export
 ListarTodoContenidoCarpeta <- function(usuario, carpeta_id) {
   elementos <- ListarContenidoCarpetaRecursivo(usuario, carpeta_id)
   tibble::as_tibble(do.call(rbind, lapply(elementos, as.data.frame)))
@@ -455,6 +466,7 @@ ListarTodoContenidoCarpeta <- function(usuario, carpeta_id) {
 #' @return Ruta del archivo temporal creado.
 #' @examples
 #' # tmp <- DescargarArchivoId("ABC123...", "juan.perez")
+#' @export
 DescargarArchivoId <- function(archivo_id, usuario) {
   headers <- CabecerasGraph()
   drive_id <- ObtenerIdUnidad(usuario)
@@ -477,6 +489,7 @@ DescargarArchivoId <- function(archivo_id, usuario) {
 #' @return Vector de caracteres con los nombres de hojas del Excel.
 #' @examples
 #' # hojas <- ListarHojasExcelOneDrive("ABC123...", "juan.perez")
+#' @export
 ListarHojasExcelOneDrive <- function(archivo_id, usuario) {
   ruta <- DescargarArchivoPorId(archivo_id, usuario)
   on.exit({ if (file.exists(ruta)) file.remove(ruta) }, add = TRUE)
@@ -491,6 +504,7 @@ ListarHojasExcelOneDrive <- function(archivo_id, usuario) {
 #' @return Un tibble/data.frame con los datos leídos.
 #' @examples
 #' # df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 1)
+#' @export
 LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
   ruta <- DescargarArchivoPorId(archivo_id, usuario)
   on.exit({ if (file.exists(ruta)) file.remove(ruta) }, add = TRUE)
