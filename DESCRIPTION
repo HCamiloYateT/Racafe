@@ -5,6 +5,8 @@ Version: 0.1.0
 Authors@R: 
     person("Camilo", "Yate", email = "hcyate@racafe.com",
            role = c("aut", "cre"))
+Author: Camilo Yate [aut, cre]
+Maintainer: Camilo Yate <hcyate@racafe.com>
 Description: Este paquete proporciona un conjunto de funciones utilitarias 
     diseñadas para facilitar el análisis de datos, visualización, 
     y tareas comunes en R. Incluye herramientas para formateo de números, 
@@ -28,7 +30,15 @@ Imports:
     shiny,
     colorspace,
     plotly,
-    magrittr
+    magrittr,
+    grDevices,
+    httr,
+    RMySQL,
+    openxlsx2,
+    readxl,
+    tibble,
+    stats,
+    utils
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
