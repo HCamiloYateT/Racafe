@@ -68,15 +68,17 @@ Moda <- function(x, na.rm = TRUE) {
 #' La función redondea un número al múltiplo más cercano de un valor especificado, similar a `REDOND.MULT` en Excel.
 #'
 #' @param x Un número. Valor que se desea redondear.
-#' @param multiple Un número. Múltiplo al que se redondeará el valor de \code{x}.
+#' @param multiple Un número. Múltiplo al que se redondeará el valor de \code{x}. Debe ser distinto de 0.
 #'
 #' @return El número redondeado al múltiplo más cercano del valor especificado en \code{multiple}.
+#' @details Si `multiple` es 0, la función lanza un error.
 #' @examples
 #' RedondearMultiplo(453, 100) # Devuelve 500
 #' RedondearMultiplo(1234, 50) # Devuelve 1250
 #'
 #' @export
 RedondearMultiplo <- function(x, multiple) {
+  stopifnot(multiple != 0)
   round(x / multiple) * multiple
 }
 
