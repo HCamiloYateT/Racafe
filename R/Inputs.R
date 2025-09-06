@@ -4,12 +4,18 @@
 #' @param label Etiqueta que describe el campo.
 #' @param value Valor inicial del input.
 #' @param dec Número de decimales a mostrar (por defecto 2).
-#' @param max Valor máximo permitido (por defecto NULL).
-#' @param min Valor mínimo permitido (por defecto NULL).
+#' @param max Valor máximo permitido. Para `type = "porcentaje"` el valor
+#'   por defecto es 100; en otros casos es `NULL`.
+#' @param min Valor mínimo permitido. Para `type = "porcentaje"` el valor
+#'   por defecto es 0; en otros casos es `NULL`.
 #' @param type Tipo de input: "dinero", "porcentaje" o "numero".
 #' @param label_col Ancho de la columna para la etiqueta (por defecto 6).
 #' @param input_col Ancho de la columna para el campo numérico (por defecto 6).
 #' @param width Ancho del control `autonumericInput` (por defecto "100%").
+#'
+#' @details
+#' Cuando `type = "porcentaje"`, el rango permitido por defecto es de 0 a 100.
+#' Estos límites pueden modificarse mediante los argumentos `min` y `max`.
 #'
 #' @return Un objeto de tipo `fluidRow` con el diseño del input.
 #' @examples
@@ -30,11 +36,19 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
   if (!is.null(min)) stopifnot(is.numeric(min))
 
   # Configuración específica según el tipo de input
-  config <- switch(type,
-                   dinero = list(currencySymbol = "$", decimalPlaces = dec, max = max, min = min),
-                   porcentaje = list(currencySymbol = "%", currencySymbolPlacement = "s", decimalPlaces = 2, max = 100, min = 0),
-                   numero = list(currencySymbol = NULL, decimalPlaces = dec, max = max, min = min),
-                   stop("Tipo de input no soportado. Use 'dinero', 'porcentaje' o 'numero'."))
+  config <- switch(
+    type,
+    dinero = list(currencySymbol = "$", decimalPlaces = dec, max = max, min = min),
+    porcentaje = list(
+      currencySymbol = "%",
+      currencySymbolPlacement = "s",
+      decimalPlaces = 2,
+      max = if (is.null(max)) 100 else max,
+      min = if (is.null(min)) 0 else min
+    ),
+    numero = list(currencySymbol = NULL, decimalPlaces = dec, max = max, min = min),
+    stop("Tipo de input no soportado. Use 'dinero', 'porcentaje' o 'numero'.")
+  )
 
   # Validaciones de rangos
   if (!is.null(config$min) && !is.null(config$max)) {
