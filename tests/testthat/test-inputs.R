@@ -11,3 +11,9 @@ test_that("InputNumerico aplica límites", {
   expect_error(InputNumerico("id", "label", 5, min = 6), "config\\$min <= value")
   expect_error(InputNumerico("id", "label", 5, min = 6, max = 3), "config\\$min <= config\\$max")
 })
+
+test_that("pick_opt maneja cho vacío sin valores negativos", {
+  opts <- pick_opt(character(0))
+  val <- as.numeric(sub("count > ", "", opts$`selected-text-format`))
+  expect_true(val >= 0)
+})
