@@ -6,10 +6,13 @@
 #' @return Una cadena de texto que contiene \code{<br/>} repetido \code{n} veces.
 #' @examples
 #' Saltos(3)  # Devuelve "<br/><br/><br/>"
+#' try(Saltos(-1))
+#' try(Saltos(1.5))
 #' @importFrom htmltools HTML
 #' @importFrom magrittr %>%
 #' @export
 Saltos <- function(n = 1) {
+  stopifnot(n >= 0, n == as.integer(n))
   htmltools::HTML(strrep('<br/>', n))
 }
 
@@ -21,8 +24,11 @@ Saltos <- function(n = 1) {
 #' @return Una cadena de texto que contiene \code{&emsp;} repetido \code{n} veces.
 #' @examples
 #' Espacios(4)  # Devuelve "&emsp;&emsp;&emsp;&emsp;"
+#' try(Espacios(-1))
+#' try(Espacios(1.2))
 #' @export
 Espacios <- function(n = 1) {
+  stopifnot(n >= 0, n == as.integer(n))
   htmltools::HTML(strrep('&emsp;', n))
 }
 

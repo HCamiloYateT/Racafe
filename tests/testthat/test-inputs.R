@@ -29,3 +29,10 @@ test_that("InputNumerico respeta rangos personalizados de porcentaje", {
   # Solo min personalizado
   expect_error(InputNumerico("id", "label", 5, type = "porcentaje", min = 10), "config\\$min <= value")
 })
+
+test_that("pick_opt maneja cho vacío sin valores negativos", {
+  opts <- pick_opt(character(0))
+  val <- as.numeric(sub("count > ", "", opts$`selected-text-format`))
+  expect_true(val >= 0)
+})
+

@@ -228,7 +228,7 @@ CabecerasGraph <- function() {
 #' @param usuario Cadena con el alias o correo (sin dominio) del usuario.
 #' @return Cadena con el identificador de la unidad (drive id) del usuario.
 #' @examples
-#' # drive_id <- ObtenerIdUnidad("hcyate")
+#' # drive_id <- ObtenerIdDrive("hcyate")
 #' @export
 ObtenerIdDrive <- function(usuario) {
   stopifnot(is.character(usuario), length(usuario) == 1)
@@ -256,7 +256,7 @@ ObtenerIdDrive <- function(usuario) {
 CargarExcelDesdeOneDrive <- function(usuario, ruta, archivo) {
   stopifnot(is.character(usuario), is.character(ruta), is.character(archivo))
   headers <- CabecerasGraph()
-  drive_id <- ObtenerIdUnidad(usuario)
+  drive_id <- ObtenerIdDrive(usuario)
 
   # Construcción de URL cuidando codificación por segmentos
   path_full <- paste(ruta, archivo, sep = "/")
@@ -296,7 +296,7 @@ CargarExcelDesdeOneDrive <- function(usuario, ruta, archivo) {
 DescargarExcelDesdeOneDrive <- function(usuario, ruta, archivo, nombre_salida) {
   stopifnot(is.character(usuario), is.character(ruta), is.character(archivo), is.character(nombre_salida))
   headers <- CabecerasGraph()
-  drive_id <- ObtenerIdUnidad(usuario)
+  drive_id <- ObtenerIdDrive(usuario)
 
   path_full <- paste(ruta, archivo, sep = "/")
   url <- paste0(
@@ -327,7 +327,7 @@ DescargarExcelDesdeOneDrive <- function(usuario, ruta, archivo, nombre_salida) {
 #' @export
 ListarCarpetas <- function(usuario) {
   headers <- CabecerasGraph()
-  drive_id <- ObtenerIdUnidad(usuario)
+  drive_id <- ObtenerIdDrive(usuario)
   url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/root/children")
   resp <- httr::GET(url, headers)
   if (httr::http_error(resp)) {
@@ -352,7 +352,7 @@ ListarCarpetas <- function(usuario) {
 #' @export
 ObtenerIdCarpeta <- function(usuario, nombre_carpeta) {
   headers <- CabecerasGraph()
-  drive_id <- ObtenerIdUnidad(usuario)
+  drive_id <- ObtenerIdDrive(usuario)
   url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/root/children")
   resp <- httr::GET(url, headers)
   if (httr::http_error(resp)) {
@@ -390,7 +390,7 @@ ListarContenidoCarpetaNombre <- function(usuario, nombre_carpeta) {
 #' @export
 ListarContenidoCarpetaId <- function(usuario, carpeta_id) {
   headers <- CabecerasGraph()
-  drive_id <- ObtenerIdUnidad(usuario)
+  drive_id <- ObtenerIdDrive(usuario)
   url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/items/", carpeta_id, "/children")
   resp <- httr::GET(url, headers)
   if (httr::http_error(resp)) {
@@ -420,7 +420,7 @@ ListarContenidoCarpetaId <- function(usuario, carpeta_id) {
 #' @export
 ListarContenidoCarpetaRecursivo <- function(usuario, carpeta_id, ruta_padre = "") {
   headers <- CabecerasGraph()
-  drive_id <- ObtenerIdUnidad(usuario)
+  drive_id <- ObtenerIdDrive(usuario)
   url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/items/", carpeta_id, "/children")
   resp <- httr::GET(url, headers)
   if (httr::http_error(resp)) {
@@ -469,7 +469,7 @@ ListarTodoContenidoCarpeta <- function(usuario, carpeta_id) {
 #' @export
 DescargarArchivoId <- function(archivo_id, usuario) {
   headers <- CabecerasGraph()
-  drive_id <- ObtenerIdUnidad(usuario)
+  drive_id <- ObtenerIdDrive(usuario)
   url <- paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/items/", archivo_id, "/content")
 
   tmp <- tempfile(fileext = ".xlsx")

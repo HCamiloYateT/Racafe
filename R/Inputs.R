@@ -104,7 +104,7 @@ pick_opt <- function(cho, fem = TRUE) {
     `actions-box` = TRUE,                       # Muestra botones de selección/deselección
     `deselect-all-text` = paste("Deseleccionar", tod), # Texto para deseleccionar todos
     `select-all-text` = paste("Seleccionar", tod),     # Texto para seleccionar todos
-    `selected-text-format` = paste0("count > ", length(cho) - 1), # Formato para mostrar la cantidad seleccionada
+    `selected-text-format` = paste0("count > ", max(length(cho) - 1, 0)), # Formato para mostrar la cantidad seleccionada
     `count-selected-text` = tod,                # Texto mostrado al seleccionar todas las opciones
     `none-selected-text` = ""                   # Texto cuando no hay opciones seleccionadas
   )
