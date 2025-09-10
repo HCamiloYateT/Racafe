@@ -67,7 +67,7 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
   # Construcción del componente visual
   res <- shiny::fluidRow(
     shiny::column(label_col, FormatearTexto(label, tamano_pct = 0.8)),
-    shiny::column(input_col, shiny::autonumericInput(
+    shiny::column(input_col, shinyWidgets::autonumericInput(
       id,
       label = NULL,
       value = value,
