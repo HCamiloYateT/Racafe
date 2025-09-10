@@ -2,7 +2,7 @@
 #'
 #' @param id Identificador único del input.
 #' @param label Etiqueta que describe el campo.
-#' @param value Valor inicial del input.
+#' @param value Valor inicial del input. Puede ser `NULL` o `NA`.
 #' @param dec Número de decimales a mostrar (por defecto 2).
 #' @param max Valor máximo permitido. Para `type = "porcentaje"` el valor
 #'   por defecto es 100; en otros casos es `NULL`.
@@ -16,6 +16,7 @@
 #' @details
 #' Cuando `type = "porcentaje"`, el rango permitido por defecto es de 0 a 100.
 #' Estos límites pueden modificarse mediante los argumentos `min` y `max`.
+#' Si `value` es `NULL` o `NA`, las validaciones de rango se omiten.
 #'
 #' @return Un objeto de tipo `fluidRow` con el diseño del input.
 #' @export
@@ -32,7 +33,7 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
   type <- match.arg(type, c("dinero", "porcentaje", "numero"))
 
   # Validaciones de tipo de datos
-  stopifnot(is.numeric(value))
+  stopifnot(is.numeric(value) || is.null(value) || (length(value) == 1 && is.na(value)))
   if (!is.null(max)) stopifnot(is.numeric(max))
   if (!is.null(min)) stopifnot(is.numeric(min))
 
@@ -52,13 +53,15 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
   )
 
   # Validaciones de rangos
-  if (!is.null(config$min) && !is.null(config$max)) {
-    stopifnot(config$min <= config$max)
-    stopifnot(config$min <= value, value <= config$max)
-  } else if (!is.null(config$min)) {
-    stopifnot(config$min <= value)
-  } else if (!is.null(config$max)) {
-    stopifnot(value <= config$max)
+  if (!is.null(value) && !(length(value) == 1 && is.na(value))) {
+    if (!is.null(config$min) && !is.null(config$max)) {
+      stopifnot(config$min <= config$max)
+      stopifnot(config$min <= value, value <= config$max)
+    } else if (!is.null(config$min)) {
+      stopifnot(config$min <= value)
+    } else if (!is.null(config$max)) {
+      stopifnot(value <= config$max)
+    }
   }
 
   # Construcción del componente visual
