@@ -203,6 +203,7 @@ EsNumero <- function(cadena) {
 #' EsNumTelefono("3001234567") # TRUE
 #' EsNumTelefono("6123456789") # TRUE
 #' EsNumTelefono("1234567890") # FALSE
+#' @export
 EsNumTelefono <- function(tel) {
   grepl("^[36]\\d{9}$", tel)
 }
