@@ -18,6 +18,7 @@
 #' Estos límites pueden modificarse mediante los argumentos `min` y `max`.
 #'
 #' @return Un objeto de tipo `fluidRow` con el diseño del input.
+#' @export
 #' @examples
 #' # Ejemplo para un input de dinero
 #' InputNumerico("dinero_input", "Monto:", 1000, type = "dinero")
