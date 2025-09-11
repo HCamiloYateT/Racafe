@@ -22,6 +22,8 @@ DefinirFormato <- function(formato) {
   } else if (formato == "numero") {
     scales::label_number(accuracy = 0.01, big.mark = ",")
   } else if (formato == "dinero") {
+    scales::label_number(accuracy = 1, prefix = "$", big.mark = ",")
+  } else if (formato == "dolares") {
     scales::label_number(accuracy = 0.01, prefix = "$", big.mark = ",")
   } else if (formato == "miles") {
     scales::label_number(accuracy = 0.01, scale = 1/1000, prefix = "$", big.mark = ",")
