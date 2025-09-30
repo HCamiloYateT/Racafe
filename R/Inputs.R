@@ -107,6 +107,8 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
 #' @return Un objeto tagList de Shiny que contiene el CSS personalizado y el
 #'   pickerInput configurado con todas las opciones especificadas.
 #'
+#' @importFrom shinyWidgets pickerInput pickerOptions
+#'
 #' @examples
 #' # Ejemplo básico con opciones de texto
 #' ListaDesplegable(
@@ -213,7 +215,7 @@ ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices,
   res <- tagList(
     custom_css,
     div(class = "custom-picker",
-        pickerInput(
+        shinyWidgets::pickerInput(
           inputId = final_id,
           label = label,
           choices = choices,
