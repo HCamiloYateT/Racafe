@@ -242,6 +242,10 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```r
 # InputNumerico("monto", "Monto:", 1000, type = "dinero")
 ```
+- `ListaDesplegable(id, label, choices, ...)`: Genera un menú desplegable compatible con `shiny` utilizando estilos corporativos.
+```r
+# ListaDesplegable("producto", "Producto:", choices = c("Café", "Azúcar", "Cacao"))
+```
 - `pick_opt(cho, fem = TRUE)`: Genera opciones personalizadas para `selectPicker`.
 ```r
 # pick_opt(letters[1:5])
