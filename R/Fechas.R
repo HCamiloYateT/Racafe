@@ -108,6 +108,11 @@ EdadCumplida <- function(from, to) {
   from <- as.Date(from)
   to <- as.Date(to)
 
+  # Validar que la fecha final no sea anterior a la inicial
+  if (to < from) {
+    stop("`to` debe ser mayor o igual que `from`")
+  }
+
   # Calcular la diferencia en años utilizando un intervalo
   int <- lubridate::interval(from, to)
   age <- lubridate::time_length(int, "years")

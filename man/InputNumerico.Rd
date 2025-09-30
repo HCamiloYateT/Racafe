@@ -22,13 +22,13 @@ InputNumerico(
 
 \item{label}{Etiqueta que describe el campo.}
 
-\item{value}{Valor inicial del input.}
+\item{value}{Valor inicial del input. Puede ser `NULL` o `NA`.}
 
 \item{dec}{Número de decimales a mostrar (por defecto 2).}
 
-\item{max}{Valor máximo permitido (por defecto NULL).}
+\item{max}{Valor máximo permitido. Para `type = "porcentaje"` el valor por defecto es 100; en otros casos es `NULL`.}
 
-\item{min}{Valor mínimo permitido (por defecto NULL).}
+\item{min}{Valor mínimo permitido. Para `type = "porcentaje"` el valor por defecto es 0; en otros casos es `NULL`.}
 
 \item{type}{Tipo de input: "dinero", "porcentaje" o "numero".}
 
@@ -37,6 +37,9 @@ InputNumerico(
 \item{input_col}{Ancho de la columna para el campo numérico (por defecto 6).}
 
 \item{width}{Ancho del control `autonumericInput` (por defecto "100%").}
+}
+\details{
+Cuando `type = "porcentaje"`, el rango permitido por defecto es de 0 a 100. Estos límites pueden modificarse mediante los argumentos `min` y `max`. Si `value` es `NULL` o `NA`, las validaciones de rango se omiten.
 }
 \value{
 Un objeto de tipo `fluidRow` con el diseño del input.

@@ -20,5 +20,9 @@ Un tibble/data.frame con los datos leídos.
 Descarga un archivo Excel (por ID) y lo carga con readxl::read_excel con los argumentos adicionales provistos.
 }
 \examples{
+<<<<<<< HEAD
+=======
+# tmp <- DescargarArchivoId("ABC123...", "juan.perez")
+>>>>>>> 16711784c5872c0621e7a759c364100e04813725
 # df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 1)
 }
