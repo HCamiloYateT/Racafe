@@ -107,6 +107,8 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
 #' @return Un objeto tagList de Shiny que contiene el CSS personalizado y el
 #'   pickerInput configurado con todas las opciones especificadas.
 #'
+#' @importFrom shinyWidgets pickerInput pickerOptions
+#'
 #' @examples
 #' # Ejemplo básico con opciones de texto
 #' ListaDesplegable(
@@ -152,9 +154,8 @@ ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices,
   nin <- ifelse(fem, "Ninguna", "Ninguno")
   sel <- ifelse(fem, "seleccionadas", "seleccionados")
 
-<<<<<<< HEAD
   # Opciones del picker
-  picker_options <- pickerOptions(
+  picker_options <- shinyWidgets::pickerOptions(
     liveSearch            = TRUE,
     liveSearchNormalize   = TRUE,
     liveSearchPlaceholder = "Buscar...",
@@ -167,17 +168,6 @@ ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices,
     showTick              = TRUE,
     width                 = "100%",
     style                 = "btn-default"
-=======
-  # Lista de opciones configurables para selectPicker
-  res <- list(
-    `live-search` = TRUE,                       # Habilita la búsqueda en vivo
-    `actions-box` = TRUE,                       # Muestra botones de selección/deselección
-    `deselect-all-text` = paste("Deseleccionar", tod), # Texto para deseleccionar todos
-    `select-all-text` = paste("Seleccionar", tod),     # Texto para seleccionar todos
-    `selected-text-format` = paste0("count > ", max(length(cho) - 1, 0)), # Formato para mostrar la cantidad seleccionada
-    `count-selected-text` = tod,                # Texto mostrado al seleccionar todas las opciones
-    `none-selected-text` = ""                   # Texto cuando no hay opciones seleccionadas
->>>>>>> 16711784c5872c0621e7a759c364100e04813725
   )
 
   # CSS personalizado
@@ -225,7 +215,7 @@ ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices,
   res <- tagList(
     custom_css,
     div(class = "custom-picker",
-        pickerInput(
+        shinyWidgets::pickerInput(
           inputId = final_id,
           label = label,
           choices = choices,
