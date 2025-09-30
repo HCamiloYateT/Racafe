@@ -15,10 +15,10 @@
 #' @examples
 #' # Ejemplo para un input de dinero
 #' InputNumerico("dinero_input", "Monto:", 1000, type = "dinero")
-#' 
+#'
 #' # Ejemplo para un input de porcentaje
 #' InputNumerico("porcentaje_input", "Porcentaje:", 50, type = "porcentaje")
-#' 
+#'
 #' # Ejemplo para un input numérico general
 #' InputNumerico("numero_input", "Cantidad:", 10, max = 100, min = 0, dec = 3, type = "numero")
 InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, type = "numero", label_col = 6, input_col = 6, width = "100%") {
@@ -65,36 +65,146 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
   return(res)
 }
 
-#' Genera opciones para selectPicker
+#' Lista Desplegable Personalizada
 #'
-#' Esta función construye una lista de opciones personalizadas para el widget `selectPicker` de la librería `shinyWidgets`.
-#' Permite configurar opciones de selección masiva y formato de texto seleccionado.
+#' @title Lista Desplegable con Búsqueda y Selección Múltiple
+#' @description Crea un input de selección múltiple personalizado con funcionalidades
+#'   de búsqueda en vivo, selección/deselección masiva y estilos CSS personalizados.
+#'   Incluye soporte para módulos de Shiny y textos dinámicos según género.
 #'
-#' @param cho Vector con las opciones del selector. Se utiliza para configurar límites del formato de selección.
-#' @param fem Lógico. Indica si el texto debe ser femenino ("Todas") o masculino ("Todos"). Por defecto, \code{TRUE} (femenino).
+#' @param inputId Cadena de caracteres. ID único del input para identificarlo en el servidor.
+#' @param label Cadena de caracteres o NULL. Etiqueta que se mostrará encima del input.
+#'   Si es NULL, no se mostrará etiqueta.
+#' @param choices Vector nombrado o lista. Opciones disponibles para seleccionar.
+#'   Puede ser un vector de caracteres o una lista nombrada.
+#' @param selected Vector. Opciones que estarán seleccionadas por defecto.
+#'   Por defecto selecciona todas las opciones disponibles.
+#' @param multiple Lógico. Si TRUE permite selección múltiple, si FALSE solo una opción.
+#'   Por defecto es TRUE.
+#' @param fem Lógico. Si TRUE usa terminología femenina ("Todas", "Ninguna"),
+#'   si FALSE usa terminología masculina ("Todos", "Ninguno"). Por defecto es FALSE.
+#' @param ns Función de namespace o NULL. Función de namespace para módulos de Shiny.
+#'   Si se proporciona, se aplicará al inputId automáticamente.
 #'
-#' @return Una lista con las opciones necesarias para personalizar el comportamiento de `selectPicker`.
-#' @export
+#' @return Un objeto tagList de Shiny que contiene el CSS personalizado y el
+#'   pickerInput configurado con todas las opciones especificadas.
 #'
 #' @examples
-#' pick_opt(letters) # Opciones con valores femeninos "Todas"
-#' pick_opt(letters, fem = FALSE) # Opciones con valores masculinos "Todos"
-pick_opt <- function(cho, fem = TRUE) {
+#' # Ejemplo básico con opciones de texto
+#' ListaDesplegable(
+#'   inputId = "mi_selector",
+#'   label = "Selecciona opciones:",
+#'   choices = c("Opción 1", "Opción 2", "Opción 3")
+#' )
+#'
+#' # Ejemplo con terminología femenina
+#' ListaDesplegable(
+#'   inputId = "categorias",
+#'   label = "Categorías:",
+#'   choices = c("Categoría A", "Categoría B", "Categoría C"),
+#'   fem = TRUE
+#' )
+#'
+#' # Ejemplo para uso en módulos
+#' # En el UI del módulo:
+#' ListaDesplegable(
+#'   inputId = "selector_modulo",
+#'   label = "Opciones del módulo:",
+#'   choices = c("A", "B", "C"),
+#'   ns = ns
+#' )
+#'
+#' # Ejemplo con selección única
+#' ListaDesplegable(
+#'   inputId = "unica_opcion",
+#'   label = "Selecciona una opción:",
+#'   choices = c("Solo A", "Solo B", "Solo C"),
+#'   selected = "Solo A",
+#'   multiple = FALSE
+#' )
+#'
+#' @export
+ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices, multiple = TRUE, fem = FALSE, ns = NULL) {
 
-  # Texto dinámico dependiendo del género
+  # Detectar si estamos en un módulo y manejar el ID correctamente
+  final_id <- if (!is.null(ns)) ns(inputId) else inputId
+
+  # Textos dinámicos según género
   tod <- ifelse(fem, "Todas", "Todos")
+  nin <- ifelse(fem, "Ninguna", "Ninguno")
+  sel <- ifelse(fem, "seleccionadas", "seleccionados")
 
-  # Lista de opciones configurables para selectPicker
-  res <- list(
-    `live-search` = TRUE,                       # Habilita la búsqueda en vivo
-    `actions-box` = TRUE,                       # Muestra botones de selección/deselección
-    `deselect-all-text` = paste("Deseleccionar", tod), # Texto para deseleccionar todos
-    `select-all-text` = paste("Seleccionar", tod),     # Texto para seleccionar todos
-    `selected-text-format` = paste0("count > ", length(cho) - 1), # Formato para mostrar la cantidad seleccionada
-    `count-selected-text` = tod,                # Texto mostrado al seleccionar todas las opciones
-    `none-selected-text` = ""                   # Texto cuando no hay opciones seleccionadas
+  # Opciones del picker
+  picker_options <- pickerOptions(
+    liveSearch            = TRUE,
+    liveSearchNormalize   = TRUE,
+    liveSearchPlaceholder = "Buscar...",
+    liveSearchStyle       = "contains",
+    actionsBox            = TRUE,
+    selectAllText         = paste("Seleccionar", tod),
+    deselectAllText       = paste("Deseleccionar", tod),
+    noneSelectedText      = nin,
+    noneResultsText       = "No hay resultados {0}",
+    showTick              = TRUE,
+    width                 = "100%",
+    style                 = "btn-default"
   )
 
-  # Retorna la lista de opciones
+  # CSS personalizado
+  custom_css <- tags$style(HTML("
+    .custom-picker .dropdown-menu {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    .custom-picker .dropdown-item {
+      padding: 6px 12px;
+      font-size: 14px;
+      border-top: 1px solid #F4F4F5;
+      border-bottom: 1px solid #F4F4F5;
+    }
+    .custom-picker .bs-searchbox input {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 5px;
+    }
+    .custom-picker .bs-searchbox input:focus {
+      border-color: #71717B !important;
+      box-shadow: 0 0 0 0.2rem rgba(128, 128, 128, 0.25) !important;
+      outline: none !important;
+    }
+    .custom-picker .dropdown-item.active {
+      background-color: #71717B !important;
+      color: #fff !important;
+      font-weight: bold;
+    }
+    .custom-picker .dropdown-menu.show {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.15);
+    }
+    .custom-picker .bs-actionsbox {
+      padding: 4px 8px;
+    }
+    .custom-picker .bs-actionsbox .btn {
+      font-size: 12px;
+      padding: 2px 6px;
+    }
+  "))
+
+  # Construcción final del input
+  res <- tagList(
+    custom_css,
+    div(class = "custom-picker",
+        pickerInput(
+          inputId = final_id,
+          label = label,
+          choices = choices,
+          selected = selected,
+          multiple = multiple,
+          options = picker_options,
+          width = "100%"
+        )
+    )
+  )
   return(res)
 }
