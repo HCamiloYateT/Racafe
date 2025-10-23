@@ -170,32 +170,39 @@ Consulta <- function(consulta) {
 }
 
 #' @title ObtenerTokenAcceso
-#' @description Obtiene un token de acceso (client_credentials) para Microsoft Graph API usando los datos de configuración `config$ms_graph`.
+#' @description Obtiene un token de acceso (client_credentials) para Microsoft Graph API usando las variables de ambiente `MS_CLIENT_ID`, `MS_CLIENT_SECRET` y `MS_TENANT_ID`.
 #' @return Cadena con el token de acceso.
 #' @examples
 #' # token <- ObtenerTokenAcceso()
 #' @export
 ObtenerTokenAcceso <- function() {
-  # Validaciones mínimas de configuración
-  if (!exists("config") || is.null(config$ms_graph)) {
-    stop("No se encontró el objeto 'config$ms_graph'. Debe contener tenant_id, client_id y client_secret.")
-  }
-  req_fields <- c("tenant_id", "client_id", "client_secret")
-  faltantes <- req_fields[!req_fields %in% names(config$ms_graph)]
+  client_id <- Sys.getenv("MS_CLIENT_ID", unset = NA_character_)
+  client_secret <- Sys.getenv("MS_CLIENT_SECRET", unset = NA_character_)
+  tenant_id <- Sys.getenv("MS_TENANT_ID", unset = NA_character_)
+
+  faltantes <- c(
+    if (is.na(client_id) || identical(client_id, "")) "MS_CLIENT_ID" else NULL,
+    if (is.na(client_secret) || identical(client_secret, "")) "MS_CLIENT_SECRET" else NULL,
+    if (is.na(tenant_id) || identical(tenant_id, "")) "MS_TENANT_ID" else NULL
+  )
+
   if (length(faltantes) > 0) {
-    stop("Faltan campos en config$ms_graph: ", paste(faltantes, collapse = ", "))
+    stop(
+      "Faltan variables de ambiente requeridas: ",
+      paste(faltantes, collapse = ", ")
+    )
   }
 
   url <- paste0(
     "https://login.microsoftonline.com/",
-    config$ms_graph$tenant_id,
+    tenant_id,
     "/oauth2/v2.0/token"
   )
 
   payload <- list(
     grant_type = "client_credentials",
-    client_id = config$ms_graph$client_id,
-    client_secret = config$ms_graph$client_secret,
+    client_id = client_id,
+    client_secret = client_secret,
     scope = "https://graph.microsoft.com/.default"
   )
 
