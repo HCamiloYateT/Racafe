@@ -10,7 +10,7 @@ ObtenerTokenAcceso()
 Cadena con el token de acceso.
 }
 \description{
-Obtiene un token de acceso (client_credentials) para Microsoft Graph API usando los datos de configuración `config$ms_graph`.
+Obtiene un token de acceso (client_credentials) para Microsoft Graph API usando las variables de ambiente `MS_CLIENT_ID`, `MS_CLIENT_SECRET` y `MS_TENANT_ID`.
 }
 \examples{
 # token <- ObtenerTokenAcceso()
