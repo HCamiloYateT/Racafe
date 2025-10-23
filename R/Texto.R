@@ -163,6 +163,7 @@ EsVacio <- function(x) {
 #' EsEnteroPositivo("123") # TRUE
 #' EsEnteroPositivo("001") # FALSE
 #' EsEnteroPositivo("-5")  # FALSE
+#' @export
 EsEnteroPositivo <- function(s) {
   grepl("^[1-9]\\d*$", s)
 }
@@ -183,6 +184,7 @@ EsEnteroPositivo <- function(s) {
 #' EsNumero("abc")      # FALSE
 #' EsNumero(NA)         # FALSE
 #' EsNumero("")         # FALSE
+#' @export
 EsNumero <- function(cadena) {
   es_valido <- grepl("^\\d*\\.?\\d+$", cadena) &
     suppressWarnings(!is.na(as.numeric(cadena))) &
@@ -220,6 +222,7 @@ EsNumTelefono <- function(tel) {
 #' EsEmail("test@example.com")  # TRUE
 #' EsEmail("user.name@domain") # FALSE
 #' EsEmail("@example.com")     # FALSE
+#' @export
 EsEmail <- function(email) {
   patron <- "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
   grepl(patron, email)
