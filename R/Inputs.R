@@ -149,26 +149,8 @@ ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices,
   # Detectar si estamos en un módulo y manejar el ID correctamente
   final_id <- if (!is.null(ns)) ns(inputId) else inputId
 
-  # Textos dinámicos según género
-  tod <- ifelse(fem, "Todas", "Todos")
-  nin <- ifelse(fem, "Ninguna", "Ninguno")
-  sel <- ifelse(fem, "seleccionadas", "seleccionados")
-
   # Opciones del picker
-  picker_options <- shinyWidgets::pickerOptions(
-    liveSearch            = TRUE,
-    liveSearchNormalize   = TRUE,
-    liveSearchPlaceholder = "Buscar...",
-    liveSearchStyle       = "contains",
-    actionsBox            = TRUE,
-    selectAllText         = paste("Seleccionar", tod),
-    deselectAllText       = paste("Deseleccionar", tod),
-    noneSelectedText      = nin,
-    noneResultsText       = "No hay resultados {0}",
-    showTick              = TRUE,
-    width                 = "100%",
-    style                 = "btn-default"
-  )
+  picker_options <- pick_opt(choices, fem)
 
   # CSS personalizado
   custom_css <- tags$style(HTML("
@@ -227,4 +209,56 @@ ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices,
     )
   )
   return(res)
+}
+
+#' Opciones personalizadas para pickerInput
+#'
+#' @description Genera un conjunto consistente de opciones para
+#'   `shinyWidgets::pickerInput()` con textos en español y soporte para
+#'   terminología femenina o masculina.
+#'
+#' @param cho Vector o lista de opciones utilizadas en el picker. Puede ser
+#'   un vector simple o una lista nombrada como la que acepta `pickerInput()`.
+#' @param fem Lógico. Cuando es `TRUE` utiliza terminología femenina ("Todas",
+#'   "seleccionadas"), de lo contrario emplea la forma masculina. El valor por
+#'   defecto es `TRUE`.
+#'
+#' @return Un objeto de clase `pickerOptions`, equivalente a una lista, que
+#'   puede pasarse al argumento `options` de `pickerInput()`.
+#' @export
+#'
+#' @examples
+#' pick_opt(letters[1:5])
+pick_opt <- function(cho, fem = TRUE) {
+  fem <- isTRUE(fem)
+
+  # Calcular el total de opciones, soportando listas nombradas
+  total <- if (is.null(cho)) {
+    0L
+  } else if (is.list(cho) && !is.data.frame(cho)) {
+    sum(vapply(cho, length, integer(1)))
+  } else {
+    length(cho)
+  }
+
+  tod <- if (fem) "Todas" else "Todos"
+  nin <- if (fem) "Ninguna" else "Ninguno"
+  sel <- if (fem) "seleccionadas" else "seleccionados"
+
+  shinyWidgets::pickerOptions(
+    liveSearch            = TRUE,
+    liveSearchNormalize   = TRUE,
+    liveSearchPlaceholder = "Buscar...",
+    liveSearchStyle       = "contains",
+    actionsBox            = TRUE,
+    selectAllText         = paste("Seleccionar", tod),
+    deselectAllText       = paste("Deseleccionar", tod),
+    noneSelectedText      = nin,
+    noneResultsText       = "No hay resultados {0}",
+    showTick              = TRUE,
+    width                 = "100%",
+    style                 = "btn-default",
+    selectedTextFormat    = sprintf("count > %d", total),
+    countSelectedText     = sprintf("{0} de %d %s", total, sel)
+  )
 }
