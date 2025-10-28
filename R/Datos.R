@@ -522,7 +522,14 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
 
 # Función interna que calcula tablas auxiliares y recodifica según el criterio
 .top_auxiliar <- function(datos, var_recode, var_top, fun_Top, criterio, tipo, nom_var, lab_recodificar) {
-  by_var <- rlang::as_name(var_recode)
+  by_var <- names(dplyr::select(datos, !!var_recode))
+
+  if (length(by_var) != 1) {
+    rlang::abort("`var_recode` debe hacer referencia exactamente a una columna del conjunto de datos.")
+  }
+
+  var_sym <- rlang::sym(by_var)
+  nom_var_sym <- rlang::sym(nom_var)
 
   if (fun_Top == "n") {
     tot <- nrow(datos)
@@ -542,9 +549,9 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
   aux2 <- aux1 |>
     dplyr::arrange(dplyr::desc(Var)) |>
     dplyr::mutate(Seq = dplyr::row_number(),
-                  !!nom_var := dplyr::case_when(
-                    tipo == "n" & Seq <= criterio ~ as.character(!!var_recode),
-                    tipo == "pct" & Pct > criterio ~ as.character(!!var_recode),
+                  !!nom_var_sym := dplyr::case_when(
+                    tipo == "n" & Seq <= criterio ~ as.character(!!var_sym),
+                    tipo == "pct" & Pct > criterio ~ as.character(!!var_sym),
                     TRUE ~ lab_recodificar
                   )) |>
     dplyr::select(dplyr::all_of(by_var), dplyr::all_of(nom_var))
@@ -552,8 +559,8 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
   datos |>
     dplyr::left_join(aux2, by = by_var) |>
     dplyr::mutate(
-      !!nom_var := factor(!!rlang::sym(nom_var), levels = unique(aux2[[nom_var]]), ordered = TRUE),
-      !!nom_var := forcats::fct_relevel(!!rlang::sym(nom_var), lab_recodificar, after = Inf)
+      !!nom_var_sym := factor(!!nom_var_sym, levels = unique(aux2[[nom_var]]), ordered = TRUE),
+      !!nom_var_sym := forcats::fct_relevel(!!nom_var_sym, lab_recodificar, after = Inf)
     )
 }
 
