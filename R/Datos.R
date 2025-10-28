@@ -523,7 +523,11 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
 # Función interna que calcula tablas auxiliares y recodifica según el criterio
 .resolve_column_quosure <- function(var, datos) {
   if (rlang::quo_is_symbol(var)) {
-    return(var)
+    var_name <- rlang::as_name(var)
+
+    if (var_name %in% names(datos)) {
+      return(var)
+    }
   }
 
   valor <- tryCatch(rlang::eval_tidy(var), error = function(...) NULL)
