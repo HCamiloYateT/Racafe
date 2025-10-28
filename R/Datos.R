@@ -521,7 +521,24 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
 }
 
 # Función interna que calcula tablas auxiliares y recodifica según el criterio
+.resolve_column_quosure <- function(var, datos) {
+  if (rlang::quo_is_symbol(var)) {
+    return(var)
+  }
+
+  valor <- tryCatch(rlang::eval_tidy(var), error = function(...) NULL)
+
+  if (rlang::is_string(valor) && length(valor) == 1 && valor %in% names(datos)) {
+    return(rlang::new_quosure(rlang::sym(valor), env = rlang::empty_env()))
+  }
+
+  var
+}
+
 .top_auxiliar <- function(datos, var_recode, var_top, fun_Top, criterio, tipo, nom_var, lab_recodificar) {
+  var_recode <- .resolve_column_quosure(var_recode, datos)
+  var_top <- .resolve_column_quosure(var_top, datos)
+
   by_var <- names(dplyr::select(datos, !!var_recode))
 
   if (length(by_var) != 1) {
@@ -529,6 +546,7 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
   }
 
   var_sym <- rlang::sym(by_var)
+  var_top_name <- rlang::as_name(var_top)
   nom_var_sym <- rlang::sym(nom_var)
 
   if (fun_Top == "n") {
@@ -539,10 +557,10 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
       dplyr::mutate(Pct = Var / tot)
   } else {
     fun <- match.fun(fun_Top)
-    tot <- fun(dplyr::pull(datos, !!var_top), na.rm = TRUE)
+    tot <- fun(datos[[var_top_name]], na.rm = TRUE)
     aux1 <- datos |>
       dplyr::group_by(dplyr::across(dplyr::all_of(by_var))) |>
-      dplyr::summarise(Var = fun(!!var_top, na.rm = TRUE), .groups = "drop") |>
+      dplyr::summarise(Var = fun(rlang::.data[[var_top_name]], na.rm = TRUE), .groups = "drop") |>
       dplyr::mutate(Pct = Var / tot)
   }
 
