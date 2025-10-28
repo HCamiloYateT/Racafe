@@ -11,3 +11,20 @@ test_that("TopRelativo aplica umbral porcentual", {
   expect_equal(as.character(res$cat_top), c("A","A","B","B","OTROS"))
   expect_equal(levels(res$cat_top), c("A","B","OTROS"))
 })
+
+test_that("TopRelativo evalua nombres de columnas almacenados en variables", {
+  datos <- data.frame(cat = c("A","A","B","B","C"), val = c(10, 5, 4, 1, 1))
+  columna_valores <- "val"
+
+  resultado <- TopRelativo(
+    datos,
+    var_recode = cat,
+    var_top = columna_valores,
+    fun_Top = "sum",
+    pct_min = 0.2,
+    nom_var = "cat_top"
+  )
+
+  expect_equal(as.character(resultado$cat_top), c("A", "A", "B", "B", "OTROS"))
+  expect_equal(levels(resultado$cat_top), c("A", "B", "OTROS"))
+})
