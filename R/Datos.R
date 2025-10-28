@@ -546,7 +546,13 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
   }
 
   var_sym <- rlang::sym(by_var)
-  var_top_name <- rlang::as_name(var_top)
+  top_var <- names(dplyr::select(datos, !!var_top))
+
+  if (length(top_var) != 1) {
+    rlang::abort("`var_top` debe hacer referencia exactamente a una columna del conjunto de datos.")
+  }
+
+  var_top_name <- top_var[[1]]
   nom_var_sym <- rlang::sym(nom_var)
 
   if (fun_Top == "n") {
