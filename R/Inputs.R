@@ -262,3 +262,91 @@ pick_opt <- function(cho, fem = TRUE) {
     countSelectedText     = sprintf("{0} de %d %s", total, sel)
   )
 }
+
+#' Botones radiales estilizados
+#'
+#' @description Genera un conjunto de botones radiales basados en
+#'   `shinyWidgets::radioGroupButtons()` con estilos personalizados y soporte
+#'   para íconos y tooltips. Funciona tanto en aplicaciones Shiny comunes como
+#'   dentro de módulos utilizando un namespace opcional.
+#'
+#' @param inputId Cadena de caracteres. Identificador único del input.
+#' @param label Cadena de caracteres o `NULL`. Etiqueta que se mostrará junto al
+#'   grupo de botones.
+#' @param choices Vector con las opciones disponibles. Puede ser nombrado para
+#'   mostrar etiquetas distintas a los valores enviados al servidor.
+#' @param selected Valor inicialmente seleccionado. Debe coincidir con uno de
+#'   los elementos de `choices`.
+#' @param usar_iconos Lógico. Si es `TRUE` utiliza los nombres de iconos de
+#'   Font Awesome especificados en `iconos`.
+#' @param iconos Vector de caracteres con los nombres de los iconos a usar. Debe
+#'   tener la misma longitud que `choices` cuando `usar_iconos = TRUE`.
+#' @param tooltips Vector de caracteres con los textos de ayuda que se mostrarán
+#'   como tooltips al pasar el cursor sobre cada botón. Debe tener la misma
+#'   longitud que `choices`.
+#' @param ns Función de namespace o `NULL`. Se utiliza para adaptar el
+#'   identificador cuando el input se usa dentro de módulos.
+#'
+#' @return Un objeto `tagList` listo para ser incluido en una interfaz Shiny.
+#'
+#' @importFrom shinyWidgets radioGroupButtons
+#'
+#' @examples
+#' BotonesRadiales(
+#'   inputId = "estado",
+#'   label = "Estado:",
+#'   choices = c(Activo = "activo", Inactivo = "inactivo"),
+#'   selected = "activo"
+#' )
+#'
+#' @export
+BotonesRadiales <- function(inputId, label = NULL, choices, selected = NULL,
+                            usar_iconos = FALSE, iconos = NULL, tooltips = NULL,
+                            ns = NULL) {
+
+  final_id <- if (!is.null(ns)) ns(inputId) else inputId
+
+  if (usar_iconos && !is.null(iconos)) {
+    choiceNames <- lapply(seq_along(choices), function(i) {
+      shiny::tags$span(
+        shiny::icon(iconos[i]),
+        if (!is.null(names(choices)) && nzchar(names(choices)[i])) {
+          paste0(" ", names(choices)[i])
+        } else {
+          ""
+        }
+      )
+    })
+    choiceValues <- unname(choices)
+  } else {
+    choiceNames <- if (!is.null(names(choices))) names(choices) else choices
+    choiceValues <- unname(choices)
+  }
+
+  result <- htmltools::tagList(
+    shiny::tags$style(htmltools::HTML(sprintf(
+      "\n      #%s .btn-group-toggle .btn {\n        border: none !important;\n        border-radius: 5px !important;\n        margin: 0 1px !important;\n        background-color: transparent !important;\n        color: #dc3545 !important;\n        box-shadow: none !important;\n      }\n      #%s .btn-group-toggle .btn:hover {\n        background-color: #f8f9fa !important;\n      }\n      #%s .btn-group-toggle .btn.active {\n        background-color: #dc3545 !important;\n        color: #fff !important;\n      }\n    ", final_id, final_id, final_id))),
+    shiny::div(
+      style = "display: flex; justify-content: center; align-items: center; margin-top: 25px; width: 100%;",
+      shinyWidgets::radioGroupButtons(
+        inputId = final_id,
+        label = label,
+        choiceNames = choiceNames,
+        choiceValues = choiceValues,
+        selected = selected,
+        justified = FALSE,
+        individual = TRUE,
+        status = "primary"
+      )
+    )
+  )
+
+  if (!is.null(tooltips) && length(tooltips) == length(choices)) {
+    tooltip_script <- shiny::tags$script(htmltools::HTML(sprintf(
+      "\n      $(document).ready(function() {\n        var buttons = $('#%s .btn-group-toggle .btn');\n        var tooltips = %s;\n        buttons.each(function(i) {\n          $(this).attr('title', tooltips[i]).tooltip({container: 'body'});\n        });\n      });\n    ", final_id, jsonlite::toJSON(tooltips))))
+
+    result <- htmltools::tagList(result, tooltip_script)
+  }
+
+  return(result)
+}

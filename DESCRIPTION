@@ -28,6 +28,7 @@ Imports:
     gt,
     htmltools,
     shiny,
+    jsonlite,
     colorspace,
     plotly,
     magrittr,
