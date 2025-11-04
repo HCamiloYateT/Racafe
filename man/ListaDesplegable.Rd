@@ -2,7 +2,7 @@
 % Please edit documentation in R/Inputs.R
 \name{ListaDesplegable}
 \alias{ListaDesplegable}
-\title{Lista Desplegable con Búsqueda y Selección Múltiple}
+\title{Lista Desplegable con Búsqueda, Selección Múltiple y Etiquetas Dinámicas}
 \usage{
 ListaDesplegable(
   inputId,
@@ -32,17 +32,19 @@ Por defecto es TRUE.}
 \item{fem}{Lógico. Si TRUE usa terminología femenina ("Todas", "Ninguna"),
 si FALSE usa terminología masculina ("Todos", "Ninguno"). Por defecto es FALSE.}
 
-\item{ns}{Función de namespace o NULL. Función de namespace para módulos de Shiny.
-Si se proporciona, se aplicará al inputId automáticamente.}
+\item{ns}{Función de namespace o NULL. Cuando se suministra, se aplica al
+\code{inputId} automáticamente, lo que facilita su uso dentro de módulos de Shiny.}
 }
 \value{
-Un objeto tagList de Shiny que contiene el CSS personalizado y el
-  pickerInput configurado con todas las opciones especificadas.
+Un objeto \code{tagList} con el CSS personalizado y el
+  \code{pickerInput} configurado con todas las opciones especificadas.
 }
 \description{
-Crea un input de selección múltiple personalizado con funcionalidades
-  de búsqueda en vivo, selección/deselección masiva y estilos CSS personalizados.
-  Incluye soporte para módulos de Shiny y textos dinámicos según género.
+Crea un \code{shinyWidgets::pickerInput()} totalmente estilizado que adapta su
+  etiqueta según la cantidad de elementos seleccionados. Incluye búsqueda en vivo,
+  botones para seleccionar/deseleccionar todas las opciones, soporte para textos
+  en femenino o masculino y compatibilidad con módulos de Shiny mediante
+  namespaces.
 }
 \details{
 Lista Desplegable Personalizada
@@ -64,7 +66,6 @@ ListaDesplegable(
 )
 
 # Ejemplo para uso en módulos
-# En el UI del módulo:
 ListaDesplegable(
   inputId = "selector_modulo",
   label = "Opciones del módulo:",
