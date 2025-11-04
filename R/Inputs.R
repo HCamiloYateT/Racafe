@@ -350,3 +350,94 @@ BotonesRadiales <- function(inputId, label = NULL, choices, selected = NULL,
 
   return(result)
 }
+
+#' Botón de estado con iconos dinámicos
+#'
+#' @description Genera un botón estilizado que refleja un estado binario mediante
+#'   iconos y títulos dinámicos. El color, el tamaño y los textos asociados pueden
+#'   personalizarse para adaptarse a diferentes interfaces dentro de aplicaciones
+#'   Shiny.
+#'
+#' @param button_id Cadena de caracteres. Identificador único del botón.
+#' @param estado Lógico. Define el estado inicial del botón. Cuando es `TRUE`,
+#'   se muestra el icono y título asociados al estado activo.
+#' @param icono_verdadero Cadena de caracteres. Nombre del icono de Font Awesome
+#'   que se mostrará cuando `estado` sea `TRUE`.
+#' @param icono_falso Cadena de caracteres. Nombre del icono de Font Awesome que
+#'   se mostrará cuando `estado` sea `FALSE`.
+#' @param color Cadena de caracteres. Color principal utilizado para el borde y
+#'   el texto del botón.
+#' @param titulo_verdadero Cadena de caracteres. Texto utilizado como título
+#'   (tooltip) cuando `estado` es `TRUE`.
+#' @param titulo_falso Cadena de caracteres. Texto utilizado como título
+#'   (tooltip) cuando `estado` es `FALSE`.
+#' @param size Cadena de caracteres. Tamaño del botón. Puede ser "sm", "md" o
+#'   "lg".
+#'
+#' @return Un objeto `shiny::tags$span` que contiene un `shiny::actionButton`
+#'   configurado con estilos e iconos dinámicos.
+#'
+#' @examples
+#' BotonEstado(
+#'   button_id = "toggle_estado",
+#'   estado = TRUE,
+#'   icono_verdadero = "check-circle",
+#'   icono_falso = "times-circle",
+#'   color = "#28a745",
+#'   titulo_verdadero = "Activo",
+#'   titulo_falso = "Inactivo"
+#' )
+#'
+#' @export
+BotonEstado <- function(
+  button_id,
+  estado = FALSE,
+  icono_verdadero = "check-circle",
+  icono_falso = "x-circle",
+  color = "#FF3222",
+  titulo_verdadero = "Activo",
+  titulo_falso = "Inactivo",
+  size = "sm"
+) {
+
+  size_config <- list(
+    sm = list(padding = "3px 8px", font_size = "12px"),
+    md = list(padding = "6px 12px", font_size = "14px"),
+    lg = list(padding = "8px 16px", font_size = "16px")
+  )
+
+  size <- match.arg(size, names(size_config))
+  current_size <- size_config[[size]]
+
+  button_style <- paste0(
+    "-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;",
+    "word-wrap:break-word;box-sizing:border-box;line-height:inherit;",
+    "text-transform:none;margin:0;border-width:1px;font-weight:400;",
+    "position:relative;overflow:hidden;border:1px solid ", color, "40;",
+    "border-radius:4px;background:transparent;",
+    "transition:all .3s cubic-bezier(0.02,0.01,0.47,1);",
+    "outline:none;-webkit-appearance:button;",
+    "padding:", current_size$padding, ";",
+    "font-size:", current_size$font_size, ";",
+    "font-family:inherit;color:", color, ";cursor:pointer!important;"
+  )
+
+  icon_obj <- if (isTRUE(estado)) {
+    shiny::icon(icono_verdadero)
+  } else {
+    shiny::icon(icono_falso)
+  }
+
+  titulo <- if (isTRUE(estado)) titulo_verdadero else titulo_falso
+
+  shiny::tags$span(
+    title = titulo,
+    shiny::actionButton(
+      inputId = button_id,
+      label = NULL,
+      icon = icon_obj,
+      class = "btn-estado",
+      style = button_style
+    )
+  )
+}
