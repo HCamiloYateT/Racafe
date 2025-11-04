@@ -238,6 +238,24 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```
 
 ### Inputs
+- `BotonesRadiales(inputId, label = NULL, choices, selected = NULL, ...)`: Crea un grupo de botones radiales con estilos corporativos personalizados para `shiny`.
+```r
+# BotonesRadiales(
+#   inputId = "opcion",
+#   label = "Seleccione una opción:",
+#   choices = c("A", "B", "C"),
+#   selected = "B"
+# )
+```
+- `BotonEstado(button_id, estado = FALSE, icono_verdadero = "check-circle", icono_falso = "x-circle", ...)`: Genera un botón con íconos dinámicos para representar estados binarios.
+```r
+# BotonEstado(
+#   button_id = "toggle_estado",
+#   estado = TRUE,
+#   titulo_verdadero = "Activo",
+#   titulo_falso = "Inactivo"
+# )
+```
 - `InputNumerico(id, label, value, ...)`: Crea un campo numérico estilizado para `shiny`.
 ```r
 # InputNumerico("monto", "Monto:", 1000, type = "dinero")
@@ -283,5 +301,11 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 - `Loadpkg(pkg)`: Instala (si es necesario) y carga paquetes de R.
 ```r
 # Loadpkg(c("ggplot2", "dplyr"))
+```
+
+### Operadores y utilidades
+- ``%||%(a, b)``: Devuelve `a` si es un valor no vacío; de lo contrario retorna `b` como alternativa segura.
+```r
+# NULL %||% "valor_por_defecto"
 ```
 
