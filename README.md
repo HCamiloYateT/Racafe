@@ -300,6 +300,10 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```
 
 ### Outputs
+- `BotonDescarga(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL, title = "Descargar", size = "sm")`: Genera un botón de descarga estilizado para aplicaciones `shiny`.
+```r
+# BotonDescarga("descargar_reporte")
+```
 - `CajaIco(texto, icono, ...)`: Crea una caja con ícono y texto.
 ```r
 # CajaIco("Mensaje", "info-circle")
