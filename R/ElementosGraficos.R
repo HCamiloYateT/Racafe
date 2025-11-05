@@ -130,3 +130,91 @@ ColoresGreenBlue <- function(value) {
   # Retornar los colores asignados
   return(cols)
 }
+
+#' Crear Gráfico de Anillo Interactivo
+#'
+#' Genera un gráfico tipo anillo (gráfico de dona) usando \pkg{plotly} a partir de un
+#' conjunto de datos y una variable categórica. Los valores de cada segmento se calculan
+#' utilizando un conteo simple o aplicando una función de agregación sobre otra variable.
+#'
+#' @param data Un objeto `data.frame` que contiene la información a graficar.
+#' @param var_label Cadena de caracteres con el nombre de la variable categórica que se usará como etiqueta.
+#' @param var_medida Cadena de caracteres con el nombre de la variable numérica sobre la cual se aplicará la función de agregación cuando `funcion != "n"`.
+#' @param funcion Función a utilizar para calcular los valores de los segmentos. Las opciones disponibles son `"sum"` y `"n"`.
+#' @param colores Vector opcional de colores que se asignará a los segmentos del gráfico.
+#'
+#' @return Un objeto de clase `plotly` con el gráfico tipo anillo.
+#'
+#' @examples
+#' \dontrun{
+#' data <- data.frame(
+#'   Categoria = c("A", "B", "C"),
+#'   Valor = c(10, 20, 30)
+#' )
+#'
+#' # Utilizar una función de suma para calcular los valores
+#' ImprimirAnillo(data, "Categoria", "Valor", funcion = "sum")
+#'
+#' # Realizar un conteo simple de observaciones por categoría
+#' ImprimirAnillo(data, "Categoria", funcion = "n")
+#' }
+#'
+#' @importFrom dplyr count group_by summarise mutate
+#' @importFrom forcats fct_reorder
+#' @importFrom plotly plot_ly add_pie layout config
+#' @importFrom rlang sym
+#' @importFrom stringr str_to_sentence
+#' @export
+ImprimirAnillo <- function(data, var_label, var_medida = NULL, funcion = c("sum", "n"), colores = NULL) {
+  funcion  <- match.arg(funcion)
+  var_lab  <- sym(var_label)
+
+  if (funcion == "n") {
+    aux1 <- data %>%
+      count(!!var_lab, name = "Var")
+  } else {
+    if (is.null(var_medida)) {
+      stop("Debe especificar 'var_medida' cuando funcion != 'n'")
+    }
+    var_med <- sym(var_medida)
+    fun_ag  <- match.fun(funcion)
+
+    aux1 <- data %>%
+      group_by(!!var_lab) %>%
+      summarise(Var = fun_ag(!!var_med, na.rm = TRUE), .groups = "drop")
+  }
+
+  total <- sum(aux1$Var, na.rm = TRUE)
+
+  aux1 <- aux1 %>%
+    mutate(Lab  = as.character(!!var_lab),
+           Lab  = sapply(Lab, function(x) paste(strwrap(str_to_sentence(x), width = 30), collapse = "<br>")),
+           Pct  = Var / total,
+           Text = sprintf("%.1f%%", Pct * 100))
+
+  aux1$Lab <- fct_reorder(aux1$Lab, aux1$Var, max)
+
+  # Colores
+  if (!is.null(colores)) {
+    colores <- rep(colores, length.out = nrow(aux1))
+    marker_list <- list(line = list(width = 2), colors = colores)
+  } else {
+    marker_list <- list(line = list(width = 2))
+  }
+
+  # Texto del hover: etiqueta, valor y porcentaje
+  hover_tmp <- paste0(
+    "<b>%{label}</b><br>",
+    if (funcion == "n") "%{value} <b>(" else paste0("%{value} <b>("),
+    "%{percent:.1%})</b><extra></extra>"
+  )
+
+  plot_ly(aux1) %>%
+    add_pie(labels = ~Lab, values = ~Var, type = "pie", sort = TRUE,
+            hole = 0.4, text = ~Text, textinfo = "text", textposition = "inside",
+            hovertemplate = hover_tmp, marker = marker_list) %>%
+    layout(margin = list(t = 40, b = 40, l = 40, r = 40),
+           legend = list(orientation = "h", xanchor = "center",
+                         x = 0.5, y = -0.1, font = list(size = 9, color = "black"))) %>%
+    config(displayModeBar = FALSE)
+}

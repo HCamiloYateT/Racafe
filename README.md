@@ -184,6 +184,11 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```r
 # ColoresGreenBlue(1:5)
 ```
+- `ImprimirAnillo(data, var_label, var_medida = NULL, funcion = c("sum", "n"), colores = NULL)`: Crea un gráfico tipo anillo interactivo usando `plotly`, calculando los valores mediante un conteo simple o una función de agregación.
+```r
+# df <- data.frame(Categoria = c("A", "B", "C"), Valor = c(10, 20, 30))
+# ImprimirAnillo(df, "Categoria", "Valor", funcion = "sum")
+```
 
 ### Formatos
 - `DefinirFormato(formato)`: Devuelve un formateador numérico predefinido.
