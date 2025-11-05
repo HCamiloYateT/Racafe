@@ -1,3 +1,65 @@
+#' Crear un botón de descarga con estilo personalizado
+#'
+#' Genera un botón de descarga con estilos corporativos y opciones de configuración para
+#' el ícono, el color y el tamaño. Puede integrarse fácilmente con módulos de `shiny`
+#' mediante el uso de un namespace.
+#'
+#' @param button_id Identificador del botón de descarga.
+#' @param icon_name Nombre del ícono a utilizar en el botón. Por defecto es "file-excel".
+#' @param color Color hexadecimal del texto y borde del botón. Por defecto es `"#28b78d"`.
+#' @param ns Función de namespace (generalmente `shiny::NS`) utilizada en módulos. Por defecto `NULL`.
+#' @param title Texto que se mostrará como tooltip al pasar el cursor sobre el botón. Por defecto "Descargar".
+#' @param size Tamaño del botón. Debe ser uno de `"sm"`, `"md"` o `"lg"`. Por defecto `"sm"`.
+#'
+#' @return Una cadena HTML que representa el botón de descarga personalizado.
+#'
+#' @examples
+#' BotonDescarga("descargar_reporte")
+#' BotonDescarga("descargar_reporte", icon_name = "download", size = "md")
+#'
+#' @importFrom shiny span downloadButton icon
+#' @export
+BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL,
+                          title = "Descargar", size = "sm") {
+
+  # Aplicar namespace si se proporciona
+  final_id <- if (!is.null(ns)) ns(button_id) else button_id
+
+  # Definir tamaños
+  size_config <- list(
+    sm = list(padding = "3px 8px", font_size = "12px"),
+    md = list(padding = "6px 12px", font_size = "14px"),
+    lg = list(padding = "8px 16px", font_size = "16px")
+  )
+
+  current_size <- size_config[[size]]
+
+  # Crear el estilo con color personalizable
+  button_style <- paste0(
+    "-webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; ",
+    "word-wrap: break-word; box-sizing: border-box; line-height: inherit; ",
+    "text-transform: none; margin: 0; border-width: 1px; font-weight: 400; ",
+    "position: relative; overflow: hidden; border: 1px solid ", color, "40; ",
+    "border-radius: 4px; background: transparent; ",
+    "transition: all 0.3s cubic-bezier(0.02, 0.01, 0.47, 1); ",
+    "outline: none; -webkit-appearance: button; ",
+    "padding: ", current_size$padding, "; ",
+    "font-size: ", current_size$font_size, "; ",
+    "font-family: inherit; color: ", color, "; cursor: pointer !important;"
+  )
+
+  # Crear el botón
+  download_button_html <- as.character(
+    span(title = title,
+         downloadButton(final_id,
+                        label = NULL,
+                        icon = icon(icon_name),
+                        style = button_style))
+  )
+
+  return(download_button_html)
+}
+
 #' Generar una Caja con Ícono y Texto
 #'
 #' Esta función crea una caja visual que incluye un ícono y un texto. La caja puede personalizarse en cuanto a color de fondo, altura, color de letra e ícono.
