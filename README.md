@@ -210,6 +210,18 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```r
 # gt::gt(head(mtcars)) |> gt_minimal_style()
 ```
+- `gt_pct_style(gt_table, ...)`: Resalta columnas con porcentajes aplicando una escala de colores corporativos.
+```r
+# gt::gt(head(mtcars)) |> gt_pct_style(pct_col)
+```
+- `gt_var_style(gt_table, ...)`: Colorea valores positivos y negativos para resaltar variaciones.
+```r
+# gt::gt(head(mtcars)) |> gt_var_style(var_col)
+```
+- `gt_color_columns(gt_table, columns, color)`: Colorea el fondo de columnas completas, incluidos los encabezados.
+```r
+# gt::gt(head(mtcars)) |> gt_color_columns(columns = "mpg", color = "#f0f0f0")
+```
 - `col_kpi(x, prop = TRUE)`: Asigna un color según el valor de un KPI.
 ```r
 # col_kpi(1)
