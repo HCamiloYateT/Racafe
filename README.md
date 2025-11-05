@@ -108,6 +108,10 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```r
 # res <- bind_rows_na(df1, df2, df3)
 ```
+- `left_join_all(x, y_list, by, type = "left")`: Realiza uniones iterativas utilizando las funciones `*_join()` de `dplyr`.
+```r
+# resultado <- left_join_all(df_base, list(df_extra1, df_extra2), by = c("id" = "id"))
+```
 
 ### Fechas
 - `PrimerDia(x, uni = "month")`: Retorna el primer día de la unidad temporal de una fecha.
