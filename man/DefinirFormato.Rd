@@ -7,8 +7,7 @@
 DefinirFormato(formato)
 }
 \arguments{
-\item{formato}{Cadena de texto con el formato: "coma", "numero", "dinero",
-"miles" o "porcentaje".}
+\item{formato}{Cadena de texto con el formato deseado.}
 }
 \value{
 Una función que formatea un vector numérico.
@@ -16,8 +15,10 @@ Una función que formatea un vector numérico.
 \description{
 Crea un formateador de números según el estilo especificado.
 Los formatos disponibles son: "coma" (sin decimales), "numero" (dos decimales),
-"dinero" (símbolo "$" y dos decimales), "miles" (en miles con "$"),
-"porcentaje" (como porcentaje con dos decimales).
+"dinero" (símbolo "$" sin decimales), "dolares" (símbolo "$" con dos
+decimales), "miles" (en miles con "$"), "porcentaje" (como porcentaje con dos
+decimales), además de "cientifico", "millones", "entero", "tiempo", "kwh" y
+"log".
 }
 \examples{
 DefinirFormato("coma")(1234567.89)

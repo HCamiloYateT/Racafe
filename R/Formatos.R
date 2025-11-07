@@ -2,11 +2,11 @@
 #'
 #' @description Crea un formateador de números según el estilo especificado.
 #' Los formatos disponibles son: "coma" (sin decimales), "numero" (dos decimales),
-#' "dinero" (símbolo "$" y dos decimales), "miles" (en miles con "$"),
-#' "porcentaje" (como porcentaje con dos decimales).
+#' "dinero" (símbolo "$" sin decimales), "dolares" (símbolo "$" con dos decimales),
+#' "miles" (en miles con "$"), "porcentaje" (como porcentaje con dos decimales),
+#' además de "cientifico", "millones", "entero", "tiempo", "kwh" y "log".
 #'
-#' @param formato Cadena de texto con el formato: "coma", "numero", "dinero",
-#'   "miles" o "porcentaje".
+#' @param formato Cadena de texto con el formato deseado.
 #'
 #' @return Una función que formatea un vector numérico.
 #'
@@ -26,19 +26,61 @@ DefinirFormato <- function(formato) {
   } else if (formato == "dolares") {
     scales::label_number(accuracy = 0.01, prefix = "$", big.mark = ",")
   } else if (formato == "miles") {
-    scales::label_number(accuracy = 0.01, scale = 1/1000, prefix = "$", big.mark = ",")
+    scales::label_number(
+      accuracy = 0.01,
+      scale = 1/1000,
+      prefix = "$",
+      big.mark = ","
+    )
   } else if (formato == "porcentaje") {
-    scales::label_number(accuracy = 0.01, scale = 100, suffix = "%", big.mark = ",")
+    scales::label_number(
+      accuracy = 0.01,
+      scale = 100,
+      suffix = "%",
+      big.mark = ","
+    )
+  } else if (formato == "cientifico") {
+    scales::label_scientific()
+  } else if (formato == "millones") {
+    scales::label_number(
+      accuracy = 0.01,
+      scale = 1e-6,
+      prefix = "$",
+      suffix = " M",
+      big.mark = ","
+    )
+  } else if (formato == "entero") {
+    scales::label_number(
+      accuracy = 1,
+      big.mark = ","
+    )
+  } else if (formato == "tiempo") {
+    scales::label_time()
+  } else if (formato == "kwh") {
+    scales::label_number(
+      accuracy = 0.01,
+      suffix = " kWh",
+      big.mark = ","
+    )
+  } else if (formato == "log") {
+    scales::label_log()
   } else {
-    stop("Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'miles' o 'porcentaje'.")
+    stop(
+      "Formato no reconocido. Use: 'coma', 'numero', 'dinero', ",
+      "'dolares', 'miles', 'porcentaje', 'cientifico', 'millones', ",
+      "'entero', 'tiempo', 'kwh' o 'log'."
+    )
   }
 }
 
 #' Definir formato para D3.js
 #'
 #' @description Genera un string de formato compatible con la librería D3.js.
+#' Los formatos disponibles incluyen "coma", "numero", "dinero", "dolares",
+#' "miles", "porcentaje", "cientifico", "millones", "entero", "tiempo",
+#' "kwh" y "log".
 #'
-#' @param formato Cadena de texto: "coma", "numero", "dinero" o "porcentaje".
+#' @param formato Cadena de texto que define el formato requerido.
 #'
 #' @return Un string que representa el formato en D3.js.
 #'
@@ -48,24 +90,42 @@ DefinirFormato <- function(formato) {
 #'
 #' @export
 FormatoD3 <- function(formato) {
-  if (formato == "coma") {
+  if (formato == "coma" || formato == "entero") {
     ",.0f"
   } else if (formato == "numero") {
     ",.2f"
   } else if (formato == "dinero") {
+    "$,.0f"
+  } else if (formato == "dolares") {
     "$,.2f"
+  } else if (formato == "miles") {
+    "$~s"
   } else if (formato == "porcentaje") {
     ",.2%"
+  } else if (formato == "cientifico" || formato == "log") {
+    ".2e"
+  } else if (formato == "millones") {
+    "$,.2s"
+  } else if (formato == "tiempo") {
+    "%H:%M:%S"
+  } else if (formato == "kwh") {
+    ",.2f"
   } else {
-    stop("Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'porcentaje'.")
+    stop(
+      "Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'dolares', 'miles', ",
+      "'porcentaje', 'cientifico', 'millones', 'entero', 'tiempo', 'kwh' o 'log'."
+    )
   }
 }
 
 #' Definir formato para JavaScript
 #'
 #' @description Genera una función en formato string para aplicar en JavaScript.
+#' Soporta los formatos "coma", "numero", "dinero", "dolares", "miles",
+#' "porcentaje", "cientifico", "millones", "entero", "tiempo", "kwh" y
+#' "log".
 #'
-#' @param formato Cadena de texto: "coma", "numero", "dinero" o "porcentaje".
+#' @param formato Cadena de texto que define el formato requerido.
 #'
 #' @return Un string con una función en JavaScript que formatea números.
 #'
@@ -75,24 +135,44 @@ FormatoD3 <- function(formato) {
 #'
 #' @export
 FormatoJS <- function(formato) {
-  if (formato == "coma") {
-    'function(d){return d.toFixed(0).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");}'
+  if (formato == "coma" || formato == "entero") {
+    'function(d){return Math.round(d).toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");}'
   } else if (formato == "numero") {
     'function(d){return d.toFixed(2);}'
   } else if (formato == "dinero") {
-    'function(d){return "$" + d.toFixed(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");}'
+    'function(d){var value = Math.round(d).toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");return "$" + value;}'
+  } else if (formato == "dolares") {
+    'function(d){var value = d.toFixed(2);var parts = value.split(".");parts[0] = parts[0].replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");return "$" + parts.join(".");}'
+  } else if (formato == "miles") {
+    'function(d){var value = (d/1000).toFixed(2);var parts = value.split(".");parts[0] = parts[0].replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");return "$" + parts.join(".") + " K";}'
   } else if (formato == "porcentaje") {
-    'function(d){return (d*100).toFixed(1) + "%";}'
+    'function(d){return (d*100).toFixed(2) + "%";}'
+  } else if (formato == "cientifico") {
+    'function(d){return d.toExponential(2);}'
+  } else if (formato == "millones") {
+    'function(d){var value = (d/1000000).toFixed(2);var parts = value.split(".");parts[0] = parts[0].replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");return "$" + parts.join(".") + " M";}'
+  } else if (formato == "tiempo") {
+    'function(d){var date = new Date(d);if(!isNaN(date.getTime())){return date.toISOString().slice(11,19);}var totalSeconds = Math.floor(d);var hours = Math.floor(totalSeconds/3600);var minutes = Math.floor((totalSeconds%3600)/60);var seconds = totalSeconds%60;return [hours,minutes,seconds].map(function(v){return String(v).padStart(2,"0");}).join(":");}'
+  } else if (formato == "kwh") {
+    'function(d){var value = d.toFixed(2);var parts = value.split(".");parts[0] = parts[0].replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");return parts.join(".") + " kWh";}'
+  } else if (formato == "log") {
+    'function(d){if(d<=0){return "";}return "10^" + (Math.log10(d)).toFixed(2);}'
   } else {
-    stop("Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'porcentaje'.")
+    stop(
+      "Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'dolares', 'miles', ",
+      "'porcentaje', 'cientifico', 'millones', 'entero', 'tiempo', 'kwh' o 'log'."
+    )
   }
 }
 
 #' Definir formato para Handsontable
 #'
 #' @description Devuelve un string con el formato numérico para usar en Handsontable.
+#' Soporta los formatos "coma", "numero", "dinero", "dolares", "miles",
+#' "porcentaje", "cientifico", "millones", "entero", "tiempo", "kwh" y
+#' "log".
 #'
-#' @param formato Cadena de texto: "coma", "numero", "dinero" o "porcentaje".
+#' @param formato Cadena de texto que define el formato requerido.
 #'
 #' @return Un string con el formato de Handsontable.
 #'
@@ -102,16 +182,31 @@ FormatoJS <- function(formato) {
 #'
 #' @export
 FormatoHOT <- function(formato) {
-  if (formato == "coma") {
+  if (formato == "coma" || formato == "entero") {
     "0,0"
   } else if (formato == "numero") {
     "0,0.00"
   } else if (formato == "dinero") {
+    "$0,0"
+  } else if (formato == "dolares") {
     "$0,0.00"
+  } else if (formato == "miles") {
+    "$0,0.00a"
   } else if (formato == "porcentaje") {
     "0.00%"
+  } else if (formato == "cientifico" || formato == "log") {
+    "0.00e+0"
+  } else if (formato == "millones") {
+    "$0,0.00a"
+  } else if (formato == "tiempo") {
+    "00:00:00"
+  } else if (formato == "kwh") {
+    "0,0.00 \"kWh\""
   } else {
-    stop("Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'porcentaje'.")
+    stop(
+      "Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'dolares', 'miles', ",
+      "'porcentaje', 'cientifico', 'millones', 'entero', 'tiempo', 'kwh' o 'log'."
+    )
   }
 }
 

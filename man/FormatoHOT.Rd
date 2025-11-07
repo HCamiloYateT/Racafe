@@ -7,13 +7,16 @@
 FormatoHOT(formato)
 }
 \arguments{
-\item{formato}{Cadena de texto: "coma", "numero", "dinero" o "porcentaje".}
+\item{formato}{Cadena de texto que define el formato requerido.}
 }
 \value{
 Un string con el formato de Handsontable.
 }
 \description{
 Devuelve un string con el formato numérico para usar en Handsontable.
+Soporta los formatos "coma", "numero", "dinero", "dolares", "miles",
+"porcentaje", "cientifico", "millones", "entero", "tiempo", "kwh" y
+"log".
 }
 \examples{
 FormatoHOT("coma")

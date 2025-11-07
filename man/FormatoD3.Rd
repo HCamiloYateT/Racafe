@@ -7,13 +7,16 @@
 FormatoD3(formato)
 }
 \arguments{
-\item{formato}{Cadena de texto: "coma", "numero", "dinero" o "porcentaje".}
+\item{formato}{Cadena de texto que define el formato requerido.}
 }
 \value{
 Un string que representa el formato en D3.js.
 }
 \description{
 Genera un string de formato compatible con la librería D3.js.
+Los formatos disponibles incluyen "coma", "numero", "dinero", "dolares",
+"miles", "porcentaje", "cientifico", "millones", "entero", "tiempo",
+"kwh" y "log".
 }
 \examples{
 FormatoD3("coma")

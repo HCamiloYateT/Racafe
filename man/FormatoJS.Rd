@@ -7,13 +7,16 @@
 FormatoJS(formato)
 }
 \arguments{
-\item{formato}{Cadena de texto: "coma", "numero", "dinero" o "porcentaje".}
+\item{formato}{Cadena de texto que define el formato requerido.}
 }
 \value{
 Un string con una función en JavaScript que formatea números.
 }
 \description{
 Genera una función en formato string para aplicar en JavaScript.
+Soporta los formatos "coma", "numero", "dinero", "dolares", "miles",
+"porcentaje", "cientifico", "millones", "entero", "tiempo", "kwh" y
+"log".
 }
 \examples{
 FormatoJS("coma")
