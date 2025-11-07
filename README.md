@@ -191,10 +191,17 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```
 
 ### Formatos
-- `DefinirFormato(formato)`: Devuelve un formateador numérico predefinido.
+- `DefinirFormato(formato, ...)`: Devuelve un formateador numérico predefinido
+  para su uso con `scales`. Acepta tanto mayúsculas como minúsculas y permite
+  personalizar parámetros adicionales (por ejemplo `accuracy`, `big.mark`,
+  `prefix` o `suffix`) mediante `...`.
 ```r
 # f <- DefinirFormato("dinero"); f(1234.5)
+# f_porcentaje <- DefinirFormato("porcentaje", accuracy = 0.1); f_porcentaje(0.257)
 ```
+- Formatos disponibles: `"coma"`, `"numero"`, `"dinero"`, `"dolares"`,
+  `"miles"`, `"porcentaje"`, `"cientifico"`, `"millones"`, `"entero"`,
+  `"tiempo"`, `"kwh"` y `"log"`.
 - `FormatoD3(formato)`: Retorna una cadena de formato compatible con D3.js.
 ```r
 # FormatoD3("porcentaje")
