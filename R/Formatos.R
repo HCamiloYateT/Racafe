@@ -2,11 +2,24 @@
 #'
 #' @description Crea un formateador de números según el estilo especificado.
 #' Los formatos disponibles son: "coma" (sin decimales), "numero" (dos decimales),
-#' "dinero" (símbolo "$" y dos decimales), "miles" (en miles con "$"),
-#' "porcentaje" (como porcentaje con dos decimales).
+#' "dinero" (símbolo "$" y sin decimales), "dolares" (dos decimales),
+#' "miles" (en miles con "$"), "porcentaje" (como porcentaje con dos decimales),
+#' "cientifico" (notación científica), "millones" (en millones con "$"),
+#' "entero" (sin decimales), "tiempo" (unidades de tiempo), "kwh" (kilovatios-hora)
+#' y "log" (escala logarítmica).
 #'
-#' @param formato Cadena de texto con el formato: "coma", "numero", "dinero",
-#'   "miles" o "porcentaje".
+#' @details Puede ajustar los parámetros de las funciones de `scales` mediante
+#'   argumentos adicionales en `...`. Por ejemplo, es posible modificar la
+#'   precisión (`accuracy`), el separador de miles (`big.mark`) o los sufijos y
+#'   prefijos sin necesidad de crear nuevos formatos.
+#'
+#' @param formato Cadena de texto (no sensible a mayúsculas/minúsculas) con el
+#'   formato: "coma", "numero", "dinero", "dolares", "miles",
+#'   "porcentaje", "cientifico", "millones", "entero", "tiempo", "kwh" o
+#'   "log".
+#' @param ... Argumentos adicionales que se pasan a la función etiquetadora de
+#'   `scales`, permitiendo personalizar aspectos como el número de decimales,
+#'   el separador de miles, prefijos, sufijos, etc.
 #'
 #' @return Una función que formatea un vector numérico.
 #'
@@ -14,24 +27,38 @@
 #' DefinirFormato("coma")(1234567.89)
 #' DefinirFormato("dinero")(1234567.89)
 #'
-#' @importFrom scales label_number
+#' @importFrom scales label_number label_scientific label_time label_log
 #' @export
-DefinirFormato <- function(formato) {
-  if (formato == "coma") {
-    scales::label_number(accuracy = 1, big.mark = ",")
-  } else if (formato == "numero") {
-    scales::label_number(accuracy = 0.01, big.mark = ",")
-  } else if (formato == "dinero") {
-    scales::label_number(accuracy = 1, prefix = "$", big.mark = ",")
-  } else if (formato == "dolares") {
-    scales::label_number(accuracy = 0.01, prefix = "$", big.mark = ",")
-  } else if (formato == "miles") {
-    scales::label_number(accuracy = 0.01, scale = 1/1000, prefix = "$", big.mark = ",")
-  } else if (formato == "porcentaje") {
-    scales::label_number(accuracy = 0.01, scale = 100, suffix = "%", big.mark = ",")
-  } else {
-    stop("Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'miles' o 'porcentaje'.")
+DefinirFormato <- function(formato, ...) {
+  if (missing(formato) || length(formato) == 0L || is.na(formato[1])) {
+    stop("Debe especificar un formato válido.")
   }
+
+  formato <- tolower(trimws(as.character(formato[1])))
+
+  generadores <- list(
+    coma = function(...) scales::label_number(accuracy = 1, big.mark = ",", ...),
+    numero = function(...) scales::label_number(accuracy = 0.01, big.mark = ",", ...),
+    dinero = function(...) scales::label_number(accuracy = 1, prefix = "$", big.mark = ",", ...),
+    dolares = function(...) scales::label_number(accuracy = 0.01, prefix = "$", big.mark = ",", ...),
+    miles = function(...) scales::label_number(accuracy = 0.01, scale = 1e-3, prefix = "$", big.mark = ",", ...),
+    porcentaje = function(...) scales::label_number(accuracy = 0.01, scale = 100, suffix = "%", big.mark = ",", ...),
+    cientifico = function(...) scales::label_scientific(...),
+    millones = function(...) scales::label_number(accuracy = 0.01, scale = 1e-6, prefix = "$", suffix = " M", big.mark = ",", ...),
+    entero = function(...) scales::label_number(accuracy = 1, big.mark = ",", ...),
+    tiempo = function(...) scales::label_time(...),
+    kwh = function(...) scales::label_number(accuracy = 0.01, suffix = " kWh", big.mark = ",", ...),
+    log = function(...) scales::label_log(...)
+  )
+
+  if (!formato %in% names(generadores)) {
+    stop(
+      "Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'dolares', 'miles', ",
+      "'porcentaje', 'cientifico', 'millones', 'entero', 'tiempo', 'kwh' o 'log'."
+    )
+  }
+
+  generadores[[formato]](...)
 }
 
 #' Definir formato para D3.js

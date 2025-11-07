@@ -4,11 +4,17 @@
 \alias{DefinirFormato}
 \title{Definir formato numérico}
 \usage{
-DefinirFormato(formato)
+DefinirFormato(formato, ...)
 }
 \arguments{
-\item{formato}{Cadena de texto con el formato: "coma", "numero", "dinero",
-"miles" o "porcentaje".}
+\item{formato}{Cadena de texto (no sensible a mayúsculas/minúsculas) con el
+formato: "coma", "numero", "dinero", "dolares", "miles",
+"porcentaje", "cientifico", "millones", "entero", "tiempo", "kwh" o
+"log".}
+
+\item{...}{Argumentos adicionales que se pasan a la función etiquetadora de
+\code{scales}, permitiendo personalizar aspectos como el número de decimales,
+el separador de miles, prefijos, sufijos, etc.}
 }
 \value{
 Una función que formatea un vector numérico.
@@ -16,8 +22,17 @@ Una función que formatea un vector numérico.
 \description{
 Crea un formateador de números según el estilo especificado.
 Los formatos disponibles son: "coma" (sin decimales), "numero" (dos decimales),
-"dinero" (símbolo "$" y dos decimales), "miles" (en miles con "$"),
-"porcentaje" (como porcentaje con dos decimales).
+"dinero" (símbolo "$" y sin decimales), "dolares" (dos decimales),
+"miles" (en miles con "$"), "porcentaje" (como porcentaje con dos decimales),
+"cientifico" (notación científica), "millones" (en millones con "$"),
+"entero" (sin decimales), "tiempo" (unidades de tiempo), "kwh" (kilovatios-hora)
+y "log" (escala logarítmica).
+}
+\details{
+Puede ajustar los parámetros de las funciones de \code{scales} mediante
+argumentos adicionales en \code{...}. Por ejemplo, es posible modificar la
+precisión (\code{accuracy}), el separador de miles (\code{big.mark}) o los sufijos y
+prefijos sin necesidad de crear nuevos formatos.
 }
 \examples{
 DefinirFormato("coma")(1234567.89)
