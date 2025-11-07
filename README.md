@@ -334,3 +334,14 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 # NULL %||% "valor_por_defecto"
 ```
 
+### Pronósticos
+- `aplicar_imputacion(ts_data, metodo_imputacion, ...)`: Imputa valores faltantes en tsibbles usando interpolación, estadísticas básicas, rellenos o valores constantes y garantiza que no queden `NA` residuales.
+- `extraer_intervalos(forecast_obj, nivel_conf)`: Obtiene intervalos de confianza desde objetos de `fable` y calcula uno aproximado cuando el nivel deseado no existe.
+- `ejecutar_pronosticos(train_data, test_data, ...)`: Ejecuta múltiples algoritmos de pronóstico (`forecast`, `fable`, `prophet`, `bsts`, `svr`, etc.), devuelve sus predicciones e intervalos y calcula métricas de error.
+- `Pronosticar(df, ...)`: Automatiza la preparación de series (completitud de fechas, imputación, particiones), ejecuta los métodos seleccionados y reúne resultados con métricas y metadatos.
+- `PronMetricas(resultado_pronostico, columna = NULL)`: Imprime las métricas calculadas por `Pronosticar()` y resume el desempeño por columna.
+- `PronSeleccionar(resultado_pronostico, ...)`: Selecciona el mejor modelo por columna según un criterio compuesto o métricas individuales, con opción de método de respaldo.
+- `PronSerie(seleccion, columna = NULL)`: Genera un gráfico interactivo con históricos, pronósticos e intervalos de confianza del modelo seleccionado.
+- `PronMensual(seleccion, columna = NULL, incluir_pronosticos = TRUE)`: Compara valores mensuales por año destacando históricos y pronósticos en un gráfico `plotly`.
+- `PronPatronMes(seleccion, columna = NULL)`: Resume el patrón estacional histórico con promedios, medianas, bandas de desviación y extremos mensuales.
+

@@ -37,13 +37,17 @@ Imports:
     RMySQL,
     openxlsx2,
     readxl,
-    httr,
-    readxl,
-    openxlsx2,
-    RMySQL,
     tibble,
     stats,
-    utils
+    utils,
+    purrr,
+    tsibble,
+    fable,
+    fabletools,
+    forecast,
+    e1071,
+    bsts,
+    prophet
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
