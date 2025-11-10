@@ -701,7 +701,7 @@ ejecutar_pronosticos <- function(train_data, test_data, h_periods, fechas_futura
 #'   metadatos utilizados durante el proceso.
 #'
 #' @importFrom tsibble as_tsibble fill_gaps yearmonth yearweek index_var is_tsibble
-#' @importFrom lubridate year interval months floor_date
+#' @importFrom lubridate year interval floor_date time_length
 #' @importFrom purrr map_dfr
 #' @importFrom tibble tibble as_tibble
 #' @importFrom dplyr select mutate arrange left_join summarise across filter distinct bind_rows group_by n
@@ -884,8 +884,10 @@ Pronosticar <- function(df, fecha_col = "fecha", valor_cols = NULL, nivel_confia
     if (is.null(periodos_pronostico)) {
       año_siguiente <- lubridate::year(fecha_max_col) + 1
       fecha_objetivo <- as.Date(paste0(año_siguiente, "-12-01"))
-      meses_hasta_obj <- lubridate::interval(fecha_max_col, fecha_objetivo) %/%
-        lubridate::months(1)
+      meses_hasta_obj <- floor(lubridate::time_length(
+        lubridate::interval(fecha_max_col, fecha_objetivo),
+        unit = "month"
+      ))
       h_periods <- max(1, meses_hasta_obj)
       cat("Pronosticando", h_periods,
           "pasos hasta diciembre", año_siguiente,
