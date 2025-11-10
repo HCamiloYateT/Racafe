@@ -243,8 +243,10 @@ BotonEstado("toggle", "Activar filtro")
 
 ### Componentes de salida (Shiny)
 - `BotonDescarga(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL, ...)`: Crea un botón de descarga personalizado.
+  - La función ahora valida todos los argumentos y acepta cualquier color reconocido por R, facilitando la detección temprana de errores de configuración.
 ```r
 BotonDescarga("descargar")
+BotonDescarga("descargar_resumen", color = "steelblue", size = "md", title = "Descargar resumen semanal")
 ```
 - `CajaIco(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra = "#17202A", col_icono = "#000000")`: Diseña cajas informativas con íconos.
 ```r
