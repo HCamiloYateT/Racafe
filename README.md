@@ -1,6 +1,20 @@
 # Funciones Utilitarias
 
 Este repositorio contiene un paquete de R creado específicamente para **Racafé**, el cual incluye una serie de funciones misceláneas diseñadas para facilitar y optimizar la creación de reportes. Las funciones incluidas permiten la generación de gráficos, cálculos de KPIs, manipulación de datos y otros procesos útiles en el contexto de análisis y reportes corporativos.
+## Instalación
+
+Para instalar el paquete directamente desde GitHub utiliza cualquiera de las siguientes alternativas:
+
+```r
+# Usando pak
+pak::pak("racafe-col/racafe")
+
+# Usando remotes
+remotes::install_github("racafe-col/racafe")
+```
+
+Si el proyecto se gestiona con `renv`, ejecuta `renv::restore()` para recrear el entorno reproducible antes de cargar el paquete.
+
 ## Funciones del paquete
 
 ### Conexión y escritura de bases
@@ -339,6 +353,21 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```r
 # Loadpkg(c("ggplot2", "dplyr"))
 ```
+
+## Flujo de trabajo recomendado
+
+1. **Configura las credenciales** necesarias para las funciones de base de datos y Microsoft Graph mediante variables de entorno o `.Renviron`.
+2. **Carga el paquete** y, en caso de ser necesario, utiliza `Loadpkg()` para instalar dependencias adicionales.
+3. **Crea o actualiza los reportes** apoyándote en las funciones de manipulación de datos, visualización y publicación incluidas en el paquete.
+4. **Automatiza la generación de informes** aprovechando las funciones de pronósticos y los componentes de `shiny`.
+
+## Contribuir
+
+1. Crea un *fork* del repositorio y realiza los cambios en una rama descriptiva.
+2. Ejecuta las pruebas o *scripts* de validación necesarios para garantizar que los cambios no rompen la funcionalidad existente.
+3. Envía un *pull request* describiendo claramente el problema que resuelves y los cambios realizados.
+
+Para dudas o sugerencias puedes abrir un *issue* en el repositorio.
 
 ### Operadores y utilidades
 - ``%||%(a, b)``: Devuelve `a` si es un valor no vacío; de lo contrario retorna `b` como alternativa segura.
