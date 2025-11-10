@@ -185,6 +185,10 @@ gt_pct_style(gt::gt(head(mtcars)), columns = mpg)
 ```r
 gt_var_style(gt::gt(head(mtcars)), columns = cyl)
 ```
+- `gt_sign_style(gt_table, ...)`: Colorea valores positivos en verde, negativos en rojo y ceros en negro dentro de tablas `gt`.
+```r
+gt_sign_style(gt::gt(head(mtcars)), columns = mpg)
+```
 - `gt_color_columns(gt_table, columns, color)`: Colorea columnas específicas en `gt`.
 ```r
 gt_color_columns(gt::gt(head(mtcars)), columns = hp, color = "#28B78D")
