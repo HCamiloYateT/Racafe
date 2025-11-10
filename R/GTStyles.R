@@ -85,6 +85,74 @@ gt_var_style <- function(gt_table, ...) {
   gt_table
 }
 
+#' Aplicar estilo según el signo de los valores en columnas de una tabla `gt`
+#'
+#' @description
+#' Colorea el texto de columnas numéricas de una tabla creada con `gt` usando
+#' un esquema tricolor: rojo para valores negativos, verde para valores
+#' positivos y negro para los valores exactamente iguales a cero.
+#'
+#' @inheritParams gt_pct_style
+#'
+#' @return El objeto `gt_table` con los estilos agregados.
+#'
+#' @examples
+#' \dontrun{
+#' library(gt)
+#' data <- data.frame(etiqueta = c("A", "B", "C"), signo = c(-2, 0, 5))
+#' data %>%
+#'   gt() %>%
+#'   gt_sign_style(signo)
+#' }
+#'
+#' @export
+#' @seealso [gt_var_style()], [gt_pct_style()]
+gt_sign_style <- function(gt_table, ...) {
+  if (!inherits(gt_table, "gt_tbl")) {
+    rlang::abort("`gt_table` debe ser un objeto creado con `gt::gt()`.")
+  }
+
+  cols <- rlang::ensyms(...)
+
+  if (length(cols) == 0) {
+    rlang::abort("Debe especificar al menos una columna para aplicar el estilo.")
+  }
+
+  gt_data <- gt_table[['_data']]
+
+  if (is.null(gt_data)) {
+    rlang::abort("No fue posible acceder a los datos internos de `gt_table`.")
+  }
+
+  for (col in cols) {
+    col_name <- rlang::as_name(col)
+
+    if (!col_name %in% names(gt_data)) {
+      rlang::abort(sprintf("La columna '%s' no existe en `gt_table`.", col_name))
+    }
+
+    if (!is.numeric(gt_data[[col_name]])) {
+      rlang::abort(sprintf("La columna '%s' debe ser numérica para aplicar `gt_sign_style()`.", col_name))
+    }
+
+    gt_table <- gt_table %>%
+      gt::tab_style(
+        style = gt::cell_text(color = "#C11007", weight = "bold"),
+        locations = gt::cells_body(columns = !!col, rows = !!col < 0)
+      ) %>%
+      gt::tab_style(
+        style = gt::cell_text(color = "#62A602", weight = "bold"),
+        locations = gt::cells_body(columns = !!col, rows = !!col > 0)
+      ) %>%
+      gt::tab_style(
+        style = gt::cell_text(color = "#000000", weight = "bold"),
+        locations = gt::cells_body(columns = !!col, rows = !!col == 0)
+      )
+  }
+
+  gt_table
+}
+
 #' Colorear columnas completas en una tabla `gt`
 #'
 #' @description
