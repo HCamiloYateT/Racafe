@@ -7,7 +7,9 @@
 FormatoJS(formato)
 }
 \arguments{
-\item{formato}{Cadena de texto: "coma", "numero", "dinero" o "porcentaje".}
+\item{formato}{Cadena de texto con el formato deseado. Valores permitidos:
+"coma", "numero", "dinero", "dolares", "miles", "porcentaje",
+"cientifico", "millones", "entero", "tiempo", "kwh" o "log".}
 }
 \value{
 Un string con una función en JavaScript que formatea números.

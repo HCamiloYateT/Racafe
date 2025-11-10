@@ -65,7 +65,9 @@ DefinirFormato <- function(formato, ...) {
 #'
 #' @description Genera un string de formato compatible con la librería D3.js.
 #'
-#' @param formato Cadena de texto: "coma", "numero", "dinero" o "porcentaje".
+#' @param formato Cadena de texto con el formato deseado. Valores permitidos:
+#'   "coma", "numero", "dinero", "dolares", "miles", "porcentaje",
+#'   "cientifico", "millones", "entero", "tiempo", "kwh" o "log".
 #'
 #' @return Un string que representa el formato en D3.js.
 #'
@@ -75,24 +77,44 @@ DefinirFormato <- function(formato, ...) {
 #'
 #' @export
 FormatoD3 <- function(formato) {
-  if (formato == "coma") {
-    ",.0f"
-  } else if (formato == "numero") {
-    ",.2f"
-  } else if (formato == "dinero") {
-    "$,.2f"
-  } else if (formato == "porcentaje") {
-    ",.2%"
-  } else {
-    stop("Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'porcentaje'.")
+  if (missing(formato) || length(formato) == 0L || is.na(formato[1])) {
+    stop("Debe especificar un formato válido.")
   }
+
+  formato <- tolower(trimws(as.character(formato[1])))
+
+  formatos <- c(
+    coma = ",.0f",
+    numero = ",.2f",
+    dinero = "$,.0f",
+    dolares = "$,.2f",
+    miles = "$,.2~s",
+    porcentaje = ",.2%",
+    cientifico = ".2e",
+    millones = "$,.2~s",
+    entero = ",.0f",
+    tiempo = "%H:%M:%S",
+    kwh = ",.2f",
+    log = ".2e"
+  )
+
+  if (!formato %in% names(formatos)) {
+    stop(
+      "Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'dolares', 'miles', ",
+      "'porcentaje', 'cientifico', 'millones', 'entero', 'tiempo', 'kwh' o 'log'."
+    )
+  }
+
+  formatos[[formato]]
 }
 
 #' Definir formato para JavaScript
 #'
 #' @description Genera una función en formato string para aplicar en JavaScript.
 #'
-#' @param formato Cadena de texto: "coma", "numero", "dinero" o "porcentaje".
+#' @param formato Cadena de texto con el formato deseado. Valores permitidos:
+#'   "coma", "numero", "dinero", "dolares", "miles", "porcentaje",
+#'   "cientifico", "millones", "entero", "tiempo", "kwh" o "log".
 #'
 #' @return Un string con una función en JavaScript que formatea números.
 #'
@@ -102,24 +124,44 @@ FormatoD3 <- function(formato) {
 #'
 #' @export
 FormatoJS <- function(formato) {
-  if (formato == "coma") {
-    'function(d){return d.toFixed(0).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");}'
-  } else if (formato == "numero") {
-    'function(d){return d.toFixed(2);}'
-  } else if (formato == "dinero") {
-    'function(d){return "$" + d.toFixed(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ",");}'
-  } else if (formato == "porcentaje") {
-    'function(d){return (d*100).toFixed(1) + "%";}'
-  } else {
-    stop("Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'porcentaje'.")
+  if (missing(formato) || length(formato) == 0L || is.na(formato[1])) {
+    stop("Debe especificar un formato válido.")
   }
+
+  formato <- tolower(trimws(as.character(formato[1])))
+
+  formatos <- list(
+    coma = 'function(d){return Number(d).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});}',
+    numero = 'function(d){return Number(d).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}',
+    dinero = 'function(d){return "$" + Number(d).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});}',
+    dolares = 'function(d){return "$" + Number(d).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}',
+    miles = 'function(d){return "$" + (Number(d)/1000).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}',
+    porcentaje = 'function(d){return (Number(d)*100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + "%";}',
+    cientifico = 'function(d){return Number(d).toExponential(2);}',
+    millones = 'function(d){return "$" + (Number(d)/1000000).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + " M";}',
+    entero = 'function(d){return Number(d).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});}',
+    tiempo = 'function(d){var total=Math.max(0,Math.round(Number(d)));var horas=Math.floor(total/3600);var minutos=Math.floor((total%3600)/60);var segundos=total%60;return [horas,minutos,segundos].map(function(v){return String(v).padStart(2,"0");}).join(":");}',
+    kwh = 'function(d){return Number(d).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + " kWh";}',
+    log = 'function(d){return Number(d).toExponential(2);}'
+  )
+
+  if (!formato %in% names(formatos)) {
+    stop(
+      "Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'dolares', 'miles', ",
+      "'porcentaje', 'cientifico', 'millones', 'entero', 'tiempo', 'kwh' o 'log'."
+    )
+  }
+
+  formatos[[formato]]
 }
 
 #' Definir formato para Handsontable
 #'
 #' @description Devuelve un string con el formato numérico para usar en Handsontable.
 #'
-#' @param formato Cadena de texto: "coma", "numero", "dinero" o "porcentaje".
+#' @param formato Cadena de texto con el formato deseado. Valores permitidos:
+#'   "coma", "numero", "dinero", "dolares", "miles", "porcentaje",
+#'   "cientifico", "millones", "entero", "tiempo", "kwh" o "log".
 #'
 #' @return Un string con el formato de Handsontable.
 #'
@@ -129,17 +171,35 @@ FormatoJS <- function(formato) {
 #'
 #' @export
 FormatoHOT <- function(formato) {
-  if (formato == "coma") {
-    "0,0"
-  } else if (formato == "numero") {
-    "0,0.00"
-  } else if (formato == "dinero") {
-    "$0,0.00"
-  } else if (formato == "porcentaje") {
-    "0.00%"
-  } else {
-    stop("Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'porcentaje'.")
+  if (missing(formato) || length(formato) == 0L || is.na(formato[1])) {
+    stop("Debe especificar un formato válido.")
   }
+
+  formato <- tolower(trimws(as.character(formato[1])))
+
+  formatos <- c(
+    coma = "0,0",
+    numero = "0,0.00",
+    dinero = "$0,0",
+    dolares = "$0,0.00",
+    miles = "$0,0.00a",
+    porcentaje = "0.00%",
+    cientifico = "0.00e+0",
+    millones = "$0,0.00a",
+    entero = "0,0",
+    tiempo = "00:00:00",
+    kwh = '0,0.00 "kWh"',
+    log = "0.00e+0"
+  )
+
+  if (!formato %in% names(formatos)) {
+    stop(
+      "Formato no reconocido. Use: 'coma', 'numero', 'dinero', 'dolares', 'miles', ",
+      "'porcentaje', 'cientifico', 'millones', 'entero', 'tiempo', 'kwh' o 'log'."
+    )
+  }
+
+  formatos[[formato]]
 }
 
 #' Formatear número en HTML
