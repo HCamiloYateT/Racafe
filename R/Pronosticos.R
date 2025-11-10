@@ -145,7 +145,7 @@ extraer_intervalos <- function(forecast_obj, nivel_conf) {
 #' Ejecutar un conjunto de métodos de pronóstico
 #'
 #' Genera pronósticos empleando diferentes métodos de la librería `forecast`,
-#' `fable`, `prophet`, `e1071` y `bsts`. El resultado incluye tanto los valores
+#' `fable`, `prophet` y `e1071`. El resultado incluye tanto los valores
 #' pronosticados como intervalos de confianza y métricas de evaluación calculadas
 #' sobre una partición de prueba.
 #'
@@ -173,7 +173,6 @@ extraer_intervalos <- function(forecast_obj, nivel_conf) {
 #' @importFrom fable ARIMA ETS NNETAR MEAN NAIVE SNAIVE TSLM
 #' @importFrom forecast ses hw tbats bats auto.arima arfima forecast
 #' @importFrom e1071 svm
-#' @importFrom bsts AddLocalLevel AddTrig bsts
 #' @importFrom prophet prophet make_future_dataframe
 #' @export
 ejecutar_pronosticos <- function(train_data, test_data, h_periods, fechas_futuras,
@@ -623,52 +622,6 @@ ejecutar_pronosticos <- function(train_data, test_data, h_periods, fechas_futura
                         data.frame(metodo = "SVR", RMSE = m["RMSE"], MAPE = m["MAPE"]))
       cat("SVR completado para", nombre_columna, "\n")
     }, error = function(e) warning(paste("Error en SVR para", nombre_columna, ":", e$message)))
-  }
-
-  if ("bsts" %in% metodos) {
-    tryCatch({
-      y <- as.numeric(train_data$valor)
-
-      ss <- list()
-      ss <- bsts::AddLocalLevel(ss, y)
-      ss <- bsts::AddTrig(ss, y, nseasons = frecuencia_ts)
-
-      modelo_bsts <- bsts::bsts(
-        y,
-        state.specification = ss,
-        niter = 1000
-      )
-
-      pred_bsts <- stats::predict(
-        modelo_bsts,
-        horizon = h_periods,
-        quantiles = c((1 - nivel_confianza) / 2, (1 + nivel_confianza) / 2)
-      )
-
-      valor_bsts <- as.numeric(pred_bsts$mean)
-      limite_inferior <- as.numeric(pred_bsts$interval[1, ])
-      limite_superior <- as.numeric(pred_bsts$interval[2, ])
-
-      if (nrow(test_data) > 0) {
-        h_test <- nrow(test_data)
-        pred_test_bsts <- stats::predict(modelo_bsts, horizon = h_test)
-        m <- calc_metricas(test_data$valor, pred_test_bsts$mean)
-      } else {
-        m <- c(RMSE = NA_real_, MAPE = NA_real_)
-      }
-
-      resultados$bsts <- data.frame(
-        fecha = fechas_futuras,
-        metodo = "BSTS",
-        valor = valor_bsts,
-        limite_inferior = limite_inferior,
-        limite_superior = limite_superior,
-        tipo = "Pronóstico"
-      )
-      metricas <- rbind(metricas,
-                        data.frame(metodo = "BSTS", RMSE = m["RMSE"], MAPE = m["MAPE"]))
-      cat("BSTS completado para", nombre_columna, "\n")
-    }, error = function(e) warning(paste("Error en BSTS para", nombre_columna, ":", e$message)))
   }
 
   if ("prophet" %in% metodos) {

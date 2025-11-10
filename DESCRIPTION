@@ -46,7 +46,6 @@ Imports:
     fabletools,
     forecast,
     e1071,
-    bsts,
     prophet
 Suggests:
     testthat (>= 3.0.0)
