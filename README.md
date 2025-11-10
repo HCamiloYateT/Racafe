@@ -1,6 +1,21 @@
 # Funciones Utilitarias
 
 Este repositorio contiene un paquete de R creado específicamente para **Racafé**, el cual incluye una serie de funciones misceláneas diseñadas para facilitar y optimizar la creación de reportes. Las funciones incluidas permiten la generación de gráficos, cálculos de KPIs, manipulación de datos y otros procesos útiles en el contexto de análisis y reportes corporativos.
+
+## Instalación
+
+```r
+# Instalar la librería devtools si aún no está disponible
+install.packages("devtools")
+
+# Clonar el repositorio y, una vez dentro de la carpeta, ejecutar:
+devtools::install(".")
+
+# Alternativamente, puede instalar directamente desde GitHub
+install.packages("remotes")
+remotes::install_github("racafe/racafe")
+```
+
 ## Funciones del paquete
 
 ### Conexión y escritura de bases
@@ -19,7 +34,7 @@ EscribirDatos(df, "mi_tabla")
 df_nuevos <- data.frame(x = 4:6, y = letters[4:6])
 AgregarDatos(df_nuevos, "mi_tabla")
 ```
-- `CargarDatos(tabla, condicion = NULL)`: Recupera datos de una tabla opcionalmente filtrando con una condición.
+- `CargarDatos(tabla, condicion = NULL)`: Recupera datos de una tabla, opcionalmente filtrando con una condición.
 ```r
 df <- CargarDatos("mi_tabla")
 df_filtrado <- CargarDatos("mi_tabla", "x > 10")
@@ -87,7 +102,7 @@ hojas <- ListarHojasExcelOneDrive("ABC123...", "juan.perez")
 df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 1)
 ```
 
-### Datos
+### Datos y transformación
 - `ConsultaSistema(bd, uid, pwd, query, server = "172.16.19.21", port = 1433)`: Ejecuta una consulta en SQL Server y devuelve un `data.frame` con nombres de columnas limpios.
 ```r
 # df <- ConsultaSistema("syscafe", "usuario", "clave", "SELECT TOP 10 * FROM tabla")
@@ -112,248 +127,248 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```r
 # resultado <- left_join_all(df_base, list(df_extra1, df_extra2), by = c("id" = "id"))
 ```
-
-### Fechas
-- `PrimerDia(x, uni = "month")`: Retorna el primer día de la unidad temporal de una fecha.
+- `%||%(a, b)`: Operador infijo que retorna `a` si no es nulo ni vacío; de lo contrario, retorna `b`.
 ```r
-# PrimerDia("2023-10-15")
+valor <- entrada %||% "valor_por_defecto"
 ```
-- `FechaTexto(x, ...)`: Convierte fechas en un texto personalizado.
+- `Loadpkg(pkg)`: Carga un paquete si está instalado o lo instala antes de cargarlo.
 ```r
-# FechaTexto(as.Date("2023-10-15"))
-```
-- `EdadCumplida(from, to)`: Calcula la edad en años entre dos fechas.
-```r
-# EdadCumplida(as.Date("1990-05-25"), Sys.Date())
+Loadpkg("dplyr")
 ```
 
-### Texto
-- `LimpiarNombres(s)`: Normaliza cadenas eliminando espacios repetidos y convirtiéndolas a mayúsculas.
+### Formatos y estilos
+- `DefinirFormato(formato, ...)`: Registra un formato personalizado reutilizable.
 ```r
-# LimpiarNombres("  Camilo    Yate  ")
+DefinirFormato("porcentaje", scales::percent_format())
 ```
-- `LimpiarCadena(x, rem_espacios = FALSE, rem_numeros = TRUE, rem_caresp = TRUE, rem_acentos = TRUE)`: Limpia caracteres no deseados de un texto.
+- `FormatoD3(formato)`: Convierte un formato registrado a la sintaxis usada por D3.js.
 ```r
-# LimpiarCadena("¡Hola, mundo 123!")
+FormatoD3("porcentaje")
 ```
-- `UnirCadenas(..., sep = " ", collapse = NULL, na.rm = FALSE)`: Une textos omitendo `NA` si se indica.
+- `FormatoJS(formato)`: Obtiene la representación JavaScript de un formato.
 ```r
-# UnirCadenas("Hola", NA, "Mundo", sep = "-", na.rm = TRUE)
+FormatoJS("porcentaje")
 ```
-- `Unicos(x)`: Devuelve los valores únicos ordenados de un vector.
+- `FormatoHOT(formato)`: Traduce un formato a la sintaxis de Handsontable.
 ```r
-# Unicos(c("b", "a", "a"))
+FormatoHOT("porcentaje")
 ```
-- `EsVacio(x)`: Verifica si un valor es `NULL`, `NA` o una cadena vacía.
+- `FormatearNumero(x, formato, negrita = TRUE, color = "#000000", meta = NA, prop = TRUE)`: Aplica formato numérico con estilos condicionales.
 ```r
-# EsVacio("")
+FormatearNumero(0.25, "porcentaje", meta = 0.2)
 ```
-- `EsEnteroPositivo(s)`: Comprueba si una cadena representa un entero positivo.
+- `FormatearTexto(x, negrita = TRUE, color = "#000000", tamano_pct = 1, alineacion = "left", transform = "none")`: Aplica estilo a texto plano.
 ```r
-# EsEnteroPositivo("123")
+FormatearTexto("Meta alcanzada", color = "#28B78D")
 ```
-- `EsNumero(cadena)`: Comprueba si la cadena es un número positivo. Los valores `NA` y las cadenas vacías retornan `FALSE`.
+- `gt_minimal_style(gt_table)`: Aplica un estilo mínimo a objetos `gt`.
 ```r
-# EsNumero("12.3")
-# EsNumero("")
-# EsNumero(NA)
+tabla <- gt_minimal_style(gt::gt(head(mtcars)))
 ```
-- `EsNumTelefono(tel)`: Verifica si una cadena corresponde a un número de teléfono válido.
+- `col_kpi(x, prop = TRUE)`: Devuelve estilos de color para columnas KPI según cumplimiento.
 ```r
-# EsNumTelefono("3001234567")
+col_kpi(c(0.8, 1.1))
 ```
-- `EsEmail(email)`: Valida si una cadena corresponde a un correo electrónico.
+- `chr_kpi(x)`: Genera indicadores textuales de desempeño.
 ```r
-# EsEmail("test@example.com")
+chr_kpi(c(0.8, 1.1))
+```
+- `col_num(x)`: Define la paleta numérica estándar del paquete.
+```r
+col_num(1:5)
+```
+- `gt_pct_style(gt_table, ...)`: Configura porcentajes en tablas `gt`.
+```r
+gt_pct_style(gt::gt(head(mtcars)), columns = mpg)
+```
+- `gt_var_style(gt_table, ...)`: Da formato variacional a columnas de `gt`.
+```r
+gt_var_style(gt::gt(head(mtcars)), columns = cyl)
+```
+- `gt_color_columns(gt_table, columns, color)`: Colorea columnas específicas en `gt`.
+```r
+gt_color_columns(gt::gt(head(mtcars)), columns = hp, color = "#28B78D")
 ```
 
 ### Elementos gráficos
-- `vline(x = 0, color = "red")`: Genera una línea vertical para gráficos interactivos.
+- `vline(x = 0, color = "red")`: Crea una línea vertical en gráficos `plotly`.
 ```r
-# plotly::layout(shapes = list(vline(2)))
+vline(10, "#28B78D")
 ```
-- `hline(y = 0, color = "#ff3a21")`: Genera una línea horizontal para gráficos interactivos.
+- `hline(y = 0, color = "#ff3a21")`: Crea una línea horizontal en `plotly`.
 ```r
-# plotly::layout(shapes = list(hline(3)))
+hline(0.5)
 ```
-- `ColoresRacafe(input_values)`: Asigna colores personalizados resaltando "RACAFE".
+- `ColoresRacafe(input_values)`: Genera una paleta de colores corporativos.
 ```r
-# ColoresRacafe(c("RACAFE", "Otro"))
+ColoresRacafe(5)
 ```
-- `ColoresGreenBlue(value)`: Genera una paleta de colores del verde al azul.
+- `ColoresGreenBlue(value)`: Devuelve gradientes verde-azul según valores numéricos.
 ```r
-# ColoresGreenBlue(1:5)
+ColoresGreenBlue(seq(0, 1, length.out = 5))
 ```
-- `ImprimirAnillo(data, var_label, var_medida = NULL, funcion = c("sum", "n"), colores = NULL)`: Crea un gráfico tipo anillo interactivo usando `plotly`, calculando los valores mediante un conteo simple o una función de agregación.
+- `ImprimirAnillo(data, var_label, var_medida = NULL, funcion = c("sum", "n"), colores = NULL)`: Construye gráficos de anillo en `plotly`.
 ```r
-# df <- data.frame(Categoria = c("A", "B", "C"), Valor = c(10, 20, 30))
-# ImprimirAnillo(df, "Categoria", "Valor", funcion = "sum")
-```
-
-### Formatos
-- `DefinirFormato(formato, ...)`: Devuelve un formateador numérico predefinido
-  para su uso con `scales`. Acepta tanto mayúsculas como minúsculas y permite
-  personalizar parámetros adicionales (por ejemplo `accuracy`, `big.mark`,
-  `prefix` o `suffix`) mediante `...`.
-```r
-# f <- DefinirFormato("dinero"); f(1234.5)
-# f_porcentaje <- DefinirFormato("porcentaje", accuracy = 0.1); f_porcentaje(0.257)
-```
-- Formatos disponibles: `"coma"`, `"numero"`, `"dinero"`, `"dolares"`,
-  `"miles"`, `"porcentaje"`, `"cientifico"`, `"millones"`, `"entero"`,
-  `"tiempo"`, `"kwh"` y `"log"`.
-- `FormatoD3(formato)`: Retorna una cadena de formato compatible con D3.js
-  para cualquiera de los formatos disponibles (`"coma"`, `"numero"`,
-  `"dinero"`, `"dolares"`, `"miles"`, `"porcentaje"`, `"cientifico"`,
-  `"millones"`, `"entero"`, `"tiempo"`, `"kwh"` y `"log"`).
-```r
-# FormatoD3("porcentaje")
-```
-- `FormatoJS(formato)`: Devuelve una función de formato en JavaScript como cadena
-  utilizando los mismos formatos soportados.
-```r
-# FormatoJS("coma")
-```
-- `FormatoHOT(formato)`: Entrega una cadena de formato para Handsontable para
-  cualquiera de los formatos soportados.
-```r
-# FormatoHOT("dinero")
-```
-- `FormatearNumero(x, formato, ...)`: Envuelve números en HTML con estilo.
-```r
-# FormatearNumero(2500, "dinero", meta = 2000)
-```
-- `FormatearTexto(x, ...)`: Aplica estilos HTML a un texto.
-```r
-# FormatearTexto("Hola", color = "#0000FF")
-```
-- `gt_minimal_style(gt_table)`: Aplica un estilo minimalista a tablas `gt`.
-```r
-# gt::gt(head(mtcars)) |> gt_minimal_style()
-```
-- `gt_pct_style(gt_table, ...)`: Resalta columnas con porcentajes aplicando una escala de colores corporativos.
-```r
-# gt::gt(head(mtcars)) |> gt_pct_style(pct_col)
-```
-- `gt_var_style(gt_table, ...)`: Colorea valores positivos y negativos para resaltar variaciones.
-```r
-# gt::gt(head(mtcars)) |> gt_var_style(var_col)
-```
-- `gt_color_columns(gt_table, columns, color)`: Colorea el fondo de columnas completas, incluidos los encabezados.
-```r
-# gt::gt(head(mtcars)) |> gt_color_columns(columns = "mpg", color = "#f0f0f0")
-```
-- `col_kpi(x, prop = TRUE)`: Asigna un color según el valor de un KPI.
-```r
-# col_kpi(1)
-```
-- `chr_kpi(x)`: Devuelve un símbolo representativo del KPI.
-```r
-# chr_kpi(-1)
-```
-- `col_num(x)`: Define color según si el número es positivo o negativo.
-```r
-# col_num(c(1, -1))
+ImprimirAnillo(df, var_label = "categoria", var_medida = "valor")
 ```
 
-### HTML
-- `Saltos(n = 1)`: Inserta saltos de línea `<br/>` en HTML.
+### Componentes de entrada (Shiny)
+- `InputNumerico(id, label, value, dec = 2, max = NULL, min = NULL, type = "numero", label_col = 6, input_col = 6, width = "100%")`: Genera un input numérico personalizado.
 ```r
-# Saltos(2)
+InputNumerico("ventas", "Ventas", 1000, dec = 0)
 ```
-- `Espacios(n = 1)`: Inserta espacios `&emsp;` en HTML.
+- `ListaDesplegable(inputId, label = NULL, choices, selected = choices, multiple = TRUE, fem = FALSE, ns = NULL)`: Crea un `pickerInput` con estilo.
 ```r
-# Espacios(3)
+ListaDesplegable("region", "Región", choices = c("Norte", "Sur"))
 ```
-- `Obligatorio(s)`: Añade un asterisco rojo a un campo obligatorio.
+- `pick_opt(cho, fem = TRUE)`: Construye opciones con género en `pickerInput`.
 ```r
-# Obligatorio("Nombre")
+pick_opt(c("Seleccionar", "Todas"))
 ```
-
-### Inputs
-- `BotonesRadiales(inputId, label = NULL, choices, selected = NULL, ...)`: Crea un grupo de botones radiales con estilos corporativos personalizados para `shiny`.
+- `BotonesRadiales(inputId, label = NULL, choices, selected = NULL, ...)`: Genera botones radiales estilizados.
 ```r
-# BotonesRadiales(
-#   inputId = "opcion",
-#   label = "Seleccione una opción:",
-#   choices = c("A", "B", "C"),
-#   selected = "B"
-# )
+BotonesRadiales("estado", "Estado", choices = c("Activo", "Inactivo"))
 ```
-- `BotonEstado(button_id, estado = FALSE, icono_verdadero = "check-circle", icono_falso = "x-circle", ...)`: Genera un botón con íconos dinámicos para representar estados binarios.
+- `BotonEstado(...)`: Construye un botón tipo interruptor para activar/desactivar estados.
 ```r
-# BotonEstado(
-#   button_id = "toggle_estado",
-#   estado = TRUE,
-#   titulo_verdadero = "Activo",
-#   titulo_falso = "Inactivo"
-# )
-```
-- `InputNumerico(id, label, value, ...)`: Crea un campo numérico estilizado para `shiny`.
-```r
-# InputNumerico("monto", "Monto:", 1000, type = "dinero")
-```
-- `ListaDesplegable(id, label, choices, ...)`: Genera un menú desplegable compatible con `shiny` utilizando estilos corporativos.
-```r
-# ListaDesplegable("producto", "Producto:", choices = c("Café", "Azúcar", "Cacao"))
-```
-- `pick_opt(cho, fem = TRUE)`: Genera opciones personalizadas para `selectPicker`.
-```r
-# pick_opt(letters[1:5])
+BotonEstado("toggle", "Activar filtro")
 ```
 
-### Numéricos
-- `SiError_0(x)`: Reemplaza valores `NaN` e infinitos por 0.
+### Componentes de salida (Shiny)
+- `BotonDescarga(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL, ...)`: Crea un botón de descarga personalizado.
 ```r
-# SiError_0(c(1, NaN, Inf))
+BotonDescarga("descargar")
 ```
-- `Variacion(ini, fin)`: Calcula la variación relativa entre valores iniciales y finales.
+- `CajaIco(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra = "#17202A", col_icono = "#000000")`: Diseña cajas informativas con íconos.
 ```r
-# Variacion(c(10, 0), c(15, 5))
+CajaIco("Ingresos", "chart-line")
 ```
-- `Moda(x, na.rm = TRUE)`: Obtiene la moda de un vector.
+- `ImprimeSankey(data, vars, fun, var = NULL, colores)`: Genera diagramas Sankey con `plotly`.
 ```r
-# Moda(c(1, 2, 2, 3))
+ImprimeSankey(df, vars = c("origen", "destino"), fun = "sum", var = "valor")
+```
+
+### Funciones numéricas
+- `SiError_0(x)`: Reemplaza errores por cero.
+```r
+SiError_0(tryCatch(log(-1), error = function(e) e))
+```
+- `Variacion(ini, fin)`: Calcula la variación porcentual entre dos valores.
+```r
+Variacion(100, 120)
+```
+- `Moda(x, na.rm = TRUE)`: Determina la moda de un vector.
+```r
+Moda(c(1, 2, 2, 3))
 ```
 - `RedondearMultiplo(x, multiple)`: Redondea al múltiplo más cercano.
 ```r
-# RedondearMultiplo(453, 100)
+RedondearMultiplo(17, 5)
 ```
 
-### Outputs
-- `BotonDescarga(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL, title = "Descargar", size = "sm")`: Genera un botón de descarga estilizado para aplicaciones `shiny`.
+### Manejo de fechas
+- `PrimerDia(x, uni = "month")`: Retorna el primer día de la unidad temporal de una fecha.
 ```r
-# BotonDescarga("descargar_reporte")
+PrimerDia("2023-10-15")
 ```
-- `CajaIco(texto, icono, ...)`: Crea una caja con ícono y texto.
+- `FechaTexto(x, ...)`: Convierte fechas en un texto personalizado.
 ```r
-# CajaIco("Mensaje", "info-circle")
+FechaTexto(as.Date("2023-10-15"))
 ```
-- `ImprimeSankey(data, vars, fun, var = NULL, colores)`: Genera un diagrama de Sankey.
+- `EdadCumplida(from, to)`: Calcula la edad en años entre dos fechas.
 ```r
-# ImprimeSankey(df, c("Var1", "Var2"), "n", colores = c("blue", "green"))
-```
-
-### Librerías
-- `Loadpkg(pkg)`: Instala (si es necesario) y carga paquetes de R.
-```r
-# Loadpkg(c("ggplot2", "dplyr"))
+EdadCumplida(as.Date("1990-05-25"), Sys.Date())
 ```
 
-### Operadores y utilidades
-- ``%||%(a, b)``: Devuelve `a` si es un valor no vacío; de lo contrario retorna `b` como alternativa segura.
+### Manipulación de texto
+- `LimpiarNombres(s)`: Normaliza cadenas eliminando espacios repetidos y convirtiéndolas a mayúsculas.
 ```r
-# NULL %||% "valor_por_defecto"
+LimpiarNombres("  Camilo    Yate  ")
+```
+- `LimpiarCadena(x, rem_espacios = FALSE, rem_numeros = TRUE, rem_caresp = TRUE, rem_acentos = TRUE)`: Limpia caracteres no deseados de un texto.
+```r
+LimpiarCadena("¡Hola, mundo 123!")
+```
+- `UnirCadenas(..., sep = " ", collapse = NULL, na.rm = FALSE)`: Une textos omitiendo `NA` si se indica.
+```r
+UnirCadenas("Hola", NA, "Mundo", sep = "-", na.rm = TRUE)
+```
+- `Unicos(x)`: Devuelve los valores únicos ordenados de un vector.
+```r
+Unicos(c("b", "a", "a"))
+```
+- `EsVacio(x)`: Verifica si un valor es `NULL`, `NA` o una cadena vacía.
+```r
+EsVacio("")
+```
+- `EsEnteroPositivo(s)`: Comprueba si una cadena representa un entero positivo.
+```r
+EsEnteroPositivo("123")
+```
+- `EsNumero(cadena)`: Comprueba si la cadena es un número positivo. Los valores `NA` y las cadenas vacías retornan `FALSE`.
+```r
+EsNumero("12.3")
+EsNumero("")
+EsNumero(NA)
+```
+- `EsNumTelefono(tel)`: Valida el formato de un número telefónico.
+```r
+EsNumTelefono("3123456789")
+```
+- `EsEmail(email)`: Valida direcciones de correo electrónico.
+```r
+EsEmail("usuario@racafe.com")
+```
+
+### Utilidades HTML
+- `Saltos(n = 1)`: Genera saltos de línea en HTML.
+```r
+Saltos(2)
+```
+- `Espacios(n = 1)`: Inserta espacios no separables.
+```r
+Espacios(3)
+```
+- `Obligatorio(s)`: Marca texto como obligatorio con estilo HTML.
+```r
+Obligatorio("Campo requerido")
 ```
 
 ### Pronósticos
-- `aplicar_imputacion(ts_data, metodo_imputacion, ...)`: Imputa valores faltantes en tsibbles usando interpolación, estadísticas básicas, rellenos o valores constantes y garantiza que no queden `NA` residuales.
-- `extraer_intervalos(forecast_obj, nivel_conf)`: Obtiene intervalos de confianza desde objetos de `fable` y calcula uno aproximado cuando el nivel deseado no existe.
-- `ejecutar_pronosticos(train_data, test_data, ...)`: Ejecuta múltiples algoritmos de pronóstico (`forecast`, `fable`, `prophet`, `bsts`, `svr`, etc.), devuelve sus predicciones e intervalos y calcula métricas de error.
-- `Pronosticar(df, ...)`: Automatiza la preparación de series (completitud de fechas, imputación, particiones), ejecuta los métodos seleccionados y reúne resultados con métricas y metadatos.
-- `PronMetricas(resultado_pronostico, columna = NULL)`: Imprime las métricas calculadas por `Pronosticar()` y resume el desempeño por columna.
-- `PronSeleccionar(resultado_pronostico, ...)`: Selecciona el mejor modelo por columna según un criterio compuesto o métricas individuales, con opción de método de respaldo.
-- `PronSerie(seleccion, columna = NULL)`: Genera un gráfico interactivo con históricos, pronósticos e intervalos de confianza del modelo seleccionado.
-- `PronMensual(seleccion, columna = NULL, incluir_pronosticos = TRUE)`: Compara valores mensuales por año destacando históricos y pronósticos en un gráfico `plotly`.
-- `PronPatronMes(seleccion, columna = NULL)`: Resume el patrón estacional histórico con promedios, medianas, bandas de desviación y extremos mensuales.
+- `aplicar_imputacion(ts_data, metodo_imputacion, valor_constante = NULL, prob_percentil = 0.25)`: Imputa valores faltantes en series de tiempo usando distintos métodos.
+```r
+serie_imputada <- aplicar_imputacion(serie, "promedio")
+```
+- `extraer_intervalos(forecast_obj, nivel_conf)`: Obtiene intervalos de confianza de un objeto de pronóstico.
+```r
+intervalos <- extraer_intervalos(pronostico, 0.95)
+```
+- `ejecutar_pronosticos(train_data, test_data, h_periods, fechas_futuras, ...)`: Ajusta múltiples modelos y devuelve resultados comparativos.
+```r
+resultado <- ejecutar_pronosticos(train, test, h_periods = 12, fechas_futuras = seq_len(12))
+```
+- `Pronosticar(df, fecha_col = "fecha", valor_cols = NULL, nivel_confianza = 0.95, ...)`: Orquesta el flujo completo de pronósticos desde datos crudos.
+```r
+pron <- Pronosticar(df, fecha_col = "fecha", valor_cols = c("ventas"))
+```
+- `PronMetricas(resultado_pronostico, columna = NULL)`: Calcula métricas de precisión para las columnas seleccionadas.
+```r
+PronMetricas(pron)
+```
+- `PronSeleccionar(resultado_pronostico, columna = NULL, ...)`: Elige el mejor modelo por columna o segmento.
+```r
+seleccion <- PronSeleccionar(pron)
+```
+- `PronSerie(seleccion, columna = NULL)`: Construye tablas detalladas de series pronosticadas.
+```r
+PronSerie(seleccion)
+```
+- `PronMensual(seleccion, columna = NULL, incluir_pronosticos = TRUE)`: Resume pronósticos por mes.
+```r
+PronMensual(seleccion)
+```
+- `PronPatronMes(seleccion, columna = NULL)`: Analiza patrones de comportamiento mensual.
+```r
+PronPatronMes(seleccion)
+```
 
