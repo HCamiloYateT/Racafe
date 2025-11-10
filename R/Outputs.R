@@ -1,40 +1,73 @@
 #' Crear un botón de descarga con estilo personalizado
 #'
 #' Genera un botón de descarga con estilos corporativos y opciones de configuración para
-#' el ícono, el color y el tamaño. Puede integrarse fácilmente con módulos de `shiny`
+#' el ícono, el color y el tamaño. La función valida exhaustivamente los argumentos para
+#' entregar mensajes de error claros y puede integrarse fácilmente con módulos de `shiny`
 #' mediante el uso de un namespace.
 #'
-#' @param button_id Identificador del botón de descarga.
-#' @param icon_name Nombre del ícono a utilizar en el botón. Por defecto es "file-excel".
-#' @param color Color hexadecimal del texto y borde del botón. Por defecto es `"#28b78d"`.
+#' @param button_id Identificador del botón de descarga. Debe ser una cadena no vacía.
+#' @param icon_name Nombre del ícono a utilizar en el botón. Debe ser una cadena no vacía.
+#' @param color Color del texto y borde del botón. Debe ser un color válido reconocido por R.
 #' @param ns Función de namespace (generalmente `shiny::NS`) utilizada en módulos. Por defecto `NULL`.
-#' @param title Texto que se mostrará como tooltip al pasar el cursor sobre el botón. Por defecto "Descargar".
+#' @param title Texto que se mostrará como tooltip al pasar el cursor sobre el botón. Debe ser una cadena.
 #' @param size Tamaño del botón. Debe ser uno de `"sm"`, `"md"` o `"lg"`. Por defecto `"sm"`.
 #'
-#' @return Una cadena HTML que representa el botón de descarga personalizado.
+#' @return Una cadena HTML (`character`) que representa el botón de descarga personalizado.
 #'
 #' @examples
 #' BotonDescarga("descargar_reporte")
 #' BotonDescarga("descargar_reporte", icon_name = "download", size = "md")
+#' BotonDescarga("descargar", color = "steelblue", title = "Descargar informe")
+#'
+#' @references
+#' Font Awesome Icons. 
+#' \url{https://fontawesome.com/v4/icons/}
 #'
 #' @importFrom shiny span downloadButton icon
 #' @export
 BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL,
                           title = "Descargar", size = "sm") {
 
-  # Aplicar namespace si se proporciona
-  final_id <- if (!is.null(ns)) ns(button_id) else button_id
+  if (!is.character(button_id) || length(button_id) != 1 || !nzchar(button_id)) {
+    stop("'button_id' debe ser una cadena de caracteres no vacía.", call. = FALSE)
+  }
 
-  # Definir tamaños
+  if (!is.character(icon_name) || length(icon_name) != 1 || !nzchar(icon_name)) {
+    stop("'icon_name' debe ser una cadena de caracteres no vacía.", call. = FALSE)
+  }
+
+  if (!is.character(color) || length(color) != 1 || !nzchar(color)) {
+    stop("'color' debe ser una cadena de caracteres no vacía.", call. = FALSE)
+  }
+
+  color_is_valid <- TRUE
+  tryCatch(grDevices::col2rgb(color), error = function(...) color_is_valid <<- FALSE)
+  if (!color_is_valid) {
+    stop("'color' debe ser un color reconocido por R (ej. nombre o código hexadecimal).", call. = FALSE)
+  }
+
+  if (!is.null(ns) && !is.function(ns)) {
+    stop("'ns' debe ser NULL o una función de namespace válida (p. ej. shiny::NS).", call. = FALSE)
+  }
+
+  if (!is.character(title) || length(title) != 1) {
+    stop("'title' debe ser una cadena de caracteres de longitud uno.", call. = FALSE)
+  }
+
   size_config <- list(
     sm = list(padding = "3px 8px", font_size = "12px"),
     md = list(padding = "6px 12px", font_size = "14px"),
     lg = list(padding = "8px 16px", font_size = "16px")
   )
 
+  if (!is.character(size) || length(size) != 1 || !size %in% names(size_config)) {
+    stop("'size' debe ser uno de los valores permitidos: 'sm', 'md' o 'lg'.", call. = FALSE)
+  }
+
+  final_id <- if (is.null(ns)) button_id else ns(button_id)
+
   current_size <- size_config[[size]]
 
-  # Crear el estilo con color personalizable
   button_style <- paste0(
     "-webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; ",
     "word-wrap: break-word; box-sizing: border-box; line-height: inherit; ",
@@ -48,16 +81,19 @@ BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d"
     "font-family: inherit; color: ", color, "; cursor: pointer !important;"
   )
 
-  # Crear el botón
   download_button_html <- as.character(
-    span(title = title,
-         downloadButton(final_id,
-                        label = NULL,
-                        icon = icon(icon_name),
-                        style = button_style))
+    span(
+      title = title,
+      downloadButton(
+        outputId = final_id,
+        label = NULL,
+        icon = icon(icon_name),
+        style = button_style
+      )
+    )
   )
 
-  return(download_button_html)
+  download_button_html
 }
 
 #' Generar una Caja con Ícono y Texto
