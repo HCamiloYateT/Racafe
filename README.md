@@ -199,6 +199,13 @@ vline(10, "#28B78D")
 ```r
 hline(0.5)
 ```
+- `ImprimirDensidad(datos, columna, titulo, formato = "numero")`: Combina un histograma en porcentaje con la densidad kernel en escala logarítmica para explorar distribuciones sesgadas.
+```r
+set.seed(123)
+ventas <- data.frame(ingresos = rgamma(250, shape = 3, rate = 0.7))
+grafico <- ImprimirDensidad(ventas, "ingresos", "Ingresos diarios", formato = "dinero")
+grafico
+```
 - `ColoresRacafe(input_values)`: Genera una paleta de colores corporativos.
 ```r
 ColoresRacafe(5)

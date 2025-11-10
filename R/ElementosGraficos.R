@@ -218,3 +218,169 @@ ImprimirAnillo <- function(data, var_label, var_medida = NULL, funcion = c("sum"
                          x = 0.5, y = -0.1, font = list(size = 9, color = "black"))) %>%
     config(displayModeBar = FALSE)
 }
+
+#' Visualizar densidad log-transformada con histograma interactivo
+#'
+#' @description Genera una visualización conjunta de histograma de frecuencias y
+#'   densidad kernel log-transformada para una columna numérica positiva. La
+#'   función valida los datos de entrada, elimina valores no finitos y produce un
+#'   gráfico interactivo con resúmenes estadísticos en español.
+#'
+#' @param datos Un `data.frame` que contiene la columna a analizar.
+#' @param columna Nombre o índice de la columna numérica que se desea graficar.
+#' @param titulo Título base que se mostrará en el gráfico.
+#' @param formato Formato numérico reconocido por `DefinirFormato()` y
+#'   `FormatoD3()` para personalizar etiquetas y valores mostrados.
+#'
+#' @return Un objeto `plotly` con el histograma y la densidad log-transformada.
+#'
+#' @examples
+#' if (interactive()) {
+#'   set.seed(123)
+#'   ventas <- data.frame(ingresos = rgamma(250, shape = 3, rate = 0.7))
+#'   ImprimirDensidad(ventas, "ingresos", "Ingresos diarios", formato = "dinero")
+#' }
+#'
+#' @references Henmi, M., Okabe, Y. y Shoji, M. (2022).\cr{}
+#'   \emph{logKDE: Kernel Density Estimation in Logarithmic Scale}.\cr{}
+#'   Manual del paquete disponible en \url{https://cran.r-project.org/package=logKDE}.
+#'
+#' @importFrom logKDE logdensity
+#' @importFrom plotly plot_ly add_histogram add_lines layout config
+#' @export
+ImprimirDensidad <- function(datos, columna, titulo, formato = "numero") {
+  if (!is.data.frame(datos) || nrow(datos) == 0L) {
+    stop("'datos' debe ser un data.frame no vacío.")
+  }
+
+  if (missing(columna) || length(columna) != 1L) {
+    stop("Debe especificar una única columna para analizar.")
+  }
+
+  if (missing(titulo) || !nzchar(trimws(as.character(titulo[1L])))) {
+    stop("Debe proporcionar un título no vacío para el gráfico.")
+  }
+
+  if (is.numeric(columna)) {
+    if (columna < 1L || columna > ncol(datos)) {
+      stop("El índice de columna está fuera de rango.")
+    }
+    colname <- names(datos)[columna]
+  } else {
+    colname <- as.character(columna[1L])
+    if (!colname %in% names(datos)) {
+      stop(sprintf("La columna '%s' no existe en 'datos'.", colname))
+    }
+  }
+
+  valores <- datos[[colname]]
+  if (!is.numeric(valores)) {
+    stop(sprintf("La columna '%s' debe ser numérica.", colname))
+  }
+
+  valores_validos <- valores[is.finite(valores) & valores > 0]
+  if (length(valores_validos) < 2L) {
+    stop("Se requieren al menos dos valores positivos y finitos para estimar la densidad.")
+  }
+
+  densidad <- logdensity(valores_validos, kernel = "triangular")
+  if (!is.list(densidad) || any(!c("x", "y") %in% names(densidad))) {
+    stop("No se pudo calcular la densidad logarítmica con los datos suministrados.")
+  }
+
+  dens_df <- data.frame(x = densidad$x, y = densidad$y)
+  max_dens <- max(dens_df$y, na.rm = TRUE)
+  if (!is.finite(max_dens) || max_dens <= 0) {
+    stop("La densidad estimada no produjo valores positivos.")
+  }
+
+  n_total <- length(valores_validos)
+  estadisticos <- c(Media = mean(valores_validos),
+                    Mediana = stats::median(valores_validos),
+                    `Desv. Est.` = stats::sd(valores_validos))
+
+  formato_d3 <- FormatoD3(formato)
+  formateador <- DefinirFormato(formato)
+  stats_fmt <- formateador(unname(estadisticos))
+  names(stats_fmt) <- names(estadisticos)
+
+  plotly::plot_ly() %>%
+    plotly::add_histogram(
+      x = valores_validos,
+      nbinsx = min(30L, max(10L, ceiling(sqrt(n_total)))),
+      name = "Histograma",
+      opacity = 0.5,
+      marker = list(color = "rgba(0, 100, 255, 0.5)"),
+      histnorm = "percent",
+      hovertemplate = paste0(
+        "<b>Histograma de Frecuencias</b><br>",
+        "Rango: %{x:", formato_d3, "}<br>",
+        "Porcentaje: %{y:.1f}%<br>",
+        "<br><i>Total de datos: ", format(n_total, big.mark = ".", decimal.mark = ","), "</i>",
+        "<extra></extra>"
+      )
+    ) %>%
+    plotly::add_lines(
+      data = dens_df,
+      x = ~x, y = ~y,
+      name = "Densidad Kernel",
+      line = list(color = "rgba(255, 100, 100, 0.7)", width = 2),
+      yaxis = "y2",
+      hovertemplate = paste0(
+        "<b>Densidad Kernel (log)</b><br>",
+        "Valor: %{x:", formato_d3, "}<br>",
+        "Densidad: %{y:.4f}<br>",
+        "<br><i>Kernel: Triangular</i><br>",
+        "<i>Media: ", stats_fmt["Media"], "</i><br>",
+        "<i>Mediana: ", stats_fmt["Mediana"], "</i><br>",
+        "<i>Desv. Est.: ", stats_fmt["Desv. Est."], "</i>",
+        "<extra></extra>"
+      )
+    ) %>%
+    plotly::layout(
+      title = list(
+        text = paste0(
+          "<b>Distribución de ", titulo, "</b><br>",
+          "<span style='font-size:12px; color:#7F8C8D'>",
+          "N = ", format(n_total, big.mark = ".", decimal.mark = ","),
+          " | Media = ", stats_fmt["Media"],
+          " | Mediana = ", stats_fmt["Mediana"],
+          " | Desv. Est. = ", stats_fmt["Desv. Est."],
+          "</span>"
+        ),
+        font = list(size = 16)
+      ),
+      yaxis = list(
+        title = "Porcentaje (%)",
+        showgrid = TRUE,
+        gridcolor = "#E8E8E8",
+        zeroline = FALSE,
+        tickformat = ",.1f"
+      ),
+      xaxis = list(
+        title = titulo,
+        showgrid = TRUE,
+        gridcolor = "#E8E8E8",
+        tickformat = formato_d3
+      ),
+      yaxis2 = list(
+        title = "",
+        overlaying = "y",
+        side = "right",
+        range = c(0, max_dens),
+        showgrid = FALSE,
+        zeroline = FALSE,
+        showticklabels = FALSE
+      ),
+      legend = list(
+        x = 0.5, y = -0.15,
+        orientation = "h",
+        xanchor = "center",
+        yanchor = "top"
+      ),
+      hovermode = "x unified",
+      plot_bgcolor = "white",
+      paper_bgcolor = "white"
+    ) %>%
+    plotly::config(locale = "es", displayModeBar = FALSE)
+}
