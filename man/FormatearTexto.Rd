@@ -14,17 +14,12 @@ FormatearTexto(
 )
 }
 \arguments{
-\item{x}{Cadena de texto.}
-
-\item{negrita}{Lógico, si el texto se muestra en negrita.}
-
-\item{color}{Cadena con el color en formato hexadecimal.}
-
-\item{tamano_pct}{Tamaño relativo en porcentaje (1 = 100%).}
-
-\item{alineacion}{Alineación: "left", "center" o "right".}
-
-\item{transform}{Transformación del texto: "none", "capitalize", "uppercase", "lowercase".}
+  \item{x}{Cadena de texto.}
+  \item{negrita}{Lógico, si el texto se muestra en negrita.}
+  \item{color}{Cadena con el color en formato hexadecimal.}
+  \item{tamano_pct}{Tamaño relativo en porcentaje (1 = 100\%).}
+  \item{alineacion}{Alineación: "left", "center" o "right".}
+  \item{transform}{Transformación del texto: "none", "capitalize", "uppercase", "lowercase".}
 }
 \value{
 Texto en HTML con estilos aplicados.
