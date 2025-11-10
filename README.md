@@ -202,15 +202,20 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 - Formatos disponibles: `"coma"`, `"numero"`, `"dinero"`, `"dolares"`,
   `"miles"`, `"porcentaje"`, `"cientifico"`, `"millones"`, `"entero"`,
   `"tiempo"`, `"kwh"` y `"log"`.
-- `FormatoD3(formato)`: Retorna una cadena de formato compatible con D3.js.
+- `FormatoD3(formato)`: Retorna una cadena de formato compatible con D3.js
+  para cualquiera de los formatos disponibles (`"coma"`, `"numero"`,
+  `"dinero"`, `"dolares"`, `"miles"`, `"porcentaje"`, `"cientifico"`,
+  `"millones"`, `"entero"`, `"tiempo"`, `"kwh"` y `"log"`).
 ```r
 # FormatoD3("porcentaje")
 ```
-- `FormatoJS(formato)`: Devuelve una función de formato en JavaScript como cadena.
+- `FormatoJS(formato)`: Devuelve una función de formato en JavaScript como cadena
+  utilizando los mismos formatos soportados.
 ```r
 # FormatoJS("coma")
 ```
-- `FormatoHOT(formato)`: Entrega una cadena de formato para Handsontable.
+- `FormatoHOT(formato)`: Entrega una cadena de formato para Handsontable para
+  cualquiera de los formatos soportados.
 ```r
 # FormatoHOT("dinero")
 ```
