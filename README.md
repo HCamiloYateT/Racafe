@@ -165,6 +165,11 @@ FormatearTexto("Meta alcanzada", color = "#28B78D")
 ```r
 tabla <- gt_minimal_style(gt::gt(head(mtcars)))
 ```
+- `gt_mensaje_vacio(mensaje = "No existen datos en la tabla")`: Genera una tabla `gt` minimalista para mostrar mensajes cuando no hay datos disponibles.
+```r
+gt_mensaje_vacio()
+gt_mensaje_vacio("Sin resultados para los filtros seleccionados")
+```
 - `col_kpi(x, prop = TRUE)`: Devuelve estilos de color para columnas KPI según cumplimiento.
 ```r
 col_kpi(c(0.8, 1.1))

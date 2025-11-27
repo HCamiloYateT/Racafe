@@ -337,6 +337,47 @@ gt_minimal_style <- function(gt_table) {
     ")
 }
 
+#' Crear una tabla `gt` para mensajes informativos
+#'
+#' @description
+#' Genera una tabla simple con formato minimalista para mostrar mensajes cuando
+#' no hay datos disponibles. Permite personalizar el texto mostrado y conserva
+#' un diseño limpio mediante la función [gt_minimal_style()].
+#'
+#' @param mensaje Cadena de texto con el mensaje a mostrar. Debe ser una
+#'   cadena de longitud 1 y no puede ser `NA`.
+#'
+#' @return Un objeto de clase `gt_tbl` con el mensaje centrado y estilos
+#'   minimalistas.
+#'
+#' @examples
+#' library(gt)
+#' gt_mensaje_vacio()
+#' gt_mensaje_vacio("Sin resultados para los filtros seleccionados")
+#'
+#' @export
+gt_mensaje_vacio <- function(mensaje = "No existen datos en la tabla") {
+  if (!is.character(mensaje) || length(mensaje) != 1 || is.na(mensaje)) {
+    rlang::abort("`mensaje` debe ser una cadena de texto única y no nula.")
+  }
+
+  data.frame(texto = mensaje, stringsAsFactors = FALSE) |>
+    gt::gt() |>
+    gt::cols_label(texto = "") |>
+    gt::tab_options(
+      column_labels.hidden = TRUE,
+      heading.title.font.size = 0,
+      heading.subtitle.font.size = 0,
+      table.font.size = 14,
+      data_row.padding = gt::px(10)
+    ) |>
+    gt::tab_style(
+      style = gt::cell_text(weight = "normal", align = "center"),
+      locations = gt::cells_body(columns = tidyselect::everything())
+    ) |>
+    gt_minimal_style()
+}
+
 #' Color para KPI
 #'
 #' @description Asigna color según si el valor es positivo, negativo o cero, y según proporcionalidad.
