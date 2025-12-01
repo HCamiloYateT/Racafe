@@ -149,6 +149,11 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
 #'
 #' @export
 ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices, multiple = TRUE, fem = FALSE, ns = NULL) {
+  add_empty <- is.null(selected)
+
+  if (is.null(selected)) selected <- ""
+  if (add_empty && !("" %in% choices)) choices <- c("", choices)
+
   # ID final para el JavaScript (con namespace si existe)
   final_id <- if (!is.null(ns)) ns(inputId) else inputId
   safe_id  <- gsub("[^A-Za-z0-9]", "_", final_id)
@@ -163,21 +168,36 @@ ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices,
   threshold <- max(n_choices - 1, 0)
 
   # Opciones del picker (incluye selected-text-format y count-selected-text)
-  picker_options <- pickerOptions(
-    liveSearch            = TRUE,
-    liveSearchNormalize   = TRUE,
-    liveSearchPlaceholder = "Buscar...",
-    liveSearchStyle       = "contains",
-    actionsBox            = TRUE,
-    selectAllText         = paste("Seleccionar", tod),
-    deselectAllText       = paste("Deseleccionar", tod),
-    noneSelectedText      = nin,
-    noneResultsText       = "No hay resultados {0}",
-    showTick              = TRUE,
-    style                 = "btn-default",
-    "selected-text-format" = paste0("count > ", threshold),
-    "count-selected-text"  = tod
-  )
+  if (multiple) {
+    picker_options <- pickerOptions(
+      liveSearch            = TRUE,
+      liveSearchNormalize   = TRUE,
+      liveSearchPlaceholder = "Buscar...",
+      liveSearchStyle       = "contains",
+      actionsBox            = TRUE,
+      selectAllText         = paste("Seleccionar", tod),
+      deselectAllText       = paste("Deseleccionar", tod),
+      noneSelectedText      = nin,
+      noneResultsText       = "No hay resultados {0}",
+      showTick              = TRUE,
+      style                 = "btn-default",
+      "selected-text-format" = paste0("count > ", threshold),
+      "count-selected-text"  = tod
+    )
+  } else {
+    picker_options <- pickerOptions(
+      liveSearch            = TRUE,
+      liveSearchNormalize   = TRUE,
+      liveSearchPlaceholder = "Buscar...",
+      liveSearchStyle       = "contains",
+      actionsBox            = FALSE,
+      noneSelectedText      = nin,
+      noneResultsText       = "No hay resultados {0}",
+      showTick              = TRUE,
+      style                 = "btn-default",
+      "selected-text-format" = "values"
+    )
+  }
 
   # CSS personalizado (barra de búsqueda 100%)
   custom_css <- tags$style(htmltools::HTML("
@@ -255,7 +275,11 @@ ListaDesplegable <- function(inputId, label = NULL, choices, selected = choices,
   "))
 
   # JavaScript dinámico para actualizar la etiqueta del botón
-  custom_js <- tags$script(htmltools::HTML(paste0("\n    $(document).ready(function() {\n\n      function updateLabel_", safe_id, "() {\n        var select  = $('#", final_id, "');\n        var selected = select.val();\n        var total    = select.find('option').length;\n        var button   = select.next('.dropdown-toggle');\n\n        if (selected && selected.length === total) {\n          button.find('.filter-option-inner-inner').text('", tod, "');\n        } else if (selected && selected.length > 0) {\n          button.find('.filter-option-inner-inner').text(selected.length + ' ", sel, "');\n        } else {\n          button.find('.filter-option-inner-inner').text('", nin, "');\n        }\n      }\n\n      // Inicialización con un pequeño retraso para asegurar render del picker\n      setTimeout(function() {\n        updateLabel_", safe_id, "();\n      }, 100);\n\n      $('#", final_id, "').on('changed.bs.select', updateLabel_", safe_id, ");\n    });\n  ")))
+  custom_js <- if (multiple) {
+    tags$script(htmltools::HTML(paste0("\n      $(document).ready(function() {\n        function updateLabel_", safe_id, "() {\n          var select   = $('#", final_id, "');\n          var selected = select.val();\n          var total    = select.find('option').length;\n          var button   = select.next('.dropdown-toggle');\n\n          if (selected && selected.length === total) {\n            button.find('.filter-option-inner-inner').text('", tod, "');\n          } else if (selected && selected.length > 0) {\n            button.find('.filter-option-inner-inner').text(selected.length + ' ", sel, "');\n          } else {\n            button.find('.filter-option-inner-inner').text('", nin, "');\n          }\n        }\n        setTimeout(function() { updateLabel_", safe_id, "(); }, 100);\n        $('#", final_id, "').on('changed.bs.select', updateLabel_", safe_id, ");\n      });\n    ")))
+  } else {
+    NULL
+  }
 
   # Construcción final - pasar inputId original (no final_id) al pickerInput
   tagList(
