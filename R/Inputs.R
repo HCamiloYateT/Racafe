@@ -18,7 +18,8 @@
 #' Estos límites pueden modificarse mediante los argumentos `min` y `max`.
 #' Si `value` es `NULL` o `NA`, las validaciones de rango se omiten.
 #'
-#' @return Un objeto de tipo `fluidRow` con el diseño del input.
+#' @return Un objeto de tipo `tagList` con el input numérico alineado al
+#'   formato visual de `ListaDesplegable`.
 #' @export
 #' @examples
 #' # Ejemplo para un input de dinero
@@ -65,22 +66,32 @@ InputNumerico <- function(id, label, value, dec = 2, max = NULL, min = NULL, typ
   }
 
   # Construcción del componente visual
-  res <- shiny::fluidRow(
-    shiny::column(label_col, FormatearTexto(label, tamano_pct = 0.8)),
-    shiny::column(input_col, shinyWidgets::autonumericInput(
-      id,
-      label = NULL,
-      value = value,
-      maximumValue = config$max,
-      minimumValue = config$min,
-      currencySymbol = config$currencySymbol,
-      currencySymbolPlacement = config$currencySymbolPlacement,
-      decimalPlaces = config$decimalPlaces,
-      width = width,
-      style = "height: 25px !important; font-size: 14px;"
-    ))
+  custom_css <- shiny::tags$style(htmltools::HTML("\n    .custom-numeric-input {\n      width: 100% !important;\n    }\n    .custom-numeric-input .form-group,\n    .custom-numeric-input .shiny-input-container {\n      width: 100% !important;\n      margin-bottom: 0;\n    }\n    .custom-numeric-input input.form-control {\n      width: 100% !important;\n      height: 35px !important;\n      font-size: 14px !important;\n      box-sizing: border-box !important;\n      border-radius: 5px;\n    }\n    .custom-numeric-input input.form-control:focus {\n      border-color: #71717B !important;\n      box-shadow: 0 0 0 0.2rem rgba(128, 128, 128, 0.25) !important;\n      outline: none !important;\n    }\n  "))
+
+  label_tag <- if (is.null(label)) {
+    NULL
+  } else {
+    shiny::div(class = "custom-numeric-label", FormatearTexto(label, tamano_pct = 0.85))
+  }
+
+  shiny::tagList(
+    custom_css,
+    shiny::div(
+      class = "custom-numeric-input",
+      label_tag,
+      shinyWidgets::autonumericInput(
+        id,
+        label = NULL,
+        value = value,
+        maximumValue = config$max,
+        minimumValue = config$min,
+        currencySymbol = config$currencySymbol,
+        currencySymbolPlacement = config$currencySymbolPlacement,
+        decimalPlaces = config$decimalPlaces,
+        width = width
+      )
+    )
   )
-  return(res)
 }
 
 #' Lista Desplegable Personalizada
