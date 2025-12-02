@@ -7,16 +7,16 @@
 #'
 #' @param bd Una cadena de texto que especifica el nombre de la base de datos a la que conectarse.
 #'           Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".
+#' @param query La consulta SQL que se ejecutará en la base de datos.
 #' @param uid El nombre de usuario para la conexión a la base de datos.
 #' @param pwd La contraseña del usuario para la conexión.
-#' @param query La consulta SQL que se ejecutará en la base de datos.
 #' @param server La dirección del servidor SQL Server. Por defecto "172.16.19.21".
 #' @param port El puerto del servidor SQL Server. Por defecto 1433.
 #'
 #' @return Un dataframe con los resultados de la consulta, con los nombres de las columnas limpiados.
 #' @export
 
-ConsultaSistema <- function(bd, uid = Sys.getenv("SYS_UID"), pwd = Sys.getenv("SYS_PWD"), query, server = "172.16.19.21", port = 1433) {
+ConsultaSistema <- function(bd, query, uid = Sys.getenv("SYS_UID"), pwd = Sys.getenv("SYS_PWD"), server = "172.16.19.21", port = 1433) {
 
   # Asigna el nombre de la base de datos en función del valor de `bd`
   base <- dplyr::case_when(
