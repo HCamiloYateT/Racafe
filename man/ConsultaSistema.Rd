@@ -6,9 +6,9 @@
 \usage{
 ConsultaSistema(
   bd,
+  query,
   uid = Sys.getenv("SYS_UID"),
   pwd = Sys.getenv("SYS_PWD"),
-  query,
   server = "172.16.19.21",
   port = 1433
 )
@@ -17,11 +17,11 @@ ConsultaSistema(
 \item{bd}{Una cadena de texto que especifica el nombre de la base de datos a la que conectarse.
 Puede ser uno de los siguientes valores: "syscafe", "cafesys" o "estad".}
 
+\item{query}{La consulta SQL que se ejecutará en la base de datos.}
+
 \item{uid}{El nombre de usuario para la conexión a la base de datos.}
 
 \item{pwd}{La contraseña del usuario para la conexión.}
-
-\item{query}{La consulta SQL que se ejecutará en la base de datos.}
 
 \item{server}{La dirección del servidor SQL Server. Por defecto "172.16.19.21".}
 

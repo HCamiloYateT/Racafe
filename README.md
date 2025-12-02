@@ -103,9 +103,9 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```
 
 ### Datos y transformación
-- `ConsultaSistema(bd, uid, pwd, query, server = "172.16.19.21", port = 1433)`: Ejecuta una consulta en SQL Server y devuelve un `data.frame` con nombres de columnas limpios.
+- `ConsultaSistema(bd, query, uid, pwd, server = "172.16.19.21", port = 1433)`: Ejecuta una consulta en SQL Server y devuelve un `data.frame` con nombres de columnas limpios.
 ```r
-# df <- ConsultaSistema("syscafe", "usuario", "clave", "SELECT TOP 10 * FROM tabla")
+# df <- ConsultaSistema("syscafe", "SELECT TOP 10 * FROM tabla", "usuario", "clave")
 ```
 - `TopAbsoluto(data, var_recode, var_top, fun_Top, n = 10, nom_var, lab_recodificar = "OTROS")`: Recodifica categorías menos frecuentes según valores absolutos o una función de resumen.
 ```r
