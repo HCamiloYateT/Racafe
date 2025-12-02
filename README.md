@@ -127,6 +127,12 @@ df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 
 ```r
 # resultado <- left_join_all(df_base, list(df_extra1, df_extra2), by = c("id" = "id"))
 ```
+- `RevisarDuplicados(x, y, by)`: Revisa si existen llaves duplicadas en dos tablas y devuelve las filas repetidas en cada una.
+```r
+datos_a <- tibble::tibble(id = c(1, 1, 2), valor = c("a", "a", "b"))
+datos_b <- tibble::tibble(id = c(1, 2, 2), valor_extra = c("x", "y", "y"))
+RevisarDuplicados(datos_a, datos_b, by = "id")
+```
 - `%||%(a, b)`: Operador infijo que retorna `a` si no es nulo ni vacío; de lo contrario, retorna `b`.
 ```r
 valor <- entrada %||% "valor_por_defecto"
