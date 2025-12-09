@@ -384,6 +384,9 @@ pick_opt <- function(cho, fem = TRUE) {
 #' @param tooltips Vector de caracteres con los textos de ayuda que se mostrarán
 #'   como tooltips al pasar el cursor sobre cada botón. Debe tener la misma
 #'   longitud que `choices`.
+#' @param alineacion Cadena de caracteres que define la alineación horizontal
+#'   del grupo de botones. Puede ser "left", "center" o "right". Por defecto
+#'   es "left".
 #' @param ns Función de namespace o `NULL`. Se utiliza para adaptar el
 #'   identificador cuando el input se usa dentro de módulos.
 #'
@@ -402,7 +405,17 @@ pick_opt <- function(cho, fem = TRUE) {
 #' @export
 BotonesRadiales <- function(inputId, label = NULL, choices, selected = NULL,
                             usar_iconos = FALSE, iconos = NULL, tooltips = NULL,
+                            alineacion = c("left", "center", "right"),
                             ns = NULL) {
+
+  alineacion <- match.arg(alineacion)
+
+  justify_value <- switch(
+    alineacion,
+    left   = "flex-start",
+    center = "center",
+    right  = "flex-end"
+  )
 
   final_id <- if (!is.null(ns)) ns(inputId) else inputId
 
@@ -427,7 +440,10 @@ BotonesRadiales <- function(inputId, label = NULL, choices, selected = NULL,
     shiny::tags$style(htmltools::HTML(sprintf(
       "\n      #%s .btn-group-toggle .btn {\n        border: none !important;\n        border-radius: 5px !important;\n        margin: 0 1px !important;\n        background-color: transparent !important;\n        color: #dc3545 !important;\n        box-shadow: none !important;\n      }\n      #%s .btn-group-toggle .btn:hover {\n        background-color: #f8f9fa !important;\n      }\n      #%s .btn-group-toggle .btn.active {\n        background-color: #dc3545 !important;\n        color: #fff !important;\n      }\n    ", final_id, final_id, final_id))),
     shiny::div(
-      style = "display: flex; justify-content: center; align-items: center; margin-top: 25px; width: 100%;",
+      style = sprintf(
+        "display: flex; justify-content: %s; align-items: center; margin-top: 25px; width: 100%%;",
+        justify_value
+      ),
       shinyWidgets::radioGroupButtons(
         inputId = final_id,
         label = label,
