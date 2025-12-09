@@ -247,7 +247,7 @@ ListaDesplegable("region", "Región", choices = c("Norte", "Sur"))
 ```r
 pick_opt(c("Seleccionar", "Todas"))
 ```
-- `BotonesRadiales(inputId, label = NULL, choices, selected = NULL, ...)`: Genera botones radiales estilizados.
+- `BotonesRadiales(inputId, label = NULL, choices, selected = NULL, alineacion = c("left", "center", "right"), ...)`: Genera botones radiales estilizados permitiendo definir la alineación del grupo.
 ```r
 BotonesRadiales("estado", "Estado", choices = c("Activo", "Inactivo"))
 ```

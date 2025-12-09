@@ -5,7 +5,8 @@
 \title{Botones radiales estilizados}
 \usage{
 BotonesRadiales(inputId, label = NULL, choices, selected = NULL,
-  usar_iconos = FALSE, iconos = NULL, tooltips = NULL, ns = NULL)
+  usar_iconos = FALSE, iconos = NULL, tooltips = NULL,
+  alineacion = c("left", "center", "right"), ns = NULL)
 }
 \arguments{
 \item{inputId}{Cadena de caracteres. Identificador único del input.}
@@ -28,6 +29,10 @@ tener la misma longitud que \code{choices} cuando \code{usar_iconos = TRUE}.}
 \item{tooltips}{Vector de caracteres con los textos de ayuda que se mostrarán
 como tooltips al pasar el cursor sobre cada botón. Debe tener la misma
 longitud que \code{choices}.}
+
+\item{alineacion}{Cadena de caracteres que define la alineación horizontal
+del grupo de botones. Puede ser "left", "center" o "right". Por defecto
+es "left".}
 
 \item{ns}{Función de namespace o \code{NULL}. Se utiliza para adaptar el
 identificador cuando el input se usa dentro de módulos.}
