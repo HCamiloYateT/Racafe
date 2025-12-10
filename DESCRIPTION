@@ -17,6 +17,7 @@ LazyData: true
 RoxygenNote: 7.3.2
 Imports:
     scales (>= 1.2.1),
+    bs4Dash,
     dplyr,
     tidyr,
     DBI,

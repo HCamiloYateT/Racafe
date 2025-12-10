@@ -149,6 +149,92 @@ CajaIco <- function(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra =
   )
 }
 
+#' Crear una caja de valor para indicadores
+#'
+#' Genera una caja de indicadores basada en `bs4Dash::bs4ValueBox` que aplica formatos
+#' numéricos y de texto personalizados, e incluye opcionalmente un botón de "Ver detalle".
+#' La función valida los argumentos de entrada para evitar errores comunes en la
+#' construcción de interfaces `shiny`.
+#'
+#' @param valor Número que se mostrará como valor principal.
+#' @param formato Cadena de formato utilizada por [FormatearNumero()] (por ejemplo, "dinero" o "porcentaje").
+#' @param texto Texto descriptivo del indicador.
+#' @param icono Nombre del ícono a usar (Font Awesome) para la caja de valor.
+#' @param inputId Identificador del botón de detalle. Requerido cuando `mostrar_boton` es `TRUE`.
+#' @param mostrar_boton Lógico que indica si se debe mostrar el botón de detalle. Por defecto `TRUE`.
+#'
+#' @return Un objeto `bs4ValueBox` listo para incorporarse en una aplicación `shiny`.
+#'
+#' @examples
+#' \dontrun{
+#' CajaValor(1500000, "dinero", "Ingresos totales", "chart-line", "detalle_ingresos")
+#' CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", mostrar_boton = FALSE)
+#' }
+#'
+#' @importFrom shiny actionButton icon
+#' @importFrom bs4Dash bs4ValueBox
+#' @export
+CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boton = TRUE) {
+
+  if (!is.numeric(valor) || length(valor) != 1 || is.na(valor)) {
+    stop("'valor' debe ser un número de longitud uno y no puede ser NA.", call. = FALSE)
+  }
+
+  if (!is.character(formato) || length(formato) != 1 || !nzchar(formato)) {
+    stop("'formato' debe ser una cadena de caracteres de longitud uno.", call. = FALSE)
+  }
+
+  if (!is.character(texto) || length(texto) != 1 || !nzchar(texto)) {
+    stop("'texto' debe ser una cadena de caracteres de longitud uno.", call. = FALSE)
+  }
+
+  if (!is.character(icono) || length(icono) != 1 || !nzchar(icono)) {
+    stop("'icono' debe ser una cadena con el nombre del ícono a utilizar.", call. = FALSE)
+  }
+
+  if (!is.logical(mostrar_boton) || length(mostrar_boton) != 1 || is.na(mostrar_boton)) {
+    stop("'mostrar_boton' debe ser TRUE o FALSE.", call. = FALSE)
+  }
+
+  if (isTRUE(mostrar_boton)) {
+    if (is.null(inputId) || !is.character(inputId) || length(inputId) != 1 || !nzchar(inputId)) {
+      stop("'inputId' debe ser una cadena de caracteres no vacía cuando se solicita el botón.", call. = FALSE)
+    }
+  } else {
+    inputId <- NULL
+  }
+
+  boton_style <- paste(
+    "background-color: transparent !important;",
+    "background-image: none !important; border: none !important;",
+    "box-shadow: none !important; text-decoration: underline !important;",
+    "margin-right: auto; margin-left: 0; display: block; font-size: 10px;",
+    "cursor: pointer;"
+  )
+
+  footer_con_boton <- if (isTRUE(mostrar_boton)) {
+    shiny::actionButton(
+      inputId,
+      "Ver detalle",
+      icon = shiny::icon("search"),
+      style = boton_style
+    )
+  } else {
+    NULL
+  }
+
+  valor_formateado <- FormatearTexto(FormatearNumero(valor, formato = formato), tamano_pct = 2)
+  subtitulo <- FormatearTexto(texto, tamano_pct = 1.2)
+
+  bs4Dash::bs4ValueBox(
+    value = valor_formateado,
+    subtitle = subtitulo,
+    icon = shiny::icon(icono),
+    color = "white",
+    footer = footer_con_boton
+  )
+}
+
 #' Imprime un diagrama de Sankey con datos de agrupación
 #'
 #' Esta función crea un diagrama de Sankey con la biblioteca `plotly`, basado en las agrupaciones especificadas
