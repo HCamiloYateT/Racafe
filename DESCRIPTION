@@ -47,8 +47,7 @@ Imports:
     fable,
     fabletools,
     forecast,
-    e1071,
-    prophet
+    e1071
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
