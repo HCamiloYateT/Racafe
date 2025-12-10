@@ -267,6 +267,10 @@ BotonDescarga("descargar_resumen", color = "steelblue", size = "md", title = "De
 ```r
 CajaIco("Ingresos", "chart-line")
 ```
+- `CajaValor(valor, formato, texto, icono, inputId, mostrar_boton = TRUE)`: Arma cajas de indicadores con formato numérico y botón opcional de detalle.
+```r
+CajaValor(1250000, "dinero", "Ingresos mensuales", "chart-line", "detalle_ingresos")
+```
 - `ImprimeSankey(data, vars, fun, var = NULL, colores)`: Genera diagramas Sankey con `plotly`.
 ```r
 ImprimeSankey(df, vars = c("origen", "destino"), fun = "sum", var = "valor")
