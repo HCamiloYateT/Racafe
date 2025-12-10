@@ -20,6 +20,7 @@ Imports:
     bs4Dash,
     dplyr,
     tidyr,
+    rstan (>= 2.21.7),
     DBI,
     odbc,
     rlang,
@@ -50,5 +51,6 @@ Imports:
     e1071,
     prophet
 Suggests:
+    rstantools (>= 2.5.0),
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
