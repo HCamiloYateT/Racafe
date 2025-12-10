@@ -145,7 +145,7 @@ extraer_intervalos <- function(forecast_obj, nivel_conf) {
 #' Ejecutar un conjunto de métodos de pronóstico
 #'
 #' Genera pronósticos empleando diferentes métodos de la librería `forecast`,
-#' `fable`, `prophet` y `e1071`. El resultado incluye tanto los valores
+#' `fable` y `e1071`. El resultado incluye tanto los valores
 #' pronosticados como intervalos de confianza y métricas de evaluación calculadas
 #' sobre una partición de prueba.
 #'
@@ -173,7 +173,6 @@ extraer_intervalos <- function(forecast_obj, nivel_conf) {
 #' @importFrom fable ARIMA ETS NNETAR MEAN NAIVE SNAIVE TSLM
 #' @importFrom forecast ses hw tbats bats auto.arima arfima forecast
 #' @importFrom e1071 svm
-#' @importFrom prophet prophet make_future_dataframe
 #' @export
 ejecutar_pronosticos <- function(train_data, test_data, h_periods, fechas_futuras,
                                  metodos, nivel_confianza, nombre_columna,
@@ -624,55 +623,6 @@ ejecutar_pronosticos <- function(train_data, test_data, h_periods, fechas_futura
     }, error = function(e) warning(paste("Error en SVR para", nombre_columna, ":", e$message)))
   }
 
-  if ("prophet" %in% metodos) {
-    tryCatch({
-      prophet_data <- train_data %>%
-        dplyr::mutate(ds = as.Date(fecha), y = valor) %>%
-        dplyr::select(ds, y) %>%
-        dplyr::filter(!is.na(y))
-
-      modelo_prophet <- prophet::prophet(
-        prophet_data,
-        interval.width = nivel_confianza,
-        yearly.seasonality = TRUE,
-        weekly.seasonality = FALSE,
-        daily.seasonality = FALSE
-      )
-
-      future_prophet <- prophet::make_future_dataframe(modelo_prophet, periods = h_periods, freq = "month")
-      forecast_prophet <- predict(modelo_prophet, future_prophet)
-      forecast_prophet_future <- utils::tail(forecast_prophet, h_periods)
-
-      if (nrow(test_data) > 0) {
-        test_prophet <- test_data %>%
-          dplyr::mutate(ds = as.Date(fecha), y = valor) %>%
-          dplyr::select(ds, y) %>%
-          dplyr::filter(!is.na(y))
-
-        if (nrow(test_prophet) > 0) {
-          forecast_test_prophet <- predict(modelo_prophet, test_prophet)
-          m <- calc_metricas(test_prophet$y, forecast_test_prophet$yhat)
-        } else {
-          m <- c(RMSE = NA_real_, MAPE = NA_real_)
-        }
-      } else {
-        m <- c(RMSE = NA_real_, MAPE = NA_real_)
-      }
-
-      resultados$prophet <- data.frame(
-        fecha = fechas_futuras,
-        metodo = "Prophet",
-        valor = forecast_prophet_future$yhat,
-        limite_inferior = forecast_prophet_future$yhat_lower,
-        limite_superior = forecast_prophet_future$yhat_upper,
-        tipo = "Pronóstico"
-      )
-      metricas <- rbind(metricas,
-                        data.frame(metodo = "Prophet", RMSE = m["RMSE"], MAPE = m["MAPE"]))
-      cat("Prophet completado para", nombre_columna, "\n")
-    }, error = function(e) warning(paste("Error en Prophet para", nombre_columna, ":", e$message)))
-  }
-
   list(pronosticos = resultados, metricas = metricas)
 }
 
@@ -711,7 +661,7 @@ Pronosticar <- function(df, fecha_col = "fecha", valor_cols = NULL, nivel_confia
                         periodos_pronostico = NULL,
                         metodos = c("arima", "ets", "mean", "naive", "snaive", "tslm", "ses",
                                     "holtwinters", "tbats", "bats", "autoarima", "arfima",
-                                    "prophet", "svr"),
+                                    "svr"),
                         metodo_imputacion = "interpolacion", incluir_historicos = TRUE,
                         tipo_frecuencia = c("diaria", "semanal", "mensual", "anual"),
                         frecuencia_ts = NULL) {
