@@ -12,7 +12,7 @@
 #' @param title Texto que se mostrará como tooltip al pasar el cursor sobre el botón. Debe ser una cadena.
 #' @param size Tamaño del botón. Debe ser uno de `"sm"`, `"md"` o `"lg"`. Por defecto `"sm"`.
 #'
-#' @return Una cadena HTML (`character`) que representa el botón de descarga personalizado.
+#' @return Un objeto HTML que representa el botón de descarga personalizado.
 #'
 #' @examples
 #' BotonDescarga("descargar_reporte")
@@ -81,19 +81,15 @@ BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d"
     "font-family: inherit; color: ", color, "; cursor: pointer !important;"
   )
 
-  download_button_html <- as.character(
-    span(
-      title = title,
-      downloadButton(
-        outputId = final_id,
-        label = NULL,
-        icon = icon(icon_name),
-        style = button_style
-      )
+  span(
+    title = title,
+    downloadButton(
+      outputId = final_id,
+      label = NULL,
+      icon = icon(icon_name),
+      style = button_style
     )
   )
-
-  download_button_html
 }
 
 #' Generar una Caja con Ícono y Texto

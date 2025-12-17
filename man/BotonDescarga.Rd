@@ -26,7 +26,7 @@ BotonDescarga(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL,
 \item{size}{Tamaño del botón. Debe ser uno de \code{"sm"}, \code{"md"} o \code{"lg"}. Por defecto \code{"sm"}.}
 }
 \value{
-Una cadena de caracteres con el marcado HTML que representa el botón de descarga personalizado.
+Un objeto HTML que representa el botón de descarga personalizado.
 }
 \examples{
 BotonDescarga("descargar_reporte")
