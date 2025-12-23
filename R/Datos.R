@@ -230,6 +230,215 @@ CabecerasGraph <- function() {
   )
 }
 
+# Valida que un argumento sea un carácter escalar no vacío.
+validar_cadena_scalar <- function(valor, nombre) {
+  if (!is.character(valor) || length(valor) != 1 || is.na(valor) || valor == "") {
+    stop("`", nombre, "` debe ser una cadena de texto única y no vacía.")
+  }
+  invisible(TRUE)
+}
+
+#' @title ObtenerIdSite
+#' @description Obtiene el identificador de un sitio de SharePoint usando Microsoft Graph.
+#' @param hostname Hostname del tenant (por ejemplo, "contoso.sharepoint.com").
+#' @param site_path Ruta relativa del sitio en SharePoint (por ejemplo, "sites/mi-sitio").
+#' @return Cadena con el ID del sitio.
+#' @examples
+#' \dontrun{
+#' site_id <- ObtenerIdSite("contoso.sharepoint.com", "sites/mi-sitio")
+#' }
+#' @references
+#' https://learn.microsoft.com/graph/api/site-get
+#' @export
+ObtenerIdSite <- function(hostname, site_path) {
+  validar_cadena_scalar(hostname, "hostname")
+  validar_cadena_scalar(site_path, "site_path")
+
+  headers <- CabecerasGraph()
+  site_path <- gsub("^/+", "", trimws(site_path))
+  site_path <- utils::URLencode(site_path, reserved = TRUE)
+
+  url <- paste0("https://graph.microsoft.com/v1.0/sites/", hostname, ":/", site_path)
+  resp <- httr::GET(url, headers)
+
+  if (httr::http_error(resp)) {
+    stop(
+      "Error al obtener id del site: ",
+      httr::content(resp, as = "text", encoding = "UTF-8")
+    )
+  }
+
+  data <- httr::content(resp, as = "parsed", type = "application/json")
+  if (is.null(data$id)) {
+    stop("No se encontró `id` en la respuesta del sitio.")
+  }
+
+  data$id
+}
+
+#' @title ObtenerIdDriveSite
+#' @description Obtiene el ID de una unidad (drive) asociada a un sitio de SharePoint.
+#' @param site_id ID del sitio (site id) en Microsoft Graph.
+#' @param nombre_drive Nombre del drive (opcional). Si es `NULL`, retorna el primero disponible.
+#' @return Cadena con el ID del drive encontrado.
+#' @examples
+#' \dontrun{
+#' drive_id <- ObtenerIdDriveSite("site-id-123")
+#' drive_id <- ObtenerIdDriveSite("site-id-123", nombre_drive = "Documentos compartidos")
+#' }
+#' @references
+#' https://learn.microsoft.com/graph/api/site-list-drives
+#' @export
+ObtenerIdDriveSite <- function(site_id, nombre_drive = NULL) {
+  validar_cadena_scalar(site_id, "site_id")
+  if (!is.null(nombre_drive)) {
+    validar_cadena_scalar(nombre_drive, "nombre_drive")
+  }
+
+  headers <- CabecerasGraph()
+  url <- paste0("https://graph.microsoft.com/v1.0/sites/", site_id, "/drives")
+  resp <- httr::GET(url, headers)
+
+  if (httr::http_error(resp)) {
+    stop(
+      "Error al obtener drives: ",
+      httr::content(resp, as = "text", encoding = "UTF-8")
+    )
+  }
+
+  data <- httr::content(resp, as = "parsed", type = "application/json")
+  if (is.null(data$value) || length(data$value) == 0) {
+    stop("El sitio no contiene drives disponibles.")
+  }
+
+  if (is.null(nombre_drive)) {
+    return(data$value[[1]]$id)
+  }
+
+  drive_names <- vapply(data$value, `[[`, character(1), "name")
+  nombre_drive_lower <- tolower(nombre_drive)
+  matches <- tolower(drive_names) == nombre_drive_lower |
+    grepl(nombre_drive_lower, tolower(drive_names), fixed = TRUE)
+
+  if (!any(matches)) {
+    stop(
+      "Drive no encontrado. Drives disponibles: ",
+      paste(drive_names, collapse = ", ")
+    )
+  }
+
+  data$value[[which(matches)[1]]]$id
+}
+
+#' @title ListarDriveRecursivo
+#' @description Lista recursivamente los archivos de un drive de SharePoint/OneDrive con metadatos.
+#' @param drive_id ID del drive.
+#' @param item_id ID del item (por defecto "root").
+#' @param ruta Ruta relativa acumulada (uso interno).
+#' @param fecha_desde Fecha mínima de modificación (Date o POSIXct); si se define,
+#'   se omiten archivos con fecha anterior.
+#' @return Tibble con metadatos de los archivos encontrados.
+#' @examples
+#' \dontrun{
+#' archivos <- ListarDriveRecursivo("drive-id-123")
+#' archivos <- ListarDriveRecursivo("drive-id-123", fecha_desde = Sys.Date() - 30)
+#' }
+#' @references
+#' https://learn.microsoft.com/graph/api/driveitem-list-children
+#' @export
+ListarDriveRecursivo <- function(drive_id, item_id = "root", ruta = "", fecha_desde = NULL) {
+  validar_cadena_scalar(drive_id, "drive_id")
+  validar_cadena_scalar(item_id, "item_id")
+
+  if (!is.null(fecha_desde)) {
+    if (inherits(fecha_desde, "Date")) {
+      fecha_desde <- as.POSIXct(fecha_desde, tz = "UTC")
+    }
+    if (!inherits(fecha_desde, "POSIXct")) {
+      stop("`fecha_desde` debe ser Date o POSIXct.")
+    }
+  }
+
+  headers <- CabecerasGraph()
+  base_url <- if (item_id == "root") {
+    paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/root/children")
+  } else {
+    paste0("https://graph.microsoft.com/v1.0/drives/", drive_id, "/items/", item_id, "/children")
+  }
+
+  obtener_items <- function(url_actual) {
+    items <- list()
+    while (!is.null(url_actual)) {
+      resp <- httr::GET(url_actual, headers)
+      if (httr::http_error(resp)) {
+        stop(
+          "Error al listar contenido: ",
+          httr::content(resp, as = "text", encoding = "UTF-8")
+        )
+      }
+      data <- httr::content(resp, as = "parsed", type = "application/json")
+      if (!is.null(data$value) && length(data$value) > 0) {
+        items <- c(items, data$value)
+      }
+      url_actual <- data$`@odata.nextLink`
+    }
+    items
+  }
+
+  items <- obtener_items(base_url)
+  if (length(items) == 0) {
+    return(tibble::tibble())
+  }
+
+  extraer_nombre_usuario <- function(x) {
+    if (is.null(x$user$displayName)) NA_character_ else x$user$displayName
+  }
+
+  salida <- list()
+  for (it in items) {
+    ruta_actual <- if (ruta == "") it$name else file.path(ruta, it$name)
+
+    if (!is.null(it$folder)) {
+      hijos <- ListarDriveRecursivo(
+        drive_id = drive_id,
+        item_id = it$id,
+        ruta = ruta_actual,
+        fecha_desde = fecha_desde
+      )
+      if (nrow(hijos) > 0) {
+        salida[[length(salida) + 1]] <- hijos
+      }
+      next
+    }
+
+    fecha_mod <- as.POSIXct(it$lastModifiedDateTime, tz = "UTC")
+    if (!is.null(fecha_desde) && !is.na(fecha_mod) && fecha_mod < fecha_desde) {
+      next
+    }
+
+    extension <- tools::file_ext(it$name)
+    extension <- ifelse(extension == "", NA_character_, extension)
+
+    salida[[length(salida) + 1]] <- tibble::tibble(
+      id = it$id,
+      nombre = it$name,
+      extension = extension,
+      ruta = ruta_actual,
+      tamaño_bytes = if (!is.null(it$size)) as.numeric(it$size) else NA_real_,
+      fecha_creacion = as.POSIXct(it$createdDateTime, tz = "UTC"),
+      fecha_modificacion = fecha_mod,
+      creado_por = extraer_nombre_usuario(it$createdBy),
+      modificado_por = extraer_nombre_usuario(it$lastModifiedBy)
+    )
+  }
+
+  if (length(salida) == 0) {
+    return(tibble::tibble())
+  }
+
+  dplyr::bind_rows(salida)
+}
+
 #' @title ObtenerIdDrive
 #' @description Obtiene el ID de OneDrive (drive id) de un usuario de dominio racafe.com.
 #' @param usuario Cadena con el alias o correo (sin dominio) del usuario.

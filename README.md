@@ -53,6 +53,14 @@ token <- ObtenerTokenAcceso()
 ```r
 headers <- CabecerasGraph()
 ```
+- `ObtenerIdSite(hostname, site_path)`: Obtiene el ID de un sitio de SharePoint a partir del hostname y la ruta del sitio.
+```r
+site_id <- ObtenerIdSite("contoso.sharepoint.com", "sites/mi-sitio")
+```
+- `ObtenerIdDriveSite(site_id, nombre_drive = NULL)`: Devuelve el ID del drive asociado a un sitio de SharePoint.
+```r
+drive_id <- ObtenerIdDriveSite(site_id, "Documentos compartidos")
+```
 - `ObtenerIdDrive(usuario)`: Devuelve el identificador de OneDrive del usuario.
 ```r
 drive_id <- ObtenerIdDrive("juan.perez")
@@ -84,6 +92,10 @@ df <- ListarContenidoCarpetaId("juan.perez", "0123ABC...")
 - `ListarContenidoCarpetaRecursivo(usuario, carpeta_id)`: Recorre una carpeta por ID de forma recursiva devolviendo una lista.
 ```r
 lst <- ListarContenidoCarpetaRecursivo("juan.perez", "0123ABC...")
+```
+- `ListarDriveRecursivo(drive_id, item_id = "root", ruta = "", fecha_desde = NULL)`: Lista recursivamente archivos en un drive de SharePoint/OneDrive con metadatos.
+```r
+archivos <- ListarDriveRecursivo(drive_id, fecha_desde = Sys.Date() - 30)
 ```
 - `ListarTodoContenidoCarpeta(usuario, carpeta_id)`: Devuelve un tibble con todos los archivos de una carpeta de manera recursiva.
 ```r
@@ -399,4 +411,3 @@ PronMensual(seleccion)
 ```r
 PronPatronMes(seleccion)
 ```
-
