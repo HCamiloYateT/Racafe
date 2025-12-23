@@ -729,6 +729,63 @@ LeerExcelDesdeOneDrive <- function(archivo_id, usuario, ...) {
   readxl::read_excel(ruta, ...)
 }
 
+#' @title CargarExcelSite
+#' @description Descarga un archivo Excel desde SharePoint/OneDrive (por drive/item)
+#'   y lo carga con readxl sin persistir el archivo.
+#' @param drive_id ID del drive en Microsoft Graph.
+#' @param item_id ID del archivo (item) en Microsoft Graph.
+#' @param hoja Hoja a leer (nombre o índice). Si es `NULL`, se usa la hoja por defecto.
+#' @param ... Argumentos adicionales para readxl::read_excel.
+#' @return Un tibble/data.frame con los datos leídos.
+#' @examples
+#' \dontrun{
+#' datos <- CargarExcelSite(
+#'   drive_id = "drive-id-123",
+#'   item_id = "item-id-456",
+#'   hoja = "Datos",
+#'   skip = 1
+#' )
+#' }
+#' @references
+#' https://learn.microsoft.com/graph/api/driveitem-get-content
+#' @export
+CargarExcelSite <- function(drive_id, item_id, hoja = NULL, ...) {
+  validar_cadena_scalar(drive_id, "drive_id")
+  validar_cadena_scalar(item_id, "item_id")
+  if (!is.null(hoja) &&
+    !(is.character(hoja) && length(hoja) == 1 && !is.na(hoja) && hoja != "") &&
+    !(is.numeric(hoja) && length(hoja) == 1 && !is.na(hoja))) {
+    stop("`hoja` debe ser un nombre (carácter) o índice (numérico) de hoja válido.")
+  }
+
+  headers <- CabecerasGraph()
+  url <- paste0(
+    "https://graph.microsoft.com/v1.0/drives/",
+    drive_id,
+    "/items/",
+    item_id,
+    "/content"
+  )
+
+  tmp <- tempfile(fileext = ".xlsx")
+  on.exit({ if (file.exists(tmp)) unlink(tmp) }, add = TRUE)
+
+  resp <- httr::GET(url, headers, httr::write_disk(tmp, overwrite = TRUE))
+
+  if (httr::http_error(resp)) {
+    stop(
+      "Error al descargar archivo: ",
+      httr::content(resp, as = "text", encoding = "UTF-8")
+    )
+  }
+
+  if (is.null(hoja)) {
+    readxl::read_excel(tmp, ...)
+  } else {
+    readxl::read_excel(tmp, sheet = hoja, ...)
+  }
+}
+
 TopAbsoluto <- function(data, var_recode, var_top, fun_Top, n=10, nom_var, lab_recodificar = "OTROS"){
   # Descripción: Recodifica las categorías menos frecuentes de una variable según su valor absoluto o una función de resumen y las agrupa en una nueva categoría.
   # Parámetros:
