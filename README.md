@@ -113,6 +113,18 @@ hojas <- ListarHojasExcelOneDrive("ABC123...", "juan.perez")
 ```r
 df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 1)
 ```
+- `CargarExcelSite(drive_id, item_id, hoja = NULL, ...)`: Descarga un Excel desde un drive de SharePoint/OneDrive (por ID) y lo lee con `readxl`.
+```r
+# Requiere credenciales válidas de Microsoft Graph.
+if (FALSE) {
+  datos <- CargarExcelSite(
+    drive_id = "drive-id-123",
+    item_id = "item-id-456",
+    hoja = "Datos",
+    skip = 1
+  )
+}
+```
 
 ### Datos y transformación
 - `ConsultaSistema(bd, query, uid, pwd, server = "172.16.19.21", port = 1433)`: Ejecuta una consulta en SQL Server y devuelve un `data.frame` con nombres de columnas limpios.
