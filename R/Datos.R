@@ -128,6 +128,7 @@ AgregarDatos <- function(df, tabla) {
 #' Cargar datos desde una tabla de la base de datos
 #'
 #' Recupera filas de la tabla indicada. Se puede pasar una condición WHERE opcional.
+#' Convierte nombres de columnas con acentos a versiones sin acentos.
 #'
 #' @param tabla Nombre de la tabla a leer (carácter).
 #' @param condicion (opc.) Cadena con la cláusula WHERE (sin la palabra WHERE). Ej: "fecha >= '2025-01-01'".
@@ -148,7 +149,16 @@ CargarDatos <- function(tabla, condicion = NULL) {
     consulta <- paste(consulta, "WHERE", condicion)
   }
 
-  DBI::dbGetQuery(con, consulta)
+  resultado <- DBI::dbGetQuery(con, consulta)
+
+  nombres <- names(resultado)
+  if (length(nombres) > 0) {
+    nombres_sin_acentos <- iconv(nombres, from = "UTF-8", to = "ASCII//TRANSLIT")
+    nombres_sin_acentos[is.na(nombres_sin_acentos)] <- nombres[is.na(nombres_sin_acentos)]
+    names(resultado) <- nombres_sin_acentos
+  }
+
+  resultado
 }
 
 #' Ejecutar una consulta SQL arbitraria

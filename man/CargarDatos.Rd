@@ -16,6 +16,7 @@ Un data.frame con las filas resultantes de la consulta.
 }
 \description{
 Recupera filas de la tabla indicada. Se puede pasar una condición WHERE opcional.
+Convierte nombres de columnas con acentos a versiones sin acentos.
 }
 \examples{
 \dontrun{
