@@ -27,7 +27,7 @@ InputNumerico(
   \item{type}{Tipo de input: "dinero", "porcentaje" o "numero".}
   \item{label_col}{Ancho de la columna para la etiqueta (por defecto 6).}
   \item{input_col}{Ancho de la columna para el campo numérico (por defecto 6).}
-  \item{width}{Ancho del control `autonumericInput` (por defecto "100%").}
+  \item{width}{Ancho del control `autonumericInput` (por defecto "100\%").}
 }
 \details{
 Cuando `type = "porcentaje"`, el rango permitido por defecto es de 0 a 100. Estos límites pueden modificarse mediante los argumentos `min` y `max`. Si `value` es `NULL` o `NA`, las validaciones de rango se omiten.

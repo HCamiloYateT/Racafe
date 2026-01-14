@@ -11,7 +11,7 @@
 #' @param type Tipo de input: "dinero", "porcentaje" o "numero".
 #' @param label_col Ancho de la columna para la etiqueta (por defecto 6).
 #' @param input_col Ancho de la columna para el campo numérico (por defecto 6).
-#' @param width Ancho del control `autonumericInput` (por defecto "100%").
+#' @param width Ancho del control `autonumericInput` (por defecto "100\\%").
 #'
 #' @details
 #' Cuando `type = "porcentaje"`, el rango permitido por defecto es de 0 a 100.
