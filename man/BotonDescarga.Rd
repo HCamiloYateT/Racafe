@@ -10,7 +10,7 @@ error claros y puede integrarse fácilmente con módulos de \pkg{shiny} mediante
 }
 \usage{
 BotonDescarga(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL,
-  title = "Descargar", size = "sm")
+  title = "Descargar", size = "sm", align = "right")
 }
 \arguments{
 \item{button_id}{Identificador del botón de descarga. Debe ser una cadena no vacía.}
@@ -24,6 +24,9 @@ BotonDescarga(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL,
 \item{title}{Texto que se mostrará como tooltip al pasar el cursor sobre el botón. Debe ser una cadena.}
 
 \item{size}{Tamaño del botón. Debe ser uno de \code{"sm"}, \code{"md"} o \code{"lg"}. Por defecto \code{"sm"}.}
+
+\item{align}{Alineación horizontal del botón dentro del contenedor. Debe ser \code{"left"},
+\code{"center"} o \code{"right"}. Por defecto \code{"right"}.}
 }
 \value{
 Un objeto HTML que representa el botón de descarga personalizado.

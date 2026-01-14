@@ -11,6 +11,8 @@
 #' @param ns Función de namespace (generalmente `shiny::NS`) utilizada en módulos. Por defecto `NULL`.
 #' @param title Texto que se mostrará como tooltip al pasar el cursor sobre el botón. Debe ser una cadena.
 #' @param size Tamaño del botón. Debe ser uno de `"sm"`, `"md"` o `"lg"`. Por defecto `"sm"`.
+#' @param align Alineación horizontal del botón dentro del contenedor. Debe ser `"left"`,
+#'   `"center"` o `"right"`. Por defecto `"right"`.
 #'
 #' @return Un objeto HTML que representa el botón de descarga personalizado.
 #'
@@ -26,7 +28,7 @@
 #' @importFrom shiny span downloadButton icon
 #' @export
 BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL,
-                          title = "Descargar", size = "sm") {
+                          title = "Descargar", size = "sm", align = "right") {
 
   if (!is.character(button_id) || length(button_id) != 1 || !nzchar(button_id)) {
     stop("'button_id' debe ser una cadena de caracteres no vacía.", call. = FALSE)
@@ -64,6 +66,12 @@ BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d"
     stop("'size' debe ser uno de los valores permitidos: 'sm', 'md' o 'lg'.", call. = FALSE)
   }
 
+  align_options <- c(left = "flex-start", center = "center", right = "flex-end")
+  if (!is.character(align) || length(align) != 1 || !align %in% names(align_options)) {
+    stop("'align' debe ser uno de los valores permitidos: 'left', 'center' o 'right'.",
+         call. = FALSE)
+  }
+
   final_id <- if (is.null(ns)) button_id else ns(button_id)
 
   current_size <- size_config[[size]]
@@ -82,7 +90,8 @@ BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d"
   )
 
   container_style <- paste0(
-    "display: flex; justify-content: flex-end; width: 100%; cursor: pointer;"
+    "display: flex; justify-content: ", align_options[[align]], "; ",
+    "width: 100%; cursor: pointer;"
   )
 
   span(
