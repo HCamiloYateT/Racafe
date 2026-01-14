@@ -81,9 +81,13 @@ BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d"
     "font-family: inherit; color: ", color, "; cursor: pointer !important;"
   )
 
+  container_style <- paste0(
+    "display: flex; justify-content: flex-end; width: 100%; cursor: pointer;"
+  )
+
   span(
     title = title,
-    style = "cursor: pointer;",
+    style = container_style,
     downloadButton(
       outputId = final_id,
       label = NULL,
