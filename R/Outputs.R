@@ -83,6 +83,7 @@ BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d"
 
   span(
     title = title,
+    style = "cursor: pointer;",
     downloadButton(
       outputId = final_id,
       label = NULL,
