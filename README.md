@@ -34,6 +34,11 @@ EscribirDatos(df, "mi_tabla")
 df_nuevos <- data.frame(x = 4:6, y = letters[4:6])
 AgregarDatos(df_nuevos, "mi_tabla")
 ```
+- `ReemplazarDatos(df, tabla, llaves)`: Elimina registros existentes según llaves y luego inserta los nuevos datos.
+```r
+df <- data.frame(id = 1, fecha = as.Date("2024-01-01"), valor = 100)
+ReemplazarDatos(df, "mi_tabla", list(id = 1, fecha = "2024-01-01"))
+```
 - `CargarDatos(tabla, condicion = NULL)`: Recupera datos de una tabla, opcionalmente filtrando con una condición.
 ```r
 df <- CargarDatos("mi_tabla")
@@ -278,6 +283,10 @@ BotonesRadiales("estado", "Estado", choices = c("Activo", "Inactivo"))
 - `BotonEstado(...)`: Construye un botón tipo interruptor para activar/desactivar estados.
 ```r
 BotonEstado("toggle", "Activar filtro")
+```
+- `BotonGuardar(id, label = "Guardar", align = "right", ...)`: Crea un botón de acción con alineación configurable.
+```r
+BotonGuardar("guardar_formulario", label = "Guardar cambios", align = "center")
 ```
 
 ### Componentes de salida (Shiny)

@@ -557,3 +557,80 @@ BotonEstado <- function(
     )
   )
 }
+
+#' Botón Guardar para acciones de confirmación
+#'
+#' @description Crea un botón de acción estilizado con
+#'   `shinyWidgets::actionBttn()` y lo alinea dentro de un contenedor flex.
+#'
+#' @param id Cadena de caracteres. Identificador único del botón.
+#' @param label Cadena de caracteres. Texto que se mostrará en el botón.
+#' @param align Cadena de caracteres. Alineación horizontal del botón dentro del
+#'   contenedor: "left", "center" o "right".
+#' @param color Cadena de caracteres. Color del botón según los estilos de
+#'   `shinyWidgets::actionBttn()`.
+#' @param size Cadena de caracteres. Tamaño del botón según los estilos de
+#'   `shinyWidgets::actionBttn()`.
+#' @param icon Icono a mostrar. Puede ser `NULL`, una cadena con el nombre del
+#'   icono de Font Awesome o un objeto `shiny.tag`.
+#' @param style_container Cadena de caracteres con estilos CSS del contenedor
+#'   principal.
+#'
+#' @return Un objeto `shiny::tags$div` que envuelve el botón con el estilo
+#'   definido.
+#'
+#' @examples
+#' \dontrun{
+#' BotonGuardar("guardar_formulario")
+#' BotonGuardar("guardar", label = "Guardar cambios", align = "center")
+#' }
+#'
+#' @export
+BotonGuardar <- function(id, label = "Guardar", align = c("right", "left", "center"),
+                         color = "danger", size = "xs", icon = NULL,
+                         style_container = "display:flex; gap:15px; margin:20px 0;") {
+  if (!is.character(id) || length(id) != 1 || !nzchar(id)) {
+    stop("id debe ser una cadena de caracteres no vacía.")
+  }
+  if (!is.character(label) || length(label) != 1) {
+    stop("label debe ser una cadena de caracteres.")
+  }
+  if (!is.character(color) || length(color) != 1) {
+    stop("color debe ser una cadena de caracteres.")
+  }
+  if (!is.character(size) || length(size) != 1) {
+    stop("size debe ser una cadena de caracteres.")
+  }
+  if (!is.character(style_container) || length(style_container) != 1) {
+    stop("style_container debe ser una cadena de caracteres.")
+  }
+
+  align <- match.arg(align)
+
+  if (is.null(icon)) {
+    icon <- shiny::icon("save")
+  } else if (is.character(icon) && length(icon) == 1) {
+    icon <- shiny::icon(icon)
+  } else if (!inherits(icon, "shiny.tag")) {
+    stop("icon debe ser NULL, un nombre de icono o un objeto shiny.tag.")
+  }
+
+  justify <- switch(
+    align,
+    left = "flex-start",
+    center = "center",
+    right = "flex-end"
+  )
+
+  shiny::div(
+    style = paste0(style_container, " justify-content:", justify, ";"),
+    shinyWidgets::actionBttn(
+      inputId = id,
+      label = label,
+      icon = icon,
+      style = "unite",
+      color = color,
+      size = size
+    )
+  )
+}
