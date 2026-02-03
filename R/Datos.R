@@ -125,6 +125,86 @@ AgregarDatos <- function(df, tabla) {
   invisible(DBI::dbWriteTable(con, tabla, df, row.names = FALSE, append = TRUE, encoding = "latin1"))
 }
 
+#' Reemplazar registros en una tabla según llaves
+#'
+#' @description Elimina registros existentes de una tabla usando un conjunto de
+#'   llaves y luego inserta los nuevos datos proporcionados.
+#'
+#' @param df Un data.frame o tibble con los datos a insertar.
+#' @param tabla Cadena de caracteres. Nombre de la tabla destino.
+#' @param llaves Lista o vector nombrado con las llaves que identifican los
+#'   registros a reemplazar. Cada nombre corresponde a una columna.
+#'
+#' @return Invisiblemente TRUE si la operación se ejecuta sin errores.
+#'
+#' @examples
+#' \dontrun{
+#' df <- data.frame(id = 1, fecha = as.Date("2024-01-01"), valor = 100)
+#' ReemplazarDatos(df, "mi_tabla", list(id = 1, fecha = "2024-01-01"))
+#' }
+#'
+#' @export
+#' @importFrom DBI dbDisconnect dbExecute dbQuoteIdentifier dbQuoteLiteral dbWriteTable
+ReemplazarDatos <- function(df, tabla, llaves) {
+  if (!is.data.frame(df)) {
+    stop("df debe ser un data.frame o tibble.")
+  }
+  if (!is.character(tabla) || length(tabla) != 1 || !nzchar(tabla)) {
+    stop("tabla debe ser una cadena de caracteres no vacía.")
+  }
+  if (is.null(llaves) || length(llaves) == 0) {
+    stop("llaves debe contener al menos una llave para el reemplazo.")
+  }
+
+  if (is.vector(llaves) && !is.list(llaves)) {
+    if (is.null(names(llaves)) || any(names(llaves) == "")) {
+      stop("llaves debe ser un vector nombrado o una lista nombrada.")
+    }
+    llaves <- as.list(llaves)
+  }
+
+  if (!is.list(llaves) || is.null(names(llaves)) || any(names(llaves) == "")) {
+    stop("llaves debe ser una lista nombrada con los nombres de las columnas.")
+  }
+
+  con <- ConectarBD()
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
+
+  where_sql <- paste(
+    mapply(
+      function(col, val) {
+        paste0(
+          DBI::dbQuoteIdentifier(con, col),
+          " = ",
+          DBI::dbQuoteLiteral(con, val)
+        )
+      },
+      names(llaves),
+      llaves,
+      SIMPLIFY = TRUE,
+      USE.NAMES = FALSE
+    ),
+    collapse = " AND "
+  )
+
+  sql_delete <- paste0(
+    "DELETE FROM ",
+    DBI::dbQuoteIdentifier(con, tabla),
+    " WHERE ",
+    where_sql
+  )
+
+  DBI::dbExecute(con, sql_delete)
+
+  if (nrow(df) == 0) {
+    return(invisible(TRUE))
+  }
+
+  DBI::dbWriteTable(con, tabla, df, row.names = FALSE, append = TRUE, encoding = "latin1")
+
+  invisible(TRUE)
+}
+
 #' Cargar datos desde una tabla de la base de datos
 #'
 #' Recupera filas de la tabla indicada. Se puede pasar una condición WHERE opcional.
