@@ -170,22 +170,7 @@ ReemplazarDatos <- function(df, tabla, llaves) {
   con <- ConectarBD()
   on.exit(DBI::dbDisconnect(con), add = TRUE)
 
-  where_sql <- paste(
-    mapply(
-      function(col, val) {
-        paste0(
-          DBI::dbQuoteIdentifier(con, col),
-          " = ",
-          DBI::dbQuoteLiteral(con, val)
-        )
-      },
-      names(llaves),
-      llaves,
-      SIMPLIFY = TRUE,
-      USE.NAMES = FALSE
-    ),
-    collapse = " AND "
-  )
+  where_sql <- .ConstruirCondicionLlavesSQL(con, llaves)
 
   sql_delete <- paste0(
     "DELETE FROM ",
@@ -203,6 +188,62 @@ ReemplazarDatos <- function(df, tabla, llaves) {
   DBI::dbWriteTable(con, tabla, df, row.names = FALSE, append = TRUE, encoding = "latin1")
 
   invisible(TRUE)
+}
+
+.ConstruirCondicionLlavesSQL <- function(con, llaves) {
+  condiciones <- mapply(
+    function(col, val) {
+      .ConstruirCondicionLlaveSQL(con, col, val)
+    },
+    names(llaves),
+    llaves,
+    SIMPLIFY = TRUE,
+    USE.NAMES = FALSE
+  )
+
+  paste(condiciones, collapse = " AND ")
+}
+
+.ConstruirCondicionLlaveSQL <- function(con, col, val) {
+  if (length(val) == 0) {
+    stop("Cada llave debe tener al menos un valor.")
+  }
+
+  col_sql <- DBI::dbQuoteIdentifier(con, col)
+
+  if (length(val) == 1) {
+    if (is.na(val)) {
+      return(paste0(col_sql, " IS NULL"))
+    }
+
+    return(paste0(col_sql, " = ", DBI::dbQuoteLiteral(con, val)))
+  }
+
+  tiene_na <- any(is.na(val))
+  valores <- val[!is.na(val)]
+
+  partes <- character(0)
+
+  if (length(valores) > 0) {
+    valores_sql <- vapply(
+      valores,
+      function(x) as.character(DBI::dbQuoteLiteral(con, x)),
+      FUN.VALUE = character(1),
+      USE.NAMES = FALSE
+    )
+
+    partes <- c(partes, paste0(col_sql, " IN (", paste(valores_sql, collapse = ", "), ")"))
+  }
+
+  if (tiene_na) {
+    partes <- c(partes, paste0(col_sql, " IS NULL"))
+  }
+
+  if (length(partes) > 1) {
+    return(paste0("(", paste(partes, collapse = " OR "), ")"))
+  }
+
+  partes
 }
 
 #' Cargar datos desde una tabla de la base de datos
