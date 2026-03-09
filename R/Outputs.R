@@ -168,12 +168,13 @@ CajaIco <- function(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra =
 #'
 #' @param valor Número que se mostrará como valor principal.
 #' @param formato Cadena de formato utilizada por [FormatearNumero()] (por ejemplo, "dinero" o "porcentaje").
-#' @param texto Texto descriptivo del indicador.
+#' @param texto Texto descriptivo del indicador. Puede ser texto plano o HTML
+#'   preformateado (por ejemplo, con color y estilos inline).
 #' @param icono Nombre del ícono a usar (Font Awesome) para la caja de valor.
 #' @param inputId Identificador del botón de detalle. Requerido cuando `mostrar_boton` es `TRUE`.
 #' @param mostrar_boton Lógico que indica si se debe mostrar el botón de detalle. Por defecto `TRUE`.
-#' @param colores Vector de longitud dos para definir los colores de la caja con nombres
-#'   `fondo` y `texto` (por defecto `c(fondo = "white", texto = "#212529")`).
+#' @param colores Vector de longitud uno para definir el color de fondo con nombre
+#'   `fondo` (por defecto `c(fondo = "white")`).
 #'
 #' @return Un objeto `bs4ValueBox` listo para incorporarse en una aplicación `shiny`.
 #'
@@ -181,14 +182,15 @@ CajaIco <- function(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra =
 #' \dontrun{
 #' CajaValor(1500000, "dinero", "Ingresos totales", "chart-line", "detalle_ingresos")
 #' CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", mostrar_boton = FALSE)
-#' CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", colores = c(fondo = "primary", texto = "#FFFFFF"))
+#' CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", colores = c(fondo = "primary"))
+#' CajaValor(0.87, "porcentaje", "<span style='color:#FF5733'>Cumplimiento</span>", "thumbs-up", mostrar_boton = FALSE)
 #' }
 #'
 #' @importFrom shiny actionButton icon
 #' @importFrom bs4Dash bs4ValueBox
 #' @export
 CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boton = TRUE,
-                      colores = c(fondo = "white", texto = "#212529")) {
+                      colores = c(fondo = "white")) {
 
   validar_cadena <- function(x) {
     is.character(x) && length(x) == 1 && nzchar(x)
@@ -222,24 +224,22 @@ CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boto
     inputId <- NULL
   }
 
-  if (!is.character(colores) || length(colores) != 2 || any(!nzchar(colores))) {
-    stop("'colores' debe ser un vector de caracteres de longitud dos para fondo y texto.", call. = FALSE)
+  if (!is.character(colores) || length(colores) != 1 || any(!nzchar(colores))) {
+    stop("'colores' debe ser un vector de caracteres de longitud uno para 'fondo'.", call. = FALSE)
   }
 
   nombres_colores <- names(colores)
-  if (is.null(nombres_colores) || !all(c("fondo", "texto") %in% nombres_colores)) {
-    stop("'colores' debe incluir los nombres 'fondo' y 'texto'.", call. = FALSE)
+  if (is.null(nombres_colores) || !("fondo" %in% nombres_colores)) {
+    stop("'colores' debe incluir el nombre 'fondo'.", call. = FALSE)
   }
 
   color_fondo <- unname(colores[["fondo"]])
-  color_texto <- unname(colores[["texto"]])
 
   boton_style <- paste(
     "background-color: transparent !important;",
     "background-image: none !important; border: none !important;",
     "box-shadow: none !important; text-decoration: underline !important;",
     "margin-right: auto; margin-left: 0; display: block; font-size: 10px;",
-    paste0("color: ", color_texto, " !important;"),
     "cursor: pointer;"
   )
 
@@ -254,14 +254,13 @@ CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boto
     NULL
   }
 
-  valor_formateado <- shiny::tags$span(
-    style = paste0("color:", color_texto, ";"),
-    FormatearTexto(FormatearNumero(valor, formato = formato), tamano_pct = 2)
-  )
-  subtitulo <- shiny::tags$span(
-    style = paste0("color:", color_texto, ";"),
-    FormatearTexto(texto, tamano_pct = 1.2)
-  )
+  valor_formateado <- FormatearTexto(FormatearNumero(valor, formato = formato), tamano_pct = 2)
+
+  subtitulo <- if (inherits(texto, c("shiny.tag", "shiny.tag.list", "html"))) {
+    texto
+  } else {
+    htmltools::HTML(as.character(texto))
+  }
 
   bs4Dash::bs4ValueBox(
     value = valor_formateado,
