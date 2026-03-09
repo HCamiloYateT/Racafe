@@ -15,7 +15,7 @@ CajaValor(
 )
 }
 \arguments{
-\item{valor}{Número que se mostrará como valor principal.}
+\item{valor}{Valor principal a mostrar. Puede ser numérico (se formatea con\n\code{\link{FormatearNumero}} y \code{\link{FormatearTexto}}) o texto/HTML preformateado.}
 
 \item{formato}{Cadena de formato utilizada por \code{\link{FormatearNumero}} (por ejemplo, "dinero" o "porcentaje").}
 
