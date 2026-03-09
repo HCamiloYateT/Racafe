@@ -205,9 +205,9 @@ tabla <- gt_minimal_style(gt::gt(head(mtcars)))
 gt_mensaje_vacio()
 gt_mensaje_vacio("Sin resultados para los filtros seleccionados")
 ```
-- `col_kpi(x, prop = TRUE)`: Devuelve estilos de color para columnas KPI según cumplimiento.
+- `col_kpi(x, prop = TRUE, ref = 0, tol = 0, col_pos = "#0B5345", col_neg = "#943126", col_neu = "#000000", col_na = "#AAAAAA")`: Devuelve estilos de color para KPI según su relación con un valor de referencia y tolerancia.
 ```r
-col_kpi(c(0.8, 1.1))
+col_kpi(c(80, 100, 115), ref = 100, tol = 5)
 ```
 - `chr_kpi(x)`: Genera indicadores textuales de desempeño.
 ```r

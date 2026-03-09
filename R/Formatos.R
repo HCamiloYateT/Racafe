@@ -380,25 +380,48 @@ gt_mensaje_vacio <- function(mensaje = "No existen datos en la tabla") {
 
 #' Color para KPI
 #'
-#' @description Asigna color según si el valor es positivo, negativo o cero, y según proporcionalidad.
+#' @description
+#' Asigna color semáforo a un valor numérico según su relación con un umbral,
+#' permitiendo definir un valor de referencia y una tolerancia neutra.
 #'
-#' @param x Valor numérico.
-#' @param prop Lógico, indica si el KPI es proporcional (default: TRUE).
+#' @param x Valor numérico (vectorizado).
+#' @param prop Lógico: `TRUE` indica que mayor es mejor y `FALSE` que menor es mejor.
+#' @param ref Valor de referencia contra el que comparar. Por defecto `0`.
+#' @param tol Tolerancia simétrica alrededor de `ref` para zona neutra.
+#'   Por defecto `0`.
+#' @param col_pos Color cuando el valor es favorable.
+#' @param col_neg Color cuando el valor es desfavorable.
+#' @param col_neu Color para zona neutra (incluye `x == ref` o dentro de tolerancia).
+#' @param col_na Color para valores `NA`.
 #'
-#' @return Cadena con un color en formato hexadecimal.
+#' @return Vector de cadenas con colores en formato hexadecimal.
 #'
 #' @examples
-#' col_kpi(1, TRUE)
-#' col_kpi(-1, FALSE)
+#' col_kpi(73.4)
+#' col_kpi(28.6, prop = FALSE)
+#' col_kpi(87, ref = 100, tol = 5)
+#' col_kpi(1250, ref = 1000, prop = TRUE)
+#' col_kpi(c(80, 100, 115), ref = 100)
 #'
 #' @export
-col_kpi <- function(x, prop = TRUE) {
+col_kpi <- function(
+    x,
+    prop = TRUE,
+    ref = 0,
+    tol = 0,
+    col_pos = "#0B5345",
+    col_neg = "#943126",
+    col_neu = "#000000",
+    col_na = "#AAAAAA"
+) {
   dplyr::case_when(
-    x == 0 ~ "#000000",
-    prop & x > 0 ~ "#0B5345",
-    prop & x < 0 ~ "#943126",
-    !prop & x > 0 ~ "#943126",
-    !prop & x < 0 ~ "#0B5345"
+    is.na(x) ~ col_na,
+    x >= (ref - tol) & x <= (ref + tol) ~ col_neu,
+    prop & x > (ref + tol) ~ col_pos,
+    prop & x < (ref - tol) ~ col_neg,
+    !prop & x > (ref + tol) ~ col_neg,
+    !prop & x < (ref - tol) ~ col_pos,
+    TRUE ~ col_neu
   )
 }
 

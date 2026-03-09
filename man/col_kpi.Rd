@@ -4,21 +4,46 @@
 \alias{col_kpi}
 \title{Color para KPI}
 \usage{
-col_kpi(x, prop = TRUE)
+col_kpi(
+  x,
+  prop = TRUE,
+  ref = 0,
+  tol = 0,
+  col_pos = "#0B5345",
+  col_neg = "#943126",
+  col_neu = "#000000",
+  col_na = "#AAAAAA"
+)
 }
 \arguments{
-\item{x}{Valor numérico.}
+\item{x}{Valor numérico (vectorizado).}
 
-\item{prop}{Lógico, indica si el KPI es proporcional (default: TRUE).}
+\item{prop}{Lógico: `TRUE` indica que mayor es mejor y `FALSE` que menor es mejor.}
+
+\item{ref}{Valor de referencia contra el que comparar. Por defecto `0`.}
+
+\item{tol}{Tolerancia simétrica alrededor de `ref` para zona neutra. Por defecto `0`.}
+
+\item{col_pos}{Color cuando el valor es favorable.}
+
+\item{col_neg}{Color cuando el valor es desfavorable.}
+
+\item{col_neu}{Color para zona neutra (incluye `x == ref` o dentro de tolerancia).}
+
+\item{col_na}{Color para valores `NA`.}
 }
 \value{
-Cadena con un color en formato hexadecimal.
+Vector de cadenas con colores en formato hexadecimal.
 }
 \description{
-Asigna color según si el valor es positivo, negativo o cero, y según proporcionalidad.
+Asigna color semáforo a un valor numérico según su relación con un umbral,
+permitiendo definir un valor de referencia y una tolerancia neutra.
 }
 \examples{
-col_kpi(1, TRUE)
-col_kpi(-1, FALSE)
+col_kpi(73.4)
+col_kpi(28.6, prop = FALSE)
+col_kpi(87, ref = 100, tol = 5)
+col_kpi(1250, ref = 1000, prop = TRUE)
+col_kpi(c(80, 100, 115), ref = 100)
 
 }
