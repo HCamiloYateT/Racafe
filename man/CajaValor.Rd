@@ -4,7 +4,15 @@
 \alias{CajaValor}
 \title{Crear una caja de valor para indicadores}
 \usage{
-CajaValor(valor, formato, texto, icono, inputId = NULL, mostrar_boton = TRUE)
+CajaValor(
+  valor,
+  formato,
+  texto,
+  icono,
+  inputId = NULL,
+  mostrar_boton = TRUE,
+  colores = c(fondo = "white", texto = "#212529")
+)
 }
 \arguments{
 \item{valor}{Número que se mostrará como valor principal.}
@@ -18,6 +26,9 @@ CajaValor(valor, formato, texto, icono, inputId = NULL, mostrar_boton = TRUE)
 \item{inputId}{Identificador del botón de detalle. Requerido cuando \code{mostrar_boton} es \code{TRUE}.}
 
 \item{mostrar_boton}{Lógico que indica si se debe mostrar el botón de detalle. Por defecto \code{TRUE}.}
+
+\item{colores}{Vector de longitud dos para definir los colores de la caja con nombres
+\code{fondo} y \code{texto} (por defecto \code{c(fondo = "white", texto = "#212529")}).}
 }
 \value{
 Un objeto \code{bs4ValueBox} listo para incorporarse en una aplicación \code{shiny}.
@@ -32,5 +43,6 @@ construcción de interfaces \code{shiny}.
 \dontrun{
 CajaValor(1500000, "dinero", "Ingresos totales", "chart-line", "detalle_ingresos")
 CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", mostrar_boton = FALSE)
+CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", colores = c(fondo = "primary", texto = "#FFFFFF"))
 }
 }

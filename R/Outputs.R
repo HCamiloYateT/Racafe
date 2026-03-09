@@ -172,6 +172,8 @@ CajaIco <- function(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra =
 #' @param icono Nombre del ícono a usar (Font Awesome) para la caja de valor.
 #' @param inputId Identificador del botón de detalle. Requerido cuando `mostrar_boton` es `TRUE`.
 #' @param mostrar_boton Lógico que indica si se debe mostrar el botón de detalle. Por defecto `TRUE`.
+#' @param colores Vector de longitud dos para definir los colores de la caja con nombres
+#'   `fondo` y `texto` (por defecto `c(fondo = "white", texto = "#212529")`).
 #'
 #' @return Un objeto `bs4ValueBox` listo para incorporarse en una aplicación `shiny`.
 #'
@@ -179,26 +181,32 @@ CajaIco <- function(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra =
 #' \dontrun{
 #' CajaValor(1500000, "dinero", "Ingresos totales", "chart-line", "detalle_ingresos")
 #' CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", mostrar_boton = FALSE)
+#' CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", colores = c(fondo = "primary", texto = "#FFFFFF"))
 #' }
 #'
 #' @importFrom shiny actionButton icon
 #' @importFrom bs4Dash bs4ValueBox
 #' @export
-CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boton = TRUE) {
+CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boton = TRUE,
+                      colores = c(fondo = "white", texto = "#212529")) {
+
+  validar_cadena <- function(x) {
+    is.character(x) && length(x) == 1 && nzchar(x)
+  }
 
   if (!is.numeric(valor) || length(valor) != 1 || is.na(valor)) {
     stop("'valor' debe ser un número de longitud uno y no puede ser NA.", call. = FALSE)
   }
 
-  if (!is.character(formato) || length(formato) != 1 || !nzchar(formato)) {
+  if (!validar_cadena(formato)) {
     stop("'formato' debe ser una cadena de caracteres de longitud uno.", call. = FALSE)
   }
 
-  if (!is.character(texto) || length(texto) != 1 || !nzchar(texto)) {
+  if (!validar_cadena(texto)) {
     stop("'texto' debe ser una cadena de caracteres de longitud uno.", call. = FALSE)
   }
 
-  if (!is.character(icono) || length(icono) != 1 || !nzchar(icono)) {
+  if (!validar_cadena(icono)) {
     stop("'icono' debe ser una cadena con el nombre del ícono a utilizar.", call. = FALSE)
   }
 
@@ -207,18 +215,31 @@ CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boto
   }
 
   if (isTRUE(mostrar_boton)) {
-    if (is.null(inputId) || !is.character(inputId) || length(inputId) != 1 || !nzchar(inputId)) {
+    if (is.null(inputId) || !validar_cadena(inputId)) {
       stop("'inputId' debe ser una cadena de caracteres no vacía cuando se solicita el botón.", call. = FALSE)
     }
   } else {
     inputId <- NULL
   }
 
+  if (!is.character(colores) || length(colores) != 2 || any(!nzchar(colores))) {
+    stop("'colores' debe ser un vector de caracteres de longitud dos para fondo y texto.", call. = FALSE)
+  }
+
+  nombres_colores <- names(colores)
+  if (is.null(nombres_colores) || !all(c("fondo", "texto") %in% nombres_colores)) {
+    stop("'colores' debe incluir los nombres 'fondo' y 'texto'.", call. = FALSE)
+  }
+
+  color_fondo <- unname(colores[["fondo"]])
+  color_texto <- unname(colores[["texto"]])
+
   boton_style <- paste(
     "background-color: transparent !important;",
     "background-image: none !important; border: none !important;",
     "box-shadow: none !important; text-decoration: underline !important;",
     "margin-right: auto; margin-left: 0; display: block; font-size: 10px;",
+    paste0("color: ", color_texto, " !important;"),
     "cursor: pointer;"
   )
 
@@ -233,14 +254,20 @@ CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boto
     NULL
   }
 
-  valor_formateado <- FormatearTexto(FormatearNumero(valor, formato = formato), tamano_pct = 2)
-  subtitulo <- FormatearTexto(texto, tamano_pct = 1.2)
+  valor_formateado <- shiny::tags$span(
+    style = paste0("color:", color_texto, ";"),
+    FormatearTexto(FormatearNumero(valor, formato = formato), tamano_pct = 2)
+  )
+  subtitulo <- shiny::tags$span(
+    style = paste0("color:", color_texto, ";"),
+    FormatearTexto(texto, tamano_pct = 1.2)
+  )
 
   bs4Dash::bs4ValueBox(
     value = valor_formateado,
     subtitle = subtitulo,
     icon = shiny::icon(icono),
-    color = "white",
+    color = color_fondo,
     footer = footer_con_boton
   )
 }
