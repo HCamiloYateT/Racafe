@@ -11,7 +11,7 @@ CajaValor(
   icono,
   inputId = NULL,
   mostrar_boton = TRUE,
-  colores = c(fondo = "white", texto = "#212529")
+  colores = c(fondo = "white")
 )
 }
 \arguments{
@@ -19,7 +19,8 @@ CajaValor(
 
 \item{formato}{Cadena de formato utilizada por \code{\link{FormatearNumero}} (por ejemplo, "dinero" o "porcentaje").}
 
-\item{texto}{Texto descriptivo del indicador.}
+\item{texto}{Texto descriptivo del indicador. Puede ser texto plano o HTML
+preformateado (por ejemplo, con color y estilos inline).}
 
 \item{icono}{Nombre del ícono a usar (Font Awesome) para la caja de valor.}
 
@@ -27,8 +28,8 @@ CajaValor(
 
 \item{mostrar_boton}{Lógico que indica si se debe mostrar el botón de detalle. Por defecto \code{TRUE}.}
 
-\item{colores}{Vector de longitud dos para definir los colores de la caja con nombres
-\code{fondo} y \code{texto} (por defecto \code{c(fondo = "white", texto = "#212529")}).}
+\item{colores}{Vector de longitud uno para definir el color de fondo con nombre
+\code{fondo} (por defecto \code{c(fondo = "white")}).}
 }
 \value{
 Un objeto \code{bs4ValueBox} listo para incorporarse en una aplicación \code{shiny}.
@@ -43,6 +44,7 @@ construcción de interfaces \code{shiny}.
 \dontrun{
 CajaValor(1500000, "dinero", "Ingresos totales", "chart-line", "detalle_ingresos")
 CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", mostrar_boton = FALSE)
-CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", colores = c(fondo = "primary", texto = "#FFFFFF"))
+CajaValor(0.87, "porcentaje", "Cumplimiento", "thumbs-up", "detalle_cumplimiento", colores = c(fondo = "primary"))
+CajaValor(0.87, "porcentaje", "<span style='color:#FF5733'>Cumplimiento</span>", "thumbs-up", mostrar_boton = FALSE)
 }
 }
