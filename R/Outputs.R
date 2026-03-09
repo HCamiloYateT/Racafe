@@ -166,7 +166,8 @@ CajaIco <- function(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra =
 #' La función valida los argumentos de entrada para evitar errores comunes en la
 #' construcción de interfaces `shiny`.
 #'
-#' @param valor Número que se mostrará como valor principal.
+#' @param valor Valor principal a mostrar. Puede ser numérico (se formatea con
+#'   [FormatearNumero()] y [FormatearTexto()]) o texto/HTML preformateado.
 #' @param formato Cadena de formato utilizada por [FormatearNumero()] (por ejemplo, "dinero" o "porcentaje").
 #' @param texto Texto descriptivo del indicador. Puede ser texto plano o HTML
 #'   preformateado (por ejemplo, con color y estilos inline).
@@ -196,8 +197,15 @@ CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boto
     is.character(x) && length(x) == 1 && nzchar(x)
   }
 
-  if (!is.numeric(valor) || length(valor) != 1 || is.na(valor)) {
-    stop("'valor' debe ser un número de longitud uno y no puede ser NA.", call. = FALSE)
+  es_numero_valido <- is.numeric(valor) && length(valor) == 1 && !is.na(valor)
+  es_texto_valido <- is.character(valor) && length(valor) == 1 && nzchar(valor)
+  es_html_valido <- inherits(valor, c("shiny.tag", "shiny.tag.list", "html"))
+
+  if (!(es_numero_valido || es_texto_valido || es_html_valido)) {
+    stop(
+      "'valor' debe ser un número válido o un texto/HTML de longitud uno.",
+      call. = FALSE
+    )
   }
 
   if (!validar_cadena(formato)) {
@@ -254,7 +262,13 @@ CajaValor <- function(valor, formato, texto, icono, inputId = NULL, mostrar_boto
     NULL
   }
 
-  valor_formateado <- FormatearTexto(FormatearNumero(valor, formato = formato), tamano_pct = 2)
+  valor_formateado <- if (es_numero_valido) {
+    FormatearTexto(FormatearNumero(valor, formato = formato), tamano_pct = 2)
+  } else if (es_html_valido) {
+    valor
+  } else {
+    FormatearTexto(valor, tamano_pct = 2)
+  }
 
   subtitulo <- if (inherits(texto, c("shiny.tag", "shiny.tag.list", "html"))) {
     texto
