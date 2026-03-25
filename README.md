@@ -1,435 +1,86 @@
-# Funciones Utilitarias
+# racafe
 
-Este repositorio contiene un paquete de R creado específicamente para **Racafé**, el cual incluye una serie de funciones misceláneas diseñadas para facilitar y optimizar la creación de reportes. Las funciones incluidas permiten la generación de gráficos, cálculos de KPIs, manipulación de datos y otros procesos útiles en el contexto de análisis y reportes corporativos.
+Paquete de R con funciones utilitarias usadas en proyectos de análisis y reporting de Racafé.
+
+## Estado real del repositorio
+
+Este repositorio **sí es un paquete de R** (no una app), con la siguiente estructura principal:
+
+- `DESCRIPTION`, `NAMESPACE`, `LICENSE`: metadatos y configuración del paquete.
+- `R/`: implementación de funciones por módulos (`Datos`, `Formatos`, `GTStyles`, `Inputs`, `Outputs`, `Pronosticos`, etc.).
+- `man/`: documentación `.Rd` generada con roxygen2.
+- `tests/testthat/`: pruebas unitarias.
+- `renv/settings.json`: configuración de entorno reproducible.
+
+Actualmente el paquete exporta **91 funciones** (ver `NAMESPACE`).
 
 ## Instalación
 
+### Instalación local (recomendada para desarrollo)
+
 ```r
-# Instalar la librería devtools si aún no está disponible
-install.packages("devtools")
-
-# Clonar el repositorio y, una vez dentro de la carpeta, ejecutar:
+install.packages(c("devtools", "remotes"))
 devtools::install(".")
+```
 
-# Alternativamente, puede instalar directamente desde GitHub
-install.packages("remotes")
+### Instalación desde GitHub
+
+```r
 remotes::install_github("racafe/racafe")
 ```
 
-## Funciones del paquete
+## Uso rápido
 
-### Conexión y escritura de bases
-- `ConectarBD()`: Establece una conexión a la base de datos usando variables de entorno.
 ```r
-con <- ConectarBD()
-DBI::dbDisconnect(con)
-```
-- `EscribirDatos(df, tabla)`: Sobrescribe una tabla con el contenido de un `data.frame`.
-```r
-df <- data.frame(x = 1:3, y = letters[1:3])
-EscribirDatos(df, "mi_tabla")
-```
-- `AgregarDatos(df, tabla)`: Agrega filas de un `data.frame` a una tabla existente.
-```r
-df_nuevos <- data.frame(x = 4:6, y = letters[4:6])
-AgregarDatos(df_nuevos, "mi_tabla")
-```
-- `ReemplazarDatos(df, tabla, llaves)`: Elimina registros existentes según llaves y luego inserta los nuevos datos.
-```r
-df <- data.frame(id = 1, fecha = as.Date("2024-01-01"), valor = 100)
-ReemplazarDatos(df, "mi_tabla", list(id = 1, fecha = "2024-01-01"))
-```
-- `CargarDatos(tabla, condicion = NULL)`: Recupera datos de una tabla, opcionalmente filtrando con una condición.
-```r
-df <- CargarDatos("mi_tabla")
-df_filtrado <- CargarDatos("mi_tabla", "x > 10")
-```
-- `Consulta(consulta)`: Ejecuta una consulta SQL arbitraria y retorna un `data.frame`.
-```r
-resultado <- Consulta("SELECT COUNT(*) AS n FROM mi_tabla")
+library(racafe)
+
+# Ver funciones exportadas
+getNamespaceExports("racafe")
+
+# Abrir ayuda general del paquete
+help(package = "racafe")
 ```
 
-### Integración con OneDrive/Microsoft Graph
-- `ObtenerTokenAcceso()`: Obtiene un token de acceso para la API de Microsoft Graph.
+## Módulos del paquete (resumen)
+
+- **Conectividad y datos (`R/Datos.R`)**:
+  - conexión y escritura a BD: `ConectarBD()`, `EscribirDatos()`, `AgregarDatos()`, `ReemplazarDatos()`, `CargarDatos()`, `Consulta()`.
+  - SQL Server: `ConsultaSistema()`.
+  - Microsoft Graph / OneDrive / SharePoint: `ObtenerTokenAcceso()`, `CabecerasGraph()`, `ObtenerIdSite()`, `ObtenerIdDriveSite()`, `ObtenerIdDrive()`, `Listar*`, `CargarExcelDesdeOneDrive()`, `CargarExcelSite()`, `LeerExcelDesdeOneDrive()`, `Descargar*()`.
+  - transformación: `TopAbsoluto()`, `TopRelativo()`, `bind_rows_na()`, `left_join_all()`, `RevisarDuplicados()`.
+
+- **Formatos y utilidades visuales**:
+  - `R/Formatos.R`: `DefinirFormato()`, `FormatoD3()`, `FormatoJS()`, `FormatoHOT()`, `FormatearNumero()`, `FormatearTexto()`.
+  - `R/GTStyles.R`: `gt_minimal_style()`, `gt_mensaje_vacio()`, `gt_pct_style()`, `gt_var_style()`, `gt_sign_style()`, `gt_color_columns()`, `col_kpi()`, `chr_kpi()`, `col_num()`.
+  - `R/ElementosGraficos.R`: `vline()`, `hline()`, `ImprimirDensidad()`, `ImprimirAnillo()`, `ImprimeSankey()`, `ColoresRacafe()`, `ColoresGreenBlue()`.
+
+- **Componentes Shiny**:
+  - `R/Inputs.R`: `InputNumerico()`, `ListaDesplegable()`, `pick_opt()`, `BotonesRadiales()`, `BotonEstado()`, `BotonGuardar()`.
+  - `R/Outputs.R`: `BotonDescarga()`, `CajaIco()`, `CajaValor()`.
+
+- **Funciones de soporte**:
+  - `R/Numericos.R`: `SiError_0()`, `Variacion()`, `Moda()`, `RedondearMultiplo()`.
+  - `R/Fechas.R`: `PrimerDia()`, `FechaTexto()`, `EdadCumplida()`.
+  - `R/Texto.R`: `LimpiarNombres()`, `LimpiarCadena()`, `UnirCadenas()`, `Unicos()`, `EsVacio()`, `EsEnteroPositivo()`, `EsNumero()`, `EsNumTelefono()`, `EsEmail()`.
+  - `R/Html.R`: `Saltos()`, `Espacios()`, `Obligatorio()`.
+  - `R/Liberias.R`: `Loadpkg()`.
+
+- **Pronósticos (`R/Pronosticos.R`)**:
+  - `aplicar_imputacion()`, `extraer_intervalos()`, `ejecutar_pronosticos()`, `Pronosticar()`, `PronMetricas()`, `PronSeleccionar()`, `PronSerie()`, `PronMensual()`, `PronPatronMes()`.
+
+## Ejecutar pruebas
+
 ```r
-token <- ObtenerTokenAcceso()
-```
-- `CabecerasGraph()`: Construye las cabeceras HTTP con el token Bearer.
-```r
-headers <- CabecerasGraph()
-```
-- `ObtenerIdSite(hostname, site_path)`: Obtiene el ID de un sitio de SharePoint a partir del hostname y la ruta del sitio.
-```r
-site_id <- ObtenerIdSite("contoso.sharepoint.com", "sites/mi-sitio")
-```
-- `ObtenerIdDriveSite(site_id, nombre_drive = NULL)`: Devuelve el ID del drive asociado a un sitio de SharePoint.
-```r
-drive_id <- ObtenerIdDriveSite(site_id, "Documentos compartidos")
-```
-- `ObtenerIdDrive(usuario)`: Devuelve el identificador de OneDrive del usuario.
-```r
-drive_id <- ObtenerIdDrive("juan.perez")
-```
-- `CargarExcelDesdeOneDrive(usuario, ruta, archivo)`: Descarga un Excel y lo abre como `openxlsx2::wb_load`.
-```r
-wb <- CargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx")
-```
-- `DescargarExcelDesdeOneDrive(usuario, ruta, archivo, nombre_salida)`: Guarda localmente un Excel desde OneDrive.
-```r
-DescargarExcelDesdeOneDrive("juan.perez", "Carpeta/Reportes", "informe.xlsx", "informe_local")
-```
-- `ListarCarpetas(usuario)`: Lista las carpetas en la raíz del OneDrive del usuario.
-```r
-carpetas <- ListarCarpetas("juan.perez")
-```
-- `ObtenerIdCarpeta(usuario, nombre_carpeta)`: Obtiene el ID de una carpeta por nombre.
-```r
-carpeta_id <- ObtenerIdCarpeta("juan.perez", "Reportes")
-```
-- `ListarContenidoCarpetaNombre(usuario, nombre_carpeta)`: Lista archivos y carpetas dentro de una carpeta por nombre.
-```r
-df <- ListarContenidoCarpetaNombre("juan.perez", "Reportes")
-```
-- `ListarContenidoCarpetaId(usuario, carpeta_id)`: Lista archivos y carpetas dentro de una carpeta por ID.
-```r
-df <- ListarContenidoCarpetaId("juan.perez", "0123ABC...")
-```
-- `ListarContenidoCarpetaRecursivo(usuario, carpeta_id)`: Recorre una carpeta por ID de forma recursiva devolviendo una lista.
-```r
-lst <- ListarContenidoCarpetaRecursivo("juan.perez", "0123ABC...")
-```
-- `ListarDriveRecursivo(drive_id, item_id = "root", ruta = "", fecha_desde = NULL)`: Lista recursivamente archivos en un drive de SharePoint/OneDrive con metadatos.
-```r
-archivos <- ListarDriveRecursivo(drive_id, fecha_desde = Sys.Date() - 30)
-```
-- `ListarTodoContenidoCarpeta(usuario, carpeta_id)`: Devuelve un tibble con todos los archivos de una carpeta de manera recursiva.
-```r
-df <- ListarTodoContenidoCarpeta("juan.perez", "0123ABC...")
-```
-- `DescargarArchivoId(archivo_id, usuario)`: Descarga un archivo de OneDrive a un temporal y retorna su ruta.
-```r
-tmp <- DescargarArchivoId("ABC123...", "juan.perez")
-```
-- `ListarHojasExcelOneDrive(archivo_id, usuario)`: Lista las hojas de un Excel alojado en OneDrive.
-```r
-hojas <- ListarHojasExcelOneDrive("ABC123...", "juan.perez")
-```
-- `LeerExcelDesdeOneDrive(archivo_id, usuario, ...)`: Lee un Excel de OneDrive con `readxl::read_excel`.
-```r
-df <- LeerExcelDesdeOneDrive("ABC123...", "juan.perez", sheet = "Datos", skip = 1)
-```
-- `CargarExcelSite(drive_id, item_id, hoja = NULL, ...)`: Descarga un Excel desde un drive de SharePoint/OneDrive (por ID) y lo lee con `readxl`.
-```r
-# Requiere credenciales válidas de Microsoft Graph.
-if (FALSE) {
-  datos <- CargarExcelSite(
-    drive_id = "drive-id-123",
-    item_id = "item-id-456",
-    hoja = "Datos",
-    skip = 1
-  )
-}
+testthat::test_dir("tests/testthat")
 ```
 
-### Datos y transformación
-- `ConsultaSistema(bd, query, uid, pwd, server = "172.16.19.21", port = 1433)`: Ejecuta una consulta en SQL Server y devuelve un `data.frame` con nombres de columnas limpios.
-```r
-# df <- ConsultaSistema("syscafe", "SELECT TOP 10 * FROM tabla", "usuario", "clave")
-```
-- `TopAbsoluto(data, var_recode, var_top, fun_Top, n = 10, nom_var, lab_recodificar = "OTROS")`: Recodifica categorías menos frecuentes según valores absolutos o una función de resumen.
-```r
-# df <- TopAbsoluto(df, Categoria, Valor, fun_Top = "sum", n = 5, nom_var = "CategoriaTop")
-```
-- `TopRelativo(data, var_recode, var_top, fun_Top, pct_min = 0.05, nom_var, lab_recodificar = "OTROS")`: Recodifica categorías menos frecuentes según porcentaje mínimo.
-```r
-# df <- TopRelativo(df, Categoria, Valor, fun_Top = "sum", pct_min = 0.05, nom_var = "CategoriaTop")
-```
-- `AdicionarBotones(tabla, botones)`: Agrega columnas con botones HTML interactivos a una tabla.
-```r
-# tabla <- AdicionarBotones(tabla, c("Detalle", "Editar"))
-```
-- `bind_rows_na(...)`: Combina múltiples `data.frame` ignorando aquellos vacíos.
-```r
-# res <- bind_rows_na(df1, df2, df3)
-```
-- `left_join_all(x, y_list, by, type = "left")`: Realiza uniones iterativas utilizando las funciones `*_join()` de `dplyr`.
-```r
-# resultado <- left_join_all(df_base, list(df_extra1, df_extra2), by = c("id" = "id"))
-```
-- `RevisarDuplicados(x, y, by)`: Revisa si existen llaves duplicadas en dos tablas y devuelve las filas repetidas en cada una.
-```r
-datos_a <- tibble::tibble(id = c(1, 1, 2), valor = c("a", "a", "b"))
-datos_b <- tibble::tibble(id = c(1, 2, 2), valor_extra = c("x", "y", "y"))
-RevisarDuplicados(datos_a, datos_b, by = "id")
-```
-- `%||%(a, b)`: Operador infijo que retorna `a` si no es nulo ni vacío; de lo contrario, retorna `b`.
-```r
-valor <- entrada %||% "valor_por_defecto"
-```
-- `Loadpkg(pkg)`: Carga un paquete si está instalado o lo instala antes de cargarlo.
-```r
-Loadpkg("dplyr")
+O desde terminal:
+
+```bash
+Rscript -e 'testthat::test_dir("tests/testthat")'
 ```
 
-### Formatos y estilos
-- `DefinirFormato(formato, ...)`: Registra un formato personalizado reutilizable.
-```r
-DefinirFormato("porcentaje", scales::percent_format())
-```
-- `FormatoD3(formato)`: Convierte un formato registrado a la sintaxis usada por D3.js.
-```r
-FormatoD3("porcentaje")
-```
-- `FormatoJS(formato)`: Obtiene la representación JavaScript de un formato.
-```r
-FormatoJS("porcentaje")
-```
-- `FormatoHOT(formato)`: Traduce un formato a la sintaxis de Handsontable.
-```r
-FormatoHOT("porcentaje")
-```
-- `FormatearNumero(x, formato, negrita = TRUE, color = "#000000", meta = NA, prop = TRUE)`: Aplica formato numérico con estilos condicionales.
-```r
-FormatearNumero(0.25, "porcentaje", meta = 0.2)
-```
-- `FormatearTexto(x, negrita = TRUE, color = "#000000", tamano_pct = 1, alineacion = "left", transform = "none")`: Aplica estilo a texto plano.
-```r
-FormatearTexto("Meta alcanzada", color = "#28B78D")
-```
-- `gt_minimal_style(gt_table)`: Aplica un estilo mínimo a objetos `gt`.
-```r
-tabla <- gt_minimal_style(gt::gt(head(mtcars)))
-```
-- `gt_mensaje_vacio(mensaje = "No existen datos en la tabla")`: Genera una tabla `gt` minimalista para mostrar mensajes cuando no hay datos disponibles.
-```r
-gt_mensaje_vacio()
-gt_mensaje_vacio("Sin resultados para los filtros seleccionados")
-```
-- `col_kpi(x, prop = TRUE, ref = 0, tol = 0, col_pos = "#0B5345", col_neg = "#943126", col_neu = "#000000", col_na = "#AAAAAA")`: Devuelve estilos de color para KPI según su relación con un valor de referencia y tolerancia.
-```r
-col_kpi(c(80, 100, 115), ref = 100, tol = 5)
-```
-- `chr_kpi(x)`: Genera indicadores textuales de desempeño.
-```r
-chr_kpi(c(0.8, 1.1))
-```
-- `col_num(x)`: Define la paleta numérica estándar del paquete.
-```r
-col_num(1:5)
-```
-- `gt_pct_style(gt_table, ...)`: Configura porcentajes en tablas `gt`.
-```r
-gt_pct_style(gt::gt(head(mtcars)), columns = mpg)
-```
-- `gt_var_style(gt_table, ...)`: Da formato variacional a columnas de `gt`.
-```r
-gt_var_style(gt::gt(head(mtcars)), columns = cyl)
-```
-- `gt_sign_style(gt_table, ...)`: Colorea valores positivos en verde, negativos en rojo y ceros en negro dentro de tablas `gt`.
-```r
-gt_sign_style(gt::gt(head(mtcars)), columns = mpg)
-```
-- `gt_color_columns(gt_table, columns, color)`: Colorea columnas específicas en `gt`.
-```r
-gt_color_columns(gt::gt(head(mtcars)), columns = hp, color = "#28B78D")
-```
+## Notas
 
-### Elementos gráficos
-- `vline(x = 0, color = "red")`: Crea una línea vertical en gráficos `plotly`.
-```r
-vline(10, "#28B78D")
-```
-- `hline(y = 0, color = "#ff3a21")`: Crea una línea horizontal en `plotly`.
-```r
-hline(0.5)
-```
-- `ImprimirDensidad(datos, columna, titulo, formato = "numero")`: Combina un histograma en porcentaje con la densidad kernel en escala logarítmica para explorar distribuciones sesgadas.
-```r
-set.seed(123)
-ventas <- data.frame(ingresos = rgamma(250, shape = 3, rate = 0.7))
-grafico <- ImprimirDensidad(ventas, "ingresos", "Ingresos diarios", formato = "dinero")
-grafico
-```
-- `ColoresRacafe(input_values)`: Genera una paleta de colores corporativos.
-```r
-ColoresRacafe(5)
-```
-- `ColoresGreenBlue(value)`: Devuelve gradientes verde-azul según valores numéricos.
-```r
-ColoresGreenBlue(seq(0, 1, length.out = 5))
-```
-- `ImprimirAnillo(data, var_label, var_medida = NULL, funcion = c("sum", "n"), colores = NULL)`: Construye gráficos de anillo en `plotly`.
-```r
-ImprimirAnillo(df, var_label = "categoria", var_medida = "valor")
-```
-
-### Componentes de entrada (Shiny)
-- `InputNumerico(id, label, value, dec = 2, max = NULL, min = NULL, type = "numero", label_col = 6, input_col = 6, width = "100%")`: Genera un input numérico personalizado.
-```r
-InputNumerico("ventas", "Ventas", 1000, dec = 0)
-```
-- `ListaDesplegable(inputId, label = NULL, choices, selected = choices, multiple = TRUE, fem = FALSE, ns = NULL)`: Crea un `pickerInput` con estilo.
-```r
-ListaDesplegable("region", "Región", choices = c("Norte", "Sur"))
-```
-- `pick_opt(cho, fem = TRUE)`: Construye opciones con género en `pickerInput`.
-```r
-pick_opt(c("Seleccionar", "Todas"))
-```
-- `BotonesRadiales(inputId, label = NULL, choices, selected = NULL, alineacion = c("left", "center", "right"), ...)`: Genera botones radiales estilizados permitiendo definir la alineación del grupo.
-```r
-BotonesRadiales("estado", "Estado", choices = c("Activo", "Inactivo"))
-```
-- `BotonEstado(...)`: Construye un botón tipo interruptor para activar/desactivar estados.
-```r
-BotonEstado("toggle", "Activar filtro")
-```
-- `BotonGuardar(id, label = "Guardar", align = "right", ...)`: Crea un botón de acción con alineación configurable.
-```r
-BotonGuardar("guardar_formulario", label = "Guardar cambios", align = "center")
-```
-
-### Componentes de salida (Shiny)
-- `BotonDescarga(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL, ...)`: Crea un botón de descarga personalizado.
-  - La función ahora valida todos los argumentos y acepta cualquier color reconocido por R, facilitando la detección temprana de errores de configuración.
-```r
-BotonDescarga("descargar")
-BotonDescarga("descargar_resumen", color = "steelblue", size = "md", title = "Descargar resumen semanal")
-```
-- `CajaIco(texto, icono, col_fondo = "#FDFEFE", alto = 120, col_letra = "#17202A", col_icono = "#000000")`: Diseña cajas informativas con íconos.
-```r
-CajaIco("Ingresos", "chart-line")
-```
-- `CajaValor(valor, formato, texto, icono, inputId = NULL, mostrar_boton = TRUE, colores = c(fondo = "white"))`: Arma cajas de indicadores con formato numérico, botón opcional de detalle y color configurable de fondo. El subtítulo (`texto`) puede enviarse como HTML preformateado y coloreado.
-```r
-CajaValor(1250000, "dinero", "Ingresos mensuales", "chart-line", "detalle_ingresos")
-CajaValor(0.87, "porcentaje", "<span style='color:#FFFFFF'>Cumplimiento</span>", "thumbs-up", "detalle_cumplimiento", colores = c(fondo = "primary"))
-```
-- `ImprimeSankey(data, vars, fun, var = NULL, colores)`: Genera diagramas Sankey con `plotly`.
-```r
-ImprimeSankey(df, vars = c("origen", "destino"), fun = "sum", var = "valor")
-```
-
-### Funciones numéricas
-- `SiError_0(x)`: Reemplaza errores por cero.
-```r
-SiError_0(tryCatch(log(-1), error = function(e) e))
-```
-- `Variacion(ini, fin)`: Calcula la variación porcentual entre dos valores.
-```r
-Variacion(100, 120)
-```
-- `Moda(x, na.rm = TRUE)`: Determina la moda de un vector.
-```r
-Moda(c(1, 2, 2, 3))
-```
-- `RedondearMultiplo(x, multiple)`: Redondea al múltiplo más cercano.
-```r
-RedondearMultiplo(17, 5)
-```
-
-### Manejo de fechas
-- `PrimerDia(x, uni = "month")`: Retorna el primer día de la unidad temporal de una fecha.
-```r
-PrimerDia("2023-10-15")
-```
-- `FechaTexto(x, ...)`: Convierte fechas en un texto personalizado.
-```r
-FechaTexto(as.Date("2023-10-15"))
-```
-- `EdadCumplida(from, to)`: Calcula la edad en años entre dos fechas.
-```r
-EdadCumplida(as.Date("1990-05-25"), Sys.Date())
-```
-
-### Manipulación de texto
-- `LimpiarNombres(s)`: Normaliza cadenas eliminando espacios repetidos y convirtiéndolas a mayúsculas.
-```r
-LimpiarNombres("  Camilo    Yate  ")
-```
-- `LimpiarCadena(x, rem_espacios = FALSE, rem_numeros = TRUE, rem_caresp = TRUE, rem_acentos = TRUE)`: Limpia caracteres no deseados de un texto.
-```r
-LimpiarCadena("¡Hola, mundo 123!")
-```
-- `UnirCadenas(..., sep = " ", collapse = NULL, na.rm = FALSE)`: Une textos omitiendo `NA` si se indica.
-```r
-UnirCadenas("Hola", NA, "Mundo", sep = "-", na.rm = TRUE)
-```
-- `Unicos(x)`: Devuelve los valores únicos ordenados de un vector.
-```r
-Unicos(c("b", "a", "a"))
-```
-- `EsVacio(x)`: Verifica si un valor es `NULL`, `NA` o una cadena vacía.
-```r
-EsVacio("")
-```
-- `EsEnteroPositivo(s)`: Comprueba si una cadena representa un entero positivo.
-```r
-EsEnteroPositivo("123")
-```
-- `EsNumero(cadena)`: Comprueba si la cadena es un número positivo. Los valores `NA` y las cadenas vacías retornan `FALSE`.
-```r
-EsNumero("12.3")
-EsNumero("")
-EsNumero(NA)
-```
-- `EsNumTelefono(tel)`: Valida el formato de un número telefónico.
-```r
-EsNumTelefono("3123456789")
-```
-- `EsEmail(email)`: Valida direcciones de correo electrónico.
-```r
-EsEmail("usuario@racafe.com")
-```
-
-### Utilidades HTML
-- `Saltos(n = 1)`: Genera saltos de línea en HTML.
-```r
-Saltos(2)
-```
-- `Espacios(n = 1)`: Inserta espacios no separables.
-```r
-Espacios(3)
-```
-- `Obligatorio(s)`: Marca texto como obligatorio con estilo HTML.
-```r
-Obligatorio("Campo requerido")
-```
-
-### Pronósticos
-- `aplicar_imputacion(ts_data, metodo_imputacion, valor_constante = NULL, prob_percentil = 0.25)`: Imputa valores faltantes en series de tiempo usando distintos métodos.
-```r
-serie_imputada <- aplicar_imputacion(serie, "promedio")
-```
-- `extraer_intervalos(forecast_obj, nivel_conf)`: Obtiene intervalos de confianza de un objeto de pronóstico.
-```r
-intervalos <- extraer_intervalos(pronostico, 0.95)
-```
-- `ejecutar_pronosticos(train_data, test_data, h_periods, fechas_futuras, ...)`: Ajusta múltiples modelos y devuelve resultados comparativos.
-```r
-resultado <- ejecutar_pronosticos(train, test, h_periods = 12, fechas_futuras = seq_len(12))
-```
-- `Pronosticar(df, fecha_col = "fecha", valor_cols = NULL, nivel_confianza = 0.95, ...)`: Orquesta el flujo completo de pronósticos desde datos crudos.
-```r
-pron <- Pronosticar(df, fecha_col = "fecha", valor_cols = c("ventas"))
-```
-- `PronMetricas(resultado_pronostico, columna = NULL)`: Calcula métricas de precisión para las columnas seleccionadas.
-```r
-PronMetricas(pron)
-```
-- `PronSeleccionar(resultado_pronostico, columna = NULL, ...)`: Elige el mejor modelo por columna o segmento.
-```r
-seleccion <- PronSeleccionar(pron)
-```
-- `PronSerie(seleccion, columna = NULL)`: Construye tablas detalladas de series pronosticadas.
-```r
-PronSerie(seleccion)
-```
-- `PronMensual(seleccion, columna = NULL, incluir_pronosticos = TRUE)`: Resume pronósticos por mes.
-```r
-PronMensual(seleccion)
-```
-- `PronPatronMes(seleccion, columna = NULL)`: Analiza patrones de comportamiento mensual.
-```r
-PronPatronMes(seleccion)
-```
+- La documentación de detalle por función está en `man/*.Rd` y se consulta con `?NombreFuncion`.
+- Si agregas/modificas funciones, actualiza la documentación con roxygen2 y regenera `NAMESPACE`/`man`.
