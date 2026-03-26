@@ -295,7 +295,7 @@ FormatearNumero <- function(x, formato, negrita = TRUE, color = "#000000", meta 
 FormatearTabla <- function(
     data,
     filas_fmt = list(),
-    formato_def = "numero",
+    formato_def = "coma",
     negrita_def = FALSE,
     color_def = "#000000",
     meta_def = NA,
