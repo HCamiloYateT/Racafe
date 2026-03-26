@@ -450,9 +450,10 @@ BotonesRadiales <- function(inputId, label = NULL, choices, selected = NULL,
         choiceNames = choiceNames,
         choiceValues = choiceValues,
         selected = selected,
-        justified = FALSE,
+        justified = TRUE,
         individual = TRUE,
-        status = "primary"
+        status = "primary",
+        width = "100%"
       )
     )
   )
