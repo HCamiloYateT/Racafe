@@ -244,6 +244,156 @@ FormatearNumero <- function(x, formato, negrita = TRUE, color = "#000000", meta 
   }
 }
 
+#' Formatear tabla numérica con defaults globales y overrides por fila
+#'
+#' @description
+#' Aplica [FormatearNumero()] a todas las columnas numéricas de una tabla,
+#' permitiendo definir parámetros globales (`*_def`) y sobrescribirlos por fila
+#' usando `filas_fmt`.
+#'
+#' Los overrides se resuelven con la siguiente prioridad:
+#' 1) por valor de la primera columna (por ejemplo, `Item`), y
+#' 2) por posición de fila como texto (`"1"`, `"2"`, ...).
+#'
+#' @param data `data.frame` o `tibble` con al menos una columna.
+#' @param filas_fmt Lista de listas con overrides por fila. Cada elemento puede
+#'   incluir: `formato`, `negrita`, `color`, `meta` y `prop`.
+#'   Los nombres de `filas_fmt` pueden corresponder al valor de la primera
+#'   columna de `data` o al índice de fila como cadena.
+#' @param formato_def Formato numérico global por defecto (ver [DefinirFormato()]).
+#' @param negrita_def Lógico global por defecto para negrita.
+#' @param color_def Color global por defecto en formato hexadecimal.
+#' @param meta_def Meta global por defecto para coloreo condicional.
+#' @param prop_def Lógico global por defecto para dirección de color según meta.
+#'
+#' @return
+#' Objeto del mismo tipo que `data`, con las columnas numéricas convertidas a
+#' HTML formateado por fila.
+#'
+#' @examples
+#' datos <- data.frame(
+#'   Item = c("Ventas", "Margen", "Meta"),
+#'   Ene = c(1000, 0.34, 1200),
+#'   Feb = c(950, 0.31, 1200)
+#' )
+#'
+#' FormatearTabla(
+#'   data = datos,
+#'   formato_def = "numero",
+#'   negrita_def = FALSE,
+#'   filas_fmt = list(
+#'     Ventas = list(formato = "dinero", negrita = TRUE, meta = 980, prop = TRUE),
+#'     Margen = list(formato = "porcentaje", color = "#0B5345"),
+#'     "3"    = list(formato = "dinero", color = "#1F618D")
+#'   )
+#' )
+#'
+#' @references
+#' [FormatearNumero()] y [DefinirFormato()] para formatos y estilos disponibles.
+#'
+#' @export
+FormatearTabla <- function(
+    data,
+    filas_fmt = list(),
+    formato_def = "numero",
+    negrita_def = FALSE,
+    color_def = "#000000",
+    meta_def = NA,
+    prop_def = TRUE
+) {
+  if (!inherits(data, c("data.frame", "tbl_df"))) {
+    rlang::abort("`data` debe ser un data.frame o tibble.")
+  }
+  if (ncol(data) < 1) {
+    rlang::abort("`data` debe contener al menos una columna.")
+  }
+  if (!is.list(filas_fmt)) {
+    rlang::abort("`filas_fmt` debe ser una lista.")
+  }
+  if (!is.character(formato_def) || length(formato_def) != 1 || is.na(formato_def)) {
+    rlang::abort("`formato_def` debe ser una cadena de texto única y no nula.")
+  }
+  if (!is.logical(negrita_def) || length(negrita_def) != 1 || is.na(negrita_def)) {
+    rlang::abort("`negrita_def` debe ser un lógico escalar no nulo.")
+  }
+  if (!is.character(color_def) || length(color_def) != 1 || is.na(color_def)) {
+    rlang::abort("`color_def` debe ser una cadena de texto única y no nula.")
+  }
+  if (!is.logical(prop_def) || length(prop_def) != 1 || is.na(prop_def)) {
+    rlang::abort("`prop_def` debe ser un lógico escalar no nulo.")
+  }
+
+  n_filas <- nrow(data)
+  if (n_filas == 0) {
+    return(data)
+  }
+
+  cols_numericas <- names(data)[vapply(data, is.numeric, logical(1))]
+  if (length(cols_numericas) == 0) {
+    return(data)
+  }
+
+  override_fila <- function(i) {
+    key_item <- as.character(data[[1]][i])
+    key_idx <- as.character(i)
+
+    ovr_item <- filas_fmt[[key_item]]
+    ovr_idx <- filas_fmt[[key_idx]]
+    ovr <- if (!is.null(ovr_item)) ovr_item else if (!is.null(ovr_idx)) ovr_idx else list()
+
+    if (!is.list(ovr)) {
+      rlang::abort(paste0("El override para la fila ", i, " debe ser una lista."))
+    }
+    ovr
+  }
+
+  overrides <- lapply(seq_len(n_filas), override_fila)
+
+  cfg_formato <- vapply(overrides, function(ovr) {
+    if (!is.null(ovr$formato)) as.character(ovr$formato[[1]]) else formato_def
+  }, character(1))
+
+  cfg_negrita <- vapply(overrides, function(ovr) {
+    if (!is.null(ovr$negrita)) isTRUE(ovr$negrita[[1]]) else negrita_def
+  }, logical(1))
+
+  cfg_color <- vapply(overrides, function(ovr) {
+    if (!is.null(ovr$color)) as.character(ovr$color[[1]]) else color_def
+  }, character(1))
+
+  cfg_meta <- lapply(overrides, function(ovr) {
+    if (!is.null(ovr$meta)) ovr$meta[[1]] else meta_def
+  })
+
+  cfg_prop <- vapply(overrides, function(ovr) {
+    if (!is.null(ovr$prop)) isTRUE(ovr$prop[[1]]) else prop_def
+  }, logical(1))
+
+  meta_key <- vapply(cfg_meta, function(m) {
+    if (length(m) == 1 && is.na(m)) "NA" else as.character(m)
+  }, character(1))
+  group_key <- paste(cfg_formato, cfg_negrita, cfg_color, meta_key, cfg_prop, sep = "||")
+
+  salida <- data
+  grupos <- split(seq_len(n_filas), group_key)
+
+  for (idx in grupos) {
+    i <- idx[[1]]
+    for (col in cols_numericas) {
+      salida[[col]][idx] <- FormatearNumero(
+        x = data[[col]][idx],
+        formato = cfg_formato[[i]],
+        negrita = cfg_negrita[[i]],
+        color = cfg_color[[i]],
+        meta = cfg_meta[[i]],
+        prop = cfg_prop[[i]]
+      )
+    }
+  }
+
+  salida
+}
+
 #' Formatear texto en HTML
 #'
 #' @description Aplica opciones de estilo visual a un texto plano.

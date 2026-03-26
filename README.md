@@ -12,7 +12,7 @@ Este repositorio **sí es un paquete de R** (no una app), con la siguiente estru
 - `tests/testthat/`: pruebas unitarias.
 - `renv/settings.json`: configuración de entorno reproducible.
 
-Actualmente el paquete exporta **91 funciones** (ver `NAMESPACE`).
+Actualmente el paquete exporta **92 funciones** (ver `NAMESPACE`).
 
 ## Instalación
 
@@ -50,7 +50,7 @@ help(package = "racafe")
   - transformación: `TopAbsoluto()`, `TopRelativo()`, `bind_rows_na()`, `left_join_all()`, `RevisarDuplicados()`.
 
 - **Formatos y utilidades visuales**:
-  - `R/Formatos.R`: `DefinirFormato()`, `FormatoD3()`, `FormatoJS()`, `FormatoHOT()`, `FormatearNumero()`, `FormatearTexto()`.
+  - `R/Formatos.R`: `DefinirFormato()`, `FormatoD3()`, `FormatoJS()`, `FormatoHOT()`, `FormatearNumero()`, `FormatearTabla()`, `FormatearTexto()`.
   - `R/GTStyles.R`: `gt_minimal_style()`, `gt_mensaje_vacio()`, `gt_pct_style()`, `gt_var_style()`, `gt_sign_style()`, `gt_color_columns()`, `col_kpi()`, `chr_kpi()`, `col_num()`.
   - `R/ElementosGraficos.R`: `vline()`, `hline()`, `ImprimirDensidad()`, `ImprimirAnillo()`, `ImprimeSankey()`, `ColoresRacafe()`, `ColoresGreenBlue()`.
 
@@ -78,6 +78,30 @@ O desde terminal:
 
 ```bash
 Rscript -e 'testthat::test_dir("tests/testthat")'
+```
+
+## Nueva funcionalidad: `FormatearTabla()`
+
+`FormatearTabla()` aplica `FormatearNumero()` por fila sobre todas las columnas numéricas de una tabla, usando defaults globales y permitiendo overrides por nombre del `Item` (primera columna) o por posición de fila.
+
+```r
+library(racafe)
+
+datos <- data.frame(
+  Item = c("Ventas", "Margen", "Meta"),
+  Ene = c(1000, 0.34, 1200),
+  Feb = c(950, 0.31, 1200)
+)
+
+tabla_fmt <- FormatearTabla(
+  data = datos,
+  formato_def = "numero",
+  filas_fmt = list(
+    Ventas = list(formato = "dinero", negrita = TRUE, meta = 980, prop = TRUE),
+    Margen = list(formato = "porcentaje", color = "#0B5345"),
+    "3"    = list(formato = "dinero", color = "#1F618D")
+  )
+)
 ```
 
 ## Notas
