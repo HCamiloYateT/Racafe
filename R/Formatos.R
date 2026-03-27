@@ -279,7 +279,7 @@ FormatearNumero <- function(x, formato, negrita = TRUE, color = "#000000", meta 
 #'
 #' FormatearTabla(
 #'   data = datos,
-#'   formato_def = "numero",
+#'   formato_def = "coma",
 #'   negrita_def = FALSE,
 #'   filas_fmt = list(
 #'     Ventas = list(formato = "dinero", negrita = TRUE, meta = 980, prop = TRUE),
@@ -294,105 +294,41 @@ FormatearNumero <- function(x, formato, negrita = TRUE, color = "#000000", meta 
 #' @export
 FormatearTabla <- function(
     data,
-    filas_fmt = list(),
+    filas_fmt   = list(),
     formato_def = "coma",
     negrita_def = FALSE,
-    color_def = "#000000",
-    meta_def = NA,
-    prop_def = TRUE
+    color_def   = "#000000",
+    meta_def    = NA,
+    prop_def    = TRUE
 ) {
-  if (!inherits(data, c("data.frame", "tbl_df"))) {
-    rlang::abort("`data` debe ser un data.frame o tibble.")
-  }
-  if (ncol(data) < 1) {
-    rlang::abort("`data` debe contener al menos una columna.")
-  }
-  if (!is.list(filas_fmt)) {
-    rlang::abort("`filas_fmt` debe ser una lista.")
-  }
-  if (!is.character(formato_def) || length(formato_def) != 1 || is.na(formato_def)) {
-    rlang::abort("`formato_def` debe ser una cadena de texto única y no nula.")
-  }
-  if (!is.logical(negrita_def) || length(negrita_def) != 1 || is.na(negrita_def)) {
-    rlang::abort("`negrita_def` debe ser un lógico escalar no nulo.")
-  }
-  if (!is.character(color_def) || length(color_def) != 1 || is.na(color_def)) {
-    rlang::abort("`color_def` debe ser una cadena de texto única y no nula.")
-  }
-  if (!is.logical(prop_def) || length(prop_def) != 1 || is.na(prop_def)) {
-    rlang::abort("`prop_def` debe ser un lógico escalar no nulo.")
-  }
+  `%||%` <- function(x, y) if (is.null(x)) y else x
 
-  n_filas <- nrow(data)
-  if (n_filas == 0) {
-    return(data)
-  }
+  purrr::pmap_dfr(
+    list(idx = seq_len(nrow(data))),
+    function(idx) {
+      # Resolucion de override: busca por valor de Item, luego por indice string
+      item_key <- as.character(data[[1]][idx])
+      ovr <- filas_fmt[[item_key]] %||% filas_fmt[[as.character(idx)]] %||% list()
 
-  cols_numericas <- names(data)[vapply(data, is.numeric, logical(1))]
-  if (length(cols_numericas) == 0) {
-    return(data)
-  }
+      # Parametros efectivos: override o default global
+      fmt <- ovr$formato %||% formato_def
+      neg <- if (!is.null(ovr$negrita)) ovr$negrita else negrita_def
+      col <- ovr$color   %||% color_def
+      met <- if (!is.null(ovr$meta))    ovr$meta    else meta_def
+      prp <- if (!is.null(ovr$prop))    ovr$prop    else prop_def
 
-  override_fila <- function(i) {
-    key_item <- as.character(data[[1]][i])
-    key_idx <- as.character(i)
-
-    ovr_item <- filas_fmt[[key_item]]
-    ovr_idx <- filas_fmt[[key_idx]]
-    ovr <- if (!is.null(ovr_item)) ovr_item else if (!is.null(ovr_idx)) ovr_idx else list()
-
-    if (!is.list(ovr)) {
-      rlang::abort(paste0("El override para la fila ", i, " debe ser una lista."))
+      data %>%
+        dplyr::slice(idx) %>%
+        dplyr::mutate(dplyr::across(
+          where(is.numeric),
+          # Lambda explicita evita colision de pronombre "." entre pmap y across
+          \(v) as.character(FormatearNumero(x = v, formato = fmt, negrita = neg,
+                                            color = col, meta = met, prop = prp))
+        ))
     }
-    ovr
-  }
-
-  overrides <- lapply(seq_len(n_filas), override_fila)
-
-  cfg_formato <- vapply(overrides, function(ovr) {
-    if (!is.null(ovr$formato)) as.character(ovr$formato[[1]]) else formato_def
-  }, character(1))
-
-  cfg_negrita <- vapply(overrides, function(ovr) {
-    if (!is.null(ovr$negrita)) isTRUE(ovr$negrita[[1]]) else negrita_def
-  }, logical(1))
-
-  cfg_color <- vapply(overrides, function(ovr) {
-    if (!is.null(ovr$color)) as.character(ovr$color[[1]]) else color_def
-  }, character(1))
-
-  cfg_meta <- lapply(overrides, function(ovr) {
-    if (!is.null(ovr$meta)) ovr$meta[[1]] else meta_def
-  })
-
-  cfg_prop <- vapply(overrides, function(ovr) {
-    if (!is.null(ovr$prop)) isTRUE(ovr$prop[[1]]) else prop_def
-  }, logical(1))
-
-  meta_key <- vapply(cfg_meta, function(m) {
-    if (length(m) == 1 && is.na(m)) "NA" else as.character(m)
-  }, character(1))
-  group_key <- paste(cfg_formato, cfg_negrita, cfg_color, meta_key, cfg_prop, sep = "||")
-
-  salida <- data
-  grupos <- split(seq_len(n_filas), group_key)
-
-  for (idx in grupos) {
-    i <- idx[[1]]
-    for (col in cols_numericas) {
-      salida[[col]][idx] <- FormatearNumero(
-        x = data[[col]][idx],
-        formato = cfg_formato[[i]],
-        negrita = cfg_negrita[[i]],
-        color = cfg_color[[i]],
-        meta = cfg_meta[[i]],
-        prop = cfg_prop[[i]]
-      )
-    }
-  }
-
-  salida
+  )
 }
+
 
 #' Formatear texto en HTML
 #'
