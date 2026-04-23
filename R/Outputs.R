@@ -1,43 +1,43 @@
-#' Crear un botón de descarga con estilo personalizado
+#' Crear un botón de descarga con clases racafe y tamaños unificados
 #'
-#' Genera un botón de descarga con estilos corporativos y opciones de configuración para
-#' el ícono, el color y el tamaño. La función valida exhaustivamente los argumentos para
-#' entregar mensajes de error claros y puede integrarse fácilmente con módulos de `shiny`
-#' mediante el uso de un namespace.
+#' Genera un botón de descarga estilizado mediante clases CSS `racafe`.
+#' Incluye validaciones de argumentos, soporte de `namespace` para módulos de `shiny`
+#' y configuración de color, tamaño y alineación.
 #'
 #' @param button_id Identificador del botón de descarga. Debe ser una cadena no vacía.
-#' @param icon_name Nombre del ícono a utilizar en el botón. Debe ser una cadena no vacía.
-#' @param color Color del texto y borde del botón. Debe ser un color válido reconocido por R.
+#' @param icono Nombre del ícono (Font Awesome) a utilizar en el botón.
+#' @param color Color asociado al botón, almacenado como atributo `data-racafe-color`.
 #' @param ns Función de namespace (generalmente `shiny::NS`) utilizada en módulos. Por defecto `NULL`.
-#' @param title Texto que se mostrará como tooltip al pasar el cursor sobre el botón. Debe ser una cadena.
-#' @param size Tamaño del botón. Debe ser uno de `"sm"`, `"md"` o `"lg"`. Por defecto `"sm"`.
+#' @param title Texto que se mostrará como tooltip al pasar el cursor sobre el botón.
+#'   Puede ser `NULL`.
+#' @param size Tamaño del botón. Debe ser uno de `"xxs"`, `"xs"`, `"sm"`, `"md"`,
+#'   `"lg"`, `"xl"` o `"xxl"`.
 #' @param align Alineación horizontal del botón dentro del contenedor. Debe ser `"left"`,
-#'   `"center"` o `"right"`. Por defecto `"right"`.
+#'   `"center"` o `"right"`.
 #'
-#' @return Un objeto HTML que representa el botón de descarga personalizado.
+#' @return Un contenedor HTML con el botón de descarga personalizado.
 #'
 #' @examples
 #' BotonDescarga("descargar_reporte")
-#' BotonDescarga("descargar_reporte", icon_name = "download", size = "md")
+#' BotonDescarga("descargar_reporte", icono = "download", size = "md")
 #' BotonDescarga("descargar", color = "steelblue", title = "Descargar informe")
 #'
 #' @references
-#' Font Awesome Icons. 
+#' Font Awesome Icons.
 #' \url{https://fontawesome.com/v4/icons/}
 #'
-#' @importFrom shiny span downloadButton icon
 #' @export
-BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d", ns = NULL,
-                          title = "Descargar", size = "sm", align = "right") {
+BotonDescarga <- function(button_id, icono = "download", color = "#28b78d",
+                          ns = NULL, title = "Descargar", size = "sm", align = "right") {
+  align <- match.arg(align, c("left", "center", "right"))
+  size <- match.arg(size, c("xxs", "xs", "sm", "md", "lg", "xl", "xxl"))
 
   if (!is.character(button_id) || length(button_id) != 1 || !nzchar(button_id)) {
     stop("'button_id' debe ser una cadena de caracteres no vacía.", call. = FALSE)
   }
-
-  if (!is.character(icon_name) || length(icon_name) != 1 || !nzchar(icon_name)) {
-    stop("'icon_name' debe ser una cadena de caracteres no vacía.", call. = FALSE)
+  if (!is.character(icono) || length(icono) != 1 || !nzchar(icono)) {
+    stop("'icono' debe ser una cadena de caracteres no vacía.", call. = FALSE)
   }
-
   if (!is.character(color) || length(color) != 1 || !nzchar(color)) {
     stop("'color' debe ser una cadena de caracteres no vacía.", call. = FALSE)
   }
@@ -51,58 +51,31 @@ BotonDescarga <- function(button_id, icon_name = "file-excel", color = "#28b78d"
   if (!is.null(ns) && !is.function(ns)) {
     stop("'ns' debe ser NULL o una función de namespace válida (p. ej. shiny::NS).", call. = FALSE)
   }
-
-  if (!is.character(title) || length(title) != 1) {
-    stop("'title' debe ser una cadena de caracteres de longitud uno.", call. = FALSE)
-  }
-
-  size_config <- list(
-    sm = list(padding = "3px 8px", font_size = "12px"),
-    md = list(padding = "6px 12px", font_size = "14px"),
-    lg = list(padding = "8px 16px", font_size = "16px")
-  )
-
-  if (!is.character(size) || length(size) != 1 || !size %in% names(size_config)) {
-    stop("'size' debe ser uno de los valores permitidos: 'sm', 'md' o 'lg'.", call. = FALSE)
-  }
-
-  align_options <- c(left = "flex-start", center = "center", right = "flex-end")
-  if (!is.character(align) || length(align) != 1 || !align %in% names(align_options)) {
-    stop("'align' debe ser uno de los valores permitidos: 'left', 'center' o 'right'.",
-         call. = FALSE)
+  if (!is.null(title) && (!is.character(title) || length(title) != 1)) {
+    stop("'title' debe ser NULL o una cadena de caracteres de longitud uno.", call. = FALSE)
   }
 
   final_id <- if (is.null(ns)) button_id else ns(button_id)
-
-  current_size <- size_config[[size]]
-
-  button_style <- paste0(
-    "-webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; ",
-    "word-wrap: break-word; box-sizing: border-box; line-height: inherit; ",
-    "text-transform: none; margin: 0; border-width: 1px; font-weight: 400; ",
-    "position: relative; overflow: hidden; border: 1px solid ", color, "40; ",
-    "border-radius: 4px; background: transparent; ",
-    "transition: all 0.3s cubic-bezier(0.02, 0.01, 0.47, 1); ",
-    "outline: none; -webkit-appearance: button; ",
-    "padding: ", current_size$padding, "; ",
-    "font-size: ", current_size$font_size, "; ",
-    "font-family: inherit; color: ", color, "; cursor: pointer !important;"
+  clase_align <- switch(align, left = "text-left", center = "text-center", right = "text-right")
+  clase_boton <- paste(
+    "btn racafe-btn-descarga",
+    sprintf("racafe-btn-descarga--%s", size),
+    collapse = " "
   )
 
-  container_style <- paste0(
-    "display: flex; justify-content: ", align_options[[align]], "; ",
-    "width: 100%; cursor: pointer;"
+  boton <- shiny::downloadButton(
+    outputId = final_id,
+    label = NULL,
+    icon = shiny::icon(icono, class = "racafe-btn-icon"),
+    class = clase_boton
   )
+  boton <- shiny::tagAppendAttributes(boton, `data-racafe-color` = color)
 
-  span(
+  shiny::div(
+    style = "cursor: pointer;",
+    class = clase_align,
     title = title,
-    style = container_style,
-    downloadButton(
-      outputId = final_id,
-      label = NULL,
-      icon = icon(icon_name),
-      style = button_style
-    )
+    boton
   )
 }
 
