@@ -635,3 +635,27 @@ BotonGuardar <- function(id, label = "Guardar", align = c("right", "left", "cent
     )
   )
 }
+
+
+#' Selector de mes
+#'
+#' @description Wrapper de `InputFecha()` para seleccionar únicamente mes y año.
+#'
+#' @param id Identificador del input.
+#' @param label Etiqueta del input.
+#' @param value Fecha inicial. Por defecto `Sys.Date()`.
+#' @param min_date Fecha mínima permitida.
+#' @param max_date Fecha máxima permitida.
+#' @param inline Si el input se muestra en línea.
+#' @param width Ancho del control.
+#' @param ... Argumentos adicionales que se pasan a `InputFecha()`.
+#'
+#' @return Un componente de entrada de fecha configurado en modo mes.
+#' @export
+InputMes <- function(id, label = NULL, value = Sys.Date(),
+                     min_date = NULL, max_date = NULL,
+                     inline = FALSE, width = "100%", ...) {
+  InputFecha(id = id, label = label, value = value,
+             tipo = "mes", min_date = min_date, max_date = max_date,
+             inline = inline, width = width, ...)
+}
