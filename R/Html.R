@@ -44,6 +44,3 @@ Obligatorio <- function(s) {
   # Crea un encabezado HTML de nivel 6 con el texto y un asterisco rojo.
   shiny::h6(htmltools::HTML(paste(s, shiny::span("*", style = "color: red;"))))
 }
-
-
-
